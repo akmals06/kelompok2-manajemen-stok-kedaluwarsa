@@ -3,27 +3,137 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      String   @default("user")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum Role {
+  PEMILIK_USAHA
+  ADMIN_USAHA
 }
 
-model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  stock       Int
-  image       String?  // Cloudinary URL
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+enum JenisTransaksi {
+  MASUK
+  KELUAR
+}
+
+enum JenisPergerakan {
+  PENAMBAHAN
+  PENGURANGAN
+}
+
+enum StatusBatch {
+  AKTIF
+  MENDEKATI_KEDALUWARSA
+  KEDALUWARSA
+  DIARSIPKAN
+}
+
+model Pengguna {
+  id_pengguna   Int             @id @default(autoincrement())
+  nama          String
+  email         String          @unique
+  password_hash String
+  peran         Role            @default(ADMIN_USAHA)
+  status_aktif  Boolean         @default(true)
+  TransaksiStok TransaksiStok[]
+
+  @@map("pengguna")
+}
+
+model KategoriProduk {
+  id_kategori   Int      @id @default(autoincrement())
+  nama_kategori String   @unique
+  deskripsi     String?
+  Produk        Produk[]
+
+  @@map("kategori_produk")
+}
+
+model Produk {
+  id_produk     Int             @id @default(autoincrement())
+  id_kategori   Int
+  nama_produk   String
+  satuan        String
+  stok_tersedia Int             @default(0)
+  stok_minimum  Int             @default(0)
+  status_aktif  Boolean         @default(true)
+  gambar_url    String?
+  kategori      KategoriProduk  @relation(fields: [id_kategori], references: [id_kategori])
+  BatchProduk   BatchProduk[]
+  TransaksiStok TransaksiStok[]
+  AnalisisEoq   AnalisisEoq[]
+
+  @@map("produk")
+}
+
+model BatchProduk {
+  id_batch            Int             @id @default(autoincrement())
+  id_produk           Int
+  kode_batch          String
+  tanggal_masuk       DateTime        @db.Date
+  tanggal_kedaluwarsa DateTime        @db.Date
+  jumlah_batch        Int             @default(0)
+  status_batch        StatusBatch     @default(AKTIF)
+  produk              Produk          @relation(fields: [id_produk], references: [id_produk])
+  TransaksiStok       TransaksiStok[]
+
+  @@map("batch_produk")
+}
+
+model TransaksiStok {
+  id_transaksi          Int                     @id @default(autoincrement())
+  id_pengguna           Int
+  id_produk             Int
+  id_batch              Int?
+  id_laporan            Int?
+  jenis_transaksi       JenisTransaksi
+  tanggal_transaksi     DateTime                @default(now())
+  jumlah                Int
+  status_validasi       Boolean                 @default(true)
+  keterangan            String?
+  pengguna              Pengguna                @relation(fields: [id_pengguna], references: [id_pengguna])
+  produk                Produk                  @relation(fields: [id_produk], references: [id_produk])
+  batch                 BatchProduk?            @relation(fields: [id_batch], references: [id_batch])
+  RiwayatPergerakanStok RiwayatPergerakanStok[]
+  laporan_inventaris    LaporanInventaris?      @relation(fields: [id_laporan], references: [id_laporan])
+
+  @@map("transaksi_stok")
+}
+
+model RiwayatPergerakanStok {
+  id_riwayat       Int             @id @default(autoincrement())
+  id_transaksi     Int
+  jenis_pergerakan JenisPergerakan
+  jumlah_perubahan Int
+  waktu_catat      DateTime        @default(now())
+  catatan          String?
+  transaksi        TransaksiStok   @relation(fields: [id_transaksi], references: [id_transaksi])
+
+  @@map("riwayat_pergerakan_stok")
+}
+
+model AnalisisEoq {
+  id_analisis         Int    @id @default(autoincrement())
+  id_produk           Int
+  kebutuhan_tahunan   Float
+  biaya_pesan         Float
+  biaya_simpan        Float
+  nilai_eoq           Float
+  frekuensi_pemesanan Float
+  biaya_pesan_tahunan Float
+  produk              Produk @relation(fields: [id_produk], references: [id_produk])
+
+  @@map("analisis_eoq")
+}
+
+model LaporanInventaris {
+  id_laporan       Int             @id @default(autoincrement())
+  periode_awal     DateTime        @db.Date
+  periode_akhir    DateTime        @db.Date
+  tanggal_generate DateTime        @default(now())
+  TransaksiStok    TransaksiStok[]
+
+  @@map("laporan_inventaris")
 }
