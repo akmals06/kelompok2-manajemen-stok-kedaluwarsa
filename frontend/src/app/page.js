@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export default function Home() {
@@ -22,12 +23,12 @@ export default function Home() {
           Seamlessly manage your products with real-time updates and secure authentication.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <button className="px-8 py-4 bg-primary text-white rounded-full font-semibold hover:opacity-90 transition-all shadow-lg shadow-primary/20">
+          <Link href="/login" className="px-8 py-4 bg-primary text-white rounded-full font-semibold hover:opacity-90 transition-all shadow-lg shadow-primary/20">
             Get Started
-          </button>
-          <button className="px-8 py-4 glass-morphism text-white rounded-full font-semibold hover:bg-white/5 transition-all">
+          </Link>
+          <Link href="/docs" className="px-8 py-4 glass-morphism text-white rounded-full font-semibold hover:bg-white/5 transition-all">
             Documentation
-          </button>
+          </Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
