@@ -2,6 +2,7 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinary');
 
+// Konfigurasi penyimpanan gambar produk ke Cloudinary
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {

@@ -3,7 +3,7 @@ const { errorResponse } = require('../utils/response');
 const errorHandler = (err, req, res, next) => {
   console.error(err.stack);
   
-  // Default status code
+  // Gunakan status code default jika tidak ada
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 

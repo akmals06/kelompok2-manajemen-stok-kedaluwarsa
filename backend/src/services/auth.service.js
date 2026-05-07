@@ -16,7 +16,7 @@ const registerUser = async (email, password, name) => {
     email,
     password_hash: hashedPassword,
     nama: name,
-    peran: 'ADMIN_USAHA', // Setting default to valid Enum role
+    peran: 'ADMIN_USAHA', // Default role untuk pendaftaran baru
     status_aktif: true,
   });
 
