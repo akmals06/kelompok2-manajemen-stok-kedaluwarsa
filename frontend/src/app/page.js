@@ -1,4 +1,16 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Biar gak error pas pertama kali load (hydration mismatch)
+  if (!mounted) return null; 
   return (
     <main className="flex-1 bg-premium-gradient flex flex-col items-center justify-center p-8">
       <div className="max-w-4xl w-full text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
