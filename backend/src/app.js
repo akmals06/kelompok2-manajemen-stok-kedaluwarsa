@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-// Middleware
+// Konfigurasi Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -12,9 +12,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/products', require('./routes/product.routes'));
+app.use('/api/produk', require('./routes/produk.routes'));
 
-// Global Error Handler Middleware
+// Middleware penanganan error secara global
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 

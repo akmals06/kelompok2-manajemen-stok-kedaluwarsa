@@ -1,6 +1,7 @@
 const prisma = require('../config/db');
 
-const findAllProducts = async () => {
+// Ambil semua data produk beserta kategorinya
+const findAllProduk = async () => {
   return await prisma.produk.findMany({
     include: {
       kategori: true,
@@ -8,7 +9,8 @@ const findAllProducts = async () => {
   });
 };
 
-const findProductById = async (id_produk) => {
+// Cari satu produk berdasarkan ID
+const findProdukById = async (id_produk) => {
   return await prisma.produk.findUnique({
     where: { id_produk: parseInt(id_produk) },
     include: {
@@ -17,20 +19,23 @@ const findProductById = async (id_produk) => {
   });
 };
 
-const createProduct = async (data) => {
+// Simpan produk baru ke database
+const createProduk = async (data) => {
   return await prisma.produk.create({
     data,
   });
 };
 
-const updateProduct = async (id_produk, data) => {
+// Update data produk yang sudah ada
+const updateProduk = async (id_produk, data) => {
   return await prisma.produk.update({
     where: { id_produk: parseInt(id_produk) },
     data,
   });
 };
 
-const updateStatusProduct = async (id_produk, status_aktif) => {
+// Ubah status aktif/nonaktif produk
+const updateStatusProduk = async (id_produk, status_aktif) => {
   return await prisma.produk.update({
     where: { id_produk: parseInt(id_produk) },
     data: { status_aktif },
@@ -38,9 +43,9 @@ const updateStatusProduct = async (id_produk, status_aktif) => {
 };
 
 module.exports = {
-  findAllProducts,
-  findProductById,
-  createProduct,
-  updateProduct,
-  updateStatusProduct,
+  findAllProduk,
+  findProdukById,
+  createProduk,
+  updateProduk,
+  updateStatusProduk,
 };
