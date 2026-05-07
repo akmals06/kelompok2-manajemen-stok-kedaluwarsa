@@ -1,23 +1,35 @@
 import { useState, useEffect } from 'react';
+import { authService } from '../services/auth.service';
 
-// Hook ini dipake buat ngecek user udah login apa belum.
-// Masih pake dummy dulu ya buat testing struktur UI.
+/**
+ * Hook for managing authentication state
+ */
 export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulasi pengecekan token di local storage
-    const checkAuth = async () => {
+    const checkAuth = () => {
       try {
-        // Logika verifikasi token akan ditambahkan di sini
-        setLoading(false);
+        const currentUser = authService.getCurrentUser();
+        setUser(currentUser);
       } catch (error) {
+        console.error('Auth verification failed:', error);
+      } finally {
         setLoading(false);
       }
     };
+    
     checkAuth();
   }, []);
 
-  return { user, loading, isAuthenticated: !!user };
+  return { 
+    user, 
+    loading, 
+    isAuthenticated: !!user,
+    logout: () => {
+      authService.logout();
+      setUser(null);
+    }
+  };
 };
