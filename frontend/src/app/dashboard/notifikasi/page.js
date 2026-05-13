@@ -54,18 +54,18 @@ export default function NotifikasiPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Notifikasi</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Notifikasi</h1>
+          <p className="text-xs sm:text-sm text-zinc-500 mt-1">
             {belumDibaca > 0 ? `${belumDibaca} notifikasi belum dibaca` : 'Semua notifikasi sudah dibaca'}
           </p>
         </div>
         {belumDibaca > 0 && (
           <button
             onClick={handleTandaiSemuaDibaca}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 text-sm font-medium transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 text-sm font-medium transition-all self-start"
           >
             <CheckCheck className="w-4 h-4" />
             Tandai Semua Dibaca

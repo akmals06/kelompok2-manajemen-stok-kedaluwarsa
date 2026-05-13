@@ -17,6 +17,8 @@ import {
   Tags,
   Bell,
   LogOut,
+  Menu,
+  X,
 } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
 
@@ -36,7 +38,7 @@ const MENU_PEMILIK = [
 
 const MENU_ADMIN = MENU_PEMILIK.filter((item) => item.nama !== 'Analisis EOQ');
 
-export default function Sidebar({ user, onLogout }) {
+export default function Sidebar({ user, onLogout, mobileOpen, onToggleMobile }) {
   const pathname = usePathname();
   const menuItems = user?.peran === 'PEMILIK_USAHA' ? MENU_PEMILIK : MENU_ADMIN;
   const [belumDibaca, setBelumDibaca] = useState(0);
@@ -53,16 +55,21 @@ export default function Sidebar({ user, onLogout }) {
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <aside className="w-64 h-full bg-[#0d0d0d] border-r border-white/5 flex flex-col z-50 shrink-0">
-      <div className="p-6">
+  useEffect(() => {
+    if (mobileOpen) onToggleMobile?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const sidebarContent = (
+    <>
+      <div className="p-5 lg:p-6">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-            <Package className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+            <Package className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">Abah Andi</h1>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold">Stok Manager</p>
+            <h1 className="text-base lg:text-lg font-bold text-white tracking-tight">Abah Andi</h1>
+            <p className="text-[9px] lg:text-[10px] text-zinc-500 uppercase tracking-widest font-semibold">Stok Manager</p>
           </div>
         </Link>
       </div>
@@ -130,6 +137,31 @@ export default function Sidebar({ user, onLogout }) {
           Keluar
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 h-full bg-[#0d0d0d] border-r border-white/5 flex-col z-50 shrink-0">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onToggleMobile} />
+          <aside className="absolute left-0 top-0 h-full w-72 bg-[#0d0d0d] border-r border-white/5 flex flex-col shadow-2xl animate-slide-in">
+            <button
+              onClick={onToggleMobile}
+              className="absolute top-5 right-4 p-1.5 rounded-lg bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

@@ -27,10 +27,10 @@ export default function RiwayatPage() {
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 text-blue-400 animate-spin" /></div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Riwayat Pergerakan Stok</h1>
-        <p className="text-sm text-zinc-500 mt-1">Catatan seluruh pergerakan stok</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Riwayat Pergerakan Stok</h1>
+        <p className="text-xs sm:text-sm text-zinc-500 mt-1">Catatan seluruh pergerakan stok</p>
       </div>
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
       {riwayatList.length === 0 ? (
@@ -39,8 +39,8 @@ export default function RiwayatPage() {
           <h3 className="text-lg font-semibold text-zinc-400">Belum ada riwayat</h3>
         </div>
       ) : (
-        <div className="glass-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead><tr className="border-b border-white/10 text-zinc-400">
               <th className="text-left py-3 px-4 font-medium">Waktu</th>
               <th className="text-left py-3 px-4 font-medium">Jenis</th>

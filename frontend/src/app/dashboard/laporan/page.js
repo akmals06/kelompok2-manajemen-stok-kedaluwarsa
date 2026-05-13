@@ -48,13 +48,13 @@ export default function LaporanPage() {
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 text-blue-400 animate-spin" /></div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Laporan Inventaris</h1>
-          <p className="text-sm text-zinc-500 mt-1">Generate dan lihat laporan stok per periode</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Laporan Inventaris</h1>
+          <p className="text-xs sm:text-sm text-zinc-500 mt-1">Generate dan lihat laporan stok per periode</p>
         </div>
-        <button onClick={() => { setShowForm(true); setHasilLaporan(null); }} className="btn-primary"><Plus className="w-4 h-4" /> Buat Laporan</button>
+        <button onClick={() => { setShowForm(true); setHasilLaporan(null); }} className="btn-primary self-start"><Plus className="w-4 h-4" /> Buat Laporan</button>
       </div>
       {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
@@ -77,16 +77,16 @@ export default function LaporanPage() {
       {hasilLaporan && (
         <div className="glass-card p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">Hasil Laporan</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Total Transaksi</p><p className="text-2xl font-bold text-white">{hasilLaporan.ringkasan?.total_transaksi}</p></div>
-            <div className="p-4 rounded-xl bg-emerald-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Total Masuk</p><p className="text-2xl font-bold text-emerald-400">+{formatAngka(hasilLaporan.ringkasan?.total_masuk)}</p></div>
-            <div className="p-4 rounded-xl bg-red-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Total Keluar</p><p className="text-2xl font-bold text-red-400">-{formatAngka(hasilLaporan.ringkasan?.total_keluar)}</p></div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-3 sm:p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Total Transaksi</p><p className="text-xl sm:text-2xl font-bold text-white">{hasilLaporan.ringkasan?.total_transaksi}</p></div>
+            <div className="p-3 sm:p-4 rounded-xl bg-emerald-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Total Masuk</p><p className="text-xl sm:text-2xl font-bold text-emerald-400">+{formatAngka(hasilLaporan.ringkasan?.total_masuk)}</p></div>
+            <div className="p-3 sm:p-4 rounded-xl bg-red-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Total Keluar</p><p className="text-xl sm:text-2xl font-bold text-red-400">-{formatAngka(hasilLaporan.ringkasan?.total_keluar)}</p></div>
           </div>
         </div>
       )}
       {laporanList.length > 0 && (
-        <div className="glass-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[360px]">
             <thead><tr className="border-b border-white/10 text-zinc-400">
               <th className="text-left py-3 px-4 font-medium">Periode</th>
               <th className="text-left py-3 px-4 font-medium">Dibuat</th>

@@ -6,7 +6,7 @@ const path = require('path');
 
 const corsOptions = require('./config/cors');
 const errorMiddleware = require('./middlewares/error.middleware');
-const notFoundMiddleware = require('./middlewares/notfound.middleware');
+const notFoundMiddleware = require('./middlewares/notFound.middleware');
 const routes = require('./routes');
 
 const app = express();

@@ -42,4 +42,18 @@ const ambilSemuaLaporan = async (req, res, next) => {
   }
 };
 
-module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan };
+const ambilRingkasanDashboard = async (req, res, next) => {
+  try {
+    const hasil = await laporanService.ambilRingkasanDashboard();
+
+    res.status(200).json({
+      success: true,
+      message: 'Ringkasan dashboard berhasil diambil',
+      data: hasil,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan, ambilRingkasanDashboard };

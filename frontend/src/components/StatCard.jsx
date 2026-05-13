@@ -11,23 +11,23 @@ export default function StatCard({ title, value, subtitle, icon, trend, trendVal
   const TrendIcon = trend === "up" ? "↑" : trend === "down" ? "↓" : "−";
 
   return (
-    <div className="glass-morphism rounded-3xl p-6 flex items-start gap-4 hover:bg-white/5 transition-all duration-300 border border-white/5 shadow-xl shadow-black/20">
+    <div className="glass-morphism rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex items-start gap-3 sm:gap-4 hover:bg-white/5 transition-all duration-300 border border-white/5 shadow-xl shadow-black/20">
       {icon && (
-        <div className={`p-4 rounded-2xl border ${colorMap[color]}`}>
+        <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border ${colorMap[color]} shrink-0`}>
           {icon}
         </div>
       )}
-      <div className="flex-1">
-        <p className="text-zinc-400 text-sm font-medium mb-1">{title}</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-zinc-400 text-xs sm:text-sm font-medium mb-0.5 sm:mb-1 truncate">{title}</p>
         <div className="flex items-baseline gap-2">
-          <h4 className="text-3xl font-bold text-white tracking-tight">{value}</h4>
+          <h4 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{value}</h4>
           {trendValue && (
-            <span className={`text-xs font-semibold ${trendColor}`}>
+            <span className={`text-[10px] sm:text-xs font-semibold ${trendColor}`}>
               {TrendIcon} {trendValue}
             </span>
           )}
         </div>
-        {subtitle && <p className="text-xs text-zinc-500 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-[10px] sm:text-xs text-zinc-500 mt-0.5 sm:mt-1 truncate">{subtitle}</p>}
       </div>
     </div>
   );
