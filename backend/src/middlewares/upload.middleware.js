@@ -1,19 +1,32 @@
 const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../config/cloudinary');
+const AppError = require('../utils/appError');
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'stok-kedaluwarsa/produk',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }],
-  },
-});
+const simpan_di_memori = multer.memoryStorage();
+
+const filter_gambar = (req, file, cb) => {
+  const tipe_valid = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (!tipe_valid.includes(file.mimetype)) {
+    return cb(
+      new AppError('File harus berupa gambar JPG, PNG, atau WEBP.', 400),
+      false
+    );
+  }
+
+  cb(null, true);
+};
 
 const upload = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
+  storage: simpan_di_memori,
+  limits: {
+    fileSize: 2 * 1024 * 1024,
+  },
+  fileFilter: filter_gambar,
 });
 
-module.exports = upload;
+const uploadProdukImage = upload.single('gambar');
+
+module.exports = {
+  upload,
+  uploadProdukImage,
+};

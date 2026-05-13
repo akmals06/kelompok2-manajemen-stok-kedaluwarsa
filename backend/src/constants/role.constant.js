@@ -3,4 +3,6 @@ const ROLES = {
   ADMIN_USAHA: 'ADMIN_USAHA',
 };
 
-module.exports = ROLES;
+const ROLE_LIST = Object.values(ROLES);
+
+module.exports = { ROLES, ROLE_LIST };

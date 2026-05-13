@@ -19,12 +19,12 @@ async function main() {
   console.log('Data lama dihapus.');
 
   // Seed pengguna
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('123456', 10);
 
   const pemilik = await prisma.pengguna.create({
     data: {
       nama: 'Abah Andi',
-      email: 'pemilik@warung.com',
+      email: 'pemilik@abahandi.test',
       password_hash: hashedPassword,
       peran: 'PEMILIK_USAHA',
       status_aktif: true,
@@ -34,7 +34,7 @@ async function main() {
   const admin = await prisma.pengguna.create({
     data: {
       nama: 'Admin Warung',
-      email: 'admin@warung.com',
+      email: 'admin@abahandi.test',
       password_hash: hashedPassword,
       peran: 'ADMIN_USAHA',
       status_aktif: true,

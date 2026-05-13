@@ -15,7 +15,6 @@ dist/
 next-env.d.ts
 
 .docs/
-.cursor/
 .env
 .env.local
 .env.development.local
@@ -44,7 +43,5 @@ Thumbs.db
 *.swp
 
 .vercel
-.agent/
-.claude/
 .turbo
 .contentlayer

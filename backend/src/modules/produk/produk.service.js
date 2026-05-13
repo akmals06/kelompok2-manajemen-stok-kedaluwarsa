@@ -1,5 +1,6 @@
 const produkRepository = require('./produk.repository');
 const AppError = require('../../utils/appError');
+const { uploadBufferToCloudinary } = require('../../utils/cloudinaryUploader');
 
 const getAllProduk = async (options = {}) => {
   return produkRepository.findAllProduk(options);
@@ -26,8 +27,10 @@ const tambahProduk = async (data) => {
     status_aktif: data.status_aktif !== undefined ? data.status_aktif : true,
   };
 
-  if (data.gambar_url) {
-    dataToCreate.gambar_url = data.gambar_url;
+  if (data.gambar_buffer) {
+    const uploadResult = await uploadBufferToCloudinary(data.gambar_buffer);
+    dataToCreate.gambar_url = uploadResult.secure_url;
+    dataToCreate.gambar_public_id = uploadResult.public_id;
   }
 
   return produkRepository.createProduk(dataToCreate);
@@ -43,7 +46,12 @@ const updateProduk = async (id, data) => {
   if (data.satuan !== undefined) dataToUpdate.satuan = data.satuan;
   if (data.stok_minimum !== undefined) dataToUpdate.stok_minimum = parseInt(data.stok_minimum);
   if (data.status_aktif !== undefined) dataToUpdate.status_aktif = data.status_aktif;
-  if (data.gambar_url !== undefined) dataToUpdate.gambar_url = data.gambar_url;
+  
+  if (data.gambar_buffer) {
+    const uploadResult = await uploadBufferToCloudinary(data.gambar_buffer);
+    dataToUpdate.gambar_url = uploadResult.secure_url;
+    dataToUpdate.gambar_public_id = uploadResult.public_id;
+  }
 
   return produkRepository.updateProduk(parseInt(id), dataToUpdate);
 };
