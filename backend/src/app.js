@@ -1,21 +1,27 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const path = require('path');
+
+const corsOptions = require('./config/cors');
+const errorMiddleware = require('./middlewares/error.middleware');
+const notFoundMiddleware = require('./middlewares/notfound.middleware');
+const routes = require('./routes');
+
 const app = express();
 
-// Konfigurasi Middleware
-app.use(cors());
+app.use(helmet());
+app.use(cors(corsOptions));
+app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API is working' });
-});
+app.use('/public', express.static(path.join(__dirname, '../public')));
 
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/produk', require('./routes/produk.routes'));
+app.use('/api', routes);
 
-// Middleware penanganan error secara global
-const errorHandler = require('./middleware/errorHandler');
-app.use(errorHandler);
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
 
 module.exports = app;

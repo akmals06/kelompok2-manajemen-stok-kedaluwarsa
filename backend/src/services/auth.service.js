@@ -1,61 +1,57 @@
-const penggunaRepository = require('../repositories/pengguna.repository');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { buatToken } = require('../utils/jwt');
+const penggunaRepo = require('../repositories/pengguna.repository');
 
-const registerUser = async (email, password, name) => {
-  const existingUser = await penggunaRepository.findByEmail(email);
-  if (existingUser) {
-    const error = new Error('User already exists');
-    error.statusCode = 400;
+const login = async (email, password) => {
+  const pengguna = await penggunaRepo.cariPenggunaByEmail(email);
+
+  if (!pengguna) {
+    const error = new Error('Email atau password salah');
+    error.statusCode = 401;
     throw error;
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  
-  const newUser = await penggunaRepository.createPengguna({
-    email,
-    password_hash: hashedPassword,
-    nama: name,
-    peran: 'ADMIN_USAHA', // Default role untuk pendaftaran baru
-    status_aktif: true,
+  if (!pengguna.status_aktif) {
+    const error = new Error('Akun tidak aktif');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const cocok = await bcrypt.compare(password, pengguna.password_hash);
+
+  if (!cocok) {
+    const error = new Error('Email atau password salah');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const token = buatToken({
+    id_pengguna: pengguna.id_pengguna,
+    email: pengguna.email,
+    peran: pengguna.peran,
   });
 
-  return { id: newUser.id_pengguna, email: newUser.email };
-};
-
-const loginUser = async (email, password) => {
-  const user = await penggunaRepository.findByEmail(email);
-  if (!user || !user.status_aktif) {
-    const error = new Error('Invalid credentials or inactive user');
-    error.statusCode = 401;
-    throw error;
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password_hash);
-  if (!isMatch) {
-    const error = new Error('Invalid credentials');
-    error.statusCode = 401;
-    throw error;
-  }
-
-  const token = jwt.sign(
-    { id: user.id_pengguna, email: user.email, role: user.peran },
-    process.env.JWT_SECRET,
-    { expiresIn: '1d' }
-  );
-
   return {
-    user: {
-      id: user.id_pengguna,
-      email: user.email,
-      name: user.nama,
-      role: user.peran
+    token,
+    pengguna: {
+      id_pengguna: pengguna.id_pengguna,
+      nama: pengguna.nama,
+      email: pengguna.email,
+      peran: pengguna.peran,
     },
-    token
   };
 };
 
-module.exports = {
-  registerUser,
-  loginUser,
+const ambilProfil = async (idPengguna) => {
+  const pengguna = await penggunaRepo.ambilPenggunaById(idPengguna);
+
+  if (!pengguna) {
+    const error = new Error('Pengguna tidak ditemukan');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return pengguna;
 };
+
+module.exports = { login, ambilProfil };

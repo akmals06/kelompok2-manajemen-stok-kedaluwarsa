@@ -1,18 +1,24 @@
-const prisma = require('../config/db');
+const prisma = require('../config/prisma');
 
-const findByEmail = async (email) => {
-  return await prisma.pengguna.findUnique({
+const cariPenggunaByEmail = async (email) => {
+  return prisma.pengguna.findUnique({
     where: { email },
   });
 };
 
-const createPengguna = async (data) => {
-  return await prisma.pengguna.create({
-    data,
+const ambilPenggunaById = async (id) => {
+  return prisma.pengguna.findUnique({
+    where: { id_pengguna: id },
+    select: {
+      id_pengguna: true,
+      nama: true,
+      email: true,
+      peran: true,
+      status_aktif: true,
+      created_at: true,
+      updated_at: true,
+    },
   });
 };
 
-module.exports = {
-  findByEmail,
-  createPengguna,
-};
+module.exports = { cariPenggunaByEmail, ambilPenggunaById };

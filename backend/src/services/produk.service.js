@@ -1,57 +1,126 @@
 const produkRepository = require('../repositories/produk.repository');
+const cloudinary = require('../config/cloudinary');
 
-const getAllProduk = async () => {
-  return await produkRepository.findAllProduk();
+const uploadBufferToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'manajemen-stok-kedaluwarsa/produk' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
 };
 
-const getProdukById = async (id_produk) => {
-  const produk = await produkRepository.findProdukById(id_produk);
+const ambilSemuaProduk = async () => {
+  return produkRepository.ambilSemuaProduk();
+};
+
+const ambilProdukById = async (idProduk) => {
+  const produk = await produkRepository.ambilProdukById(idProduk);
   if (!produk) {
     const error = new Error('Produk tidak ditemukan');
-    error.statusCode = 404;
+    error.status = 404;
     throw error;
   }
   return produk;
 };
 
-const tambahProduk = async (produkData) => {
-  // Validasi input minimal sesuai skema database
-  if (!produkData.nama_produk || !produkData.id_kategori || !produkData.satuan) {
-    const error = new Error('nama_produk, id_kategori, dan satuan wajib diisi');
-    error.statusCode = 400;
+const buatProduk = async (dataProduk, fileBuffer) => {
+  const kategoriAda = await produkRepository.cekKategoriAda(dataProduk.id_kategori);
+  if (!kategoriAda) {
+    const error = new Error('Kategori tidak valid atau tidak ditemukan');
+    error.status = 400;
     throw error;
   }
 
-  // Pastikan tipe data angka benar sebelum masuk ke DB
-  const dataToCreate = {
-    ...produkData,
-    id_kategori: parseInt(produkData.id_kategori),
-    stok_minimum: produkData.stok_minimum ? parseInt(produkData.stok_minimum) : 0,
-    status_aktif: produkData.status_aktif !== undefined ? produkData.status_aktif : true
+  const produkAda = await produkRepository.cariProdukByNama(dataProduk.nama_produk);
+  if (produkAda) {
+    const error = new Error('Nama produk sudah digunakan');
+    error.status = 409;
+    throw error;
+  }
+
+  let gambar_produk = null;
+  if (fileBuffer) {
+    try {
+      gambar_produk = await uploadBufferToCloudinary(fileBuffer);
+    } catch (uploadError) {
+      const error = new Error('Gagal mengunggah gambar produk');
+      error.status = 500;
+      throw error;
+    }
+  }
+
+  const payload = {
+    ...dataProduk,
+    id_kategori: parseInt(dataProduk.id_kategori, 10),
+    stok_minimum: parseInt(dataProduk.stok_minimum, 10),
+    gambar_produk,
   };
 
-  return await produkRepository.createProduk(dataToCreate);
+  return produkRepository.buatProduk(payload);
 };
 
-const updateProduk = async (id_produk, produkData) => {
-  await getProdukById(id_produk); // Cek keberadaan produk
+const updateProduk = async (idProduk, dataProduk, fileBuffer) => {
+  const produkLama = await ambilProdukById(idProduk);
 
-  const dataToUpdate = { ...produkData };
-  if (dataToUpdate.id_kategori) dataToUpdate.id_kategori = parseInt(dataToUpdate.id_kategori);
-  if (dataToUpdate.stok_minimum) dataToUpdate.stok_minimum = parseInt(dataToUpdate.stok_minimum);
+  if (dataProduk.id_kategori) {
+    const kategoriAda = await produkRepository.cekKategoriAda(dataProduk.id_kategori);
+    if (!kategoriAda) {
+      const error = new Error('Kategori tidak valid atau tidak ditemukan');
+      error.status = 400;
+      throw error;
+    }
+  }
 
-  return await produkRepository.updateProduk(id_produk, dataToUpdate);
+  if (dataProduk.nama_produk && dataProduk.nama_produk !== produkLama.nama_produk) {
+    const produkAda = await produkRepository.cariProdukByNama(dataProduk.nama_produk);
+    if (produkAda) {
+      const error = new Error('Nama produk sudah digunakan oleh produk lain');
+      error.status = 409;
+      throw error;
+    }
+  }
+
+  let gambar_produk = produkLama.gambar_produk;
+  if (fileBuffer) {
+    try {
+      gambar_produk = await uploadBufferToCloudinary(fileBuffer);
+    } catch (uploadError) {
+      const error = new Error('Gagal mengunggah gambar produk');
+      error.status = 500;
+      throw error;
+    }
+  }
+
+  const payload = {
+    ...dataProduk,
+    id_kategori: dataProduk.id_kategori ? parseInt(dataProduk.id_kategori, 10) : produkLama.id_kategori,
+    stok_minimum: dataProduk.stok_minimum ? parseInt(dataProduk.stok_minimum, 10) : produkLama.stok_minimum,
+    gambar_produk,
+  };
+
+  return produkRepository.updateProduk(idProduk, payload);
 };
 
-const nonaktifkanProduk = async (id_produk) => {
-  await getProdukById(id_produk); // Cek keberadaan produk
-  return await produkRepository.updateStatusProduk(id_produk, false);
+const nonaktifkanProduk = async (idProduk) => {
+  await ambilProdukById(idProduk);
+  return produkRepository.ubahStatusProduk(idProduk, false);
+};
+
+const aktifkanProduk = async (idProduk) => {
+  await ambilProdukById(idProduk);
+  return produkRepository.ubahStatusProduk(idProduk, true);
 };
 
 module.exports = {
-  getAllProduk,
-  getProdukById,
-  tambahProduk,
+  ambilSemuaProduk,
+  ambilProdukById,
+  buatProduk,
   updateProduk,
   nonaktifkanProduk,
+  aktifkanProduk,
 };

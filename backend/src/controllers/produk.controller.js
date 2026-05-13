@@ -1,43 +1,43 @@
 const produkService = require('../services/produk.service');
-const { successResponse, errorResponse } = require('../utils/response');
 
-const getProduk = async (req, res, next) => {
+const ambilSemuaProduk = async (req, res, next) => {
   try {
-    const produk = await produkService.getAllProduk();
-    return successResponse(res, 'Produk berhasil diambil', produk);
+    const produk = await produkService.ambilSemuaProduk();
+    res.status(200).json({
+      success: true,
+      message: 'Berhasil mengambil daftar produk',
+      data: produk,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-const getProdukById = async (req, res, next) => {
+const ambilProdukById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const produk = await produkService.getProdukById(id);
-    return successResponse(res, 'Produk berhasil diambil', produk);
+    const produk = await produkService.ambilProdukById(id);
+    res.status(200).json({
+      success: true,
+      message: 'Berhasil mengambil detail produk',
+      data: produk,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-const createProduk = async (req, res, next) => {
+const buatProduk = async (req, res, next) => {
   try {
-    const { id_kategori, nama_produk, satuan, stok_minimum, status_aktif } = req.body;
-    const gambar_url = req.file ? req.file.path : null;
-
-    const produkData = {
-      id_kategori,
-      nama_produk,
-      satuan,
-      stok_minimum,
-      status_aktif: status_aktif === 'true' || status_aktif === true,
-    };
-    if (gambar_url) {
-      produkData.gambar_url = gambar_url;
-    }
-
-    const newProduk = await produkService.tambahProduk(produkData);
-    return successResponse(res, 'Produk berhasil dibuat', newProduk, 201);
+    const dataProduk = req.body;
+    const fileBuffer = req.file ? req.file.buffer : null;
+    
+    const produkBaru = await produkService.buatProduk(dataProduk, fileBuffer);
+    res.status(201).json({
+      success: true,
+      message: 'Produk berhasil ditambahkan',
+      data: produkBaru,
+    });
   } catch (error) {
     next(error);
   }
@@ -46,27 +46,15 @@ const createProduk = async (req, res, next) => {
 const updateProduk = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { id_kategori, nama_produk, satuan, stok_minimum, status_aktif } = req.body;
-    const gambar_url = req.file ? req.file.path : null;
+    const dataProduk = req.body;
+    const fileBuffer = req.file ? req.file.buffer : null;
 
-    const produkData = {
-      id_kategori,
-      nama_produk,
-      satuan,
-      stok_minimum,
-    };
-    if (status_aktif !== undefined) {
-      produkData.status_aktif = status_aktif === 'true' || status_aktif === true;
-    }
-    if (gambar_url) {
-      produkData.gambar_url = gambar_url;
-    }
-
-    // Hapus field yang tidak dikirim agar tidak menimpa data lama dengan undefined
-    Object.keys(produkData).forEach(key => produkData[key] === undefined && delete produkData[key]);
-
-    const updatedProduk = await produkService.updateProduk(id, produkData);
-    return successResponse(res, 'Produk berhasil diperbarui', updatedProduk);
+    const produkDiperbarui = await produkService.updateProduk(id, dataProduk, fileBuffer);
+    res.status(200).json({
+      success: true,
+      message: 'Produk berhasil diperbarui',
+      data: produkDiperbarui,
+    });
   } catch (error) {
     next(error);
   }
@@ -75,17 +63,36 @@ const updateProduk = async (req, res, next) => {
 const nonaktifkanProduk = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const nonaktifProduk = await produkService.nonaktifkanProduk(id);
-    return successResponse(res, 'Produk berhasil dinonaktifkan', nonaktifProduk);
+    const produk = await produkService.nonaktifkanProduk(id);
+    res.status(200).json({
+      success: true,
+      message: 'Produk berhasil dinonaktifkan',
+      data: produk,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const aktifkanProduk = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const produk = await produkService.aktifkanProduk(id);
+    res.status(200).json({
+      success: true,
+      message: 'Produk berhasil diaktifkan kembali',
+      data: produk,
+    });
   } catch (error) {
     next(error);
   }
 };
 
 module.exports = {
-  getProduk,
-  getProdukById,
-  createProduk,
+  ambilSemuaProduk,
+  ambilProdukById,
+  buatProduk,
   updateProduk,
   nonaktifkanProduk,
+  aktifkanProduk,
 };

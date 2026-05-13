@@ -1,51 +1,76 @@
-const prisma = require('../config/db');
+const prisma = require('../config/prisma');
 
-// Ambil semua data produk beserta kategorinya
-const findAllProduk = async () => {
-  return await prisma.produk.findMany({
+const ambilSemuaProduk = async () => {
+  return prisma.produk.findMany({
     include: {
-      kategori: true,
+      kategori: {
+        select: {
+          nama_kategori: true,
+        },
+      },
+    },
+    orderBy: {
+      created_at: 'desc',
     },
   });
 };
 
-// Cari satu produk berdasarkan ID
-const findProdukById = async (id_produk) => {
-  return await prisma.produk.findUnique({
-    where: { id_produk: parseInt(id_produk) },
+const ambilProdukById = async (idProduk) => {
+  return prisma.produk.findUnique({
+    where: { id_produk: parseInt(idProduk, 10) },
     include: {
-      kategori: true,
+      kategori: {
+        select: {
+          nama_kategori: true,
+        },
+      },
     },
   });
 };
 
-// Simpan produk baru ke database
-const createProduk = async (data) => {
-  return await prisma.produk.create({
-    data,
+const cariProdukByNama = async (namaProduk) => {
+  return prisma.produk.findFirst({
+    where: {
+      nama_produk: {
+        equals: namaProduk,
+        mode: 'insensitive',
+      },
+    },
   });
 };
 
-// Update data produk yang sudah ada
-const updateProduk = async (id_produk, data) => {
-  return await prisma.produk.update({
-    where: { id_produk: parseInt(id_produk) },
-    data,
+const buatProduk = async (dataProduk) => {
+  return prisma.produk.create({
+    data: dataProduk,
   });
 };
 
-// Ubah status aktif/nonaktif produk
-const updateStatusProduk = async (id_produk, status_aktif) => {
-  return await prisma.produk.update({
-    where: { id_produk: parseInt(id_produk) },
-    data: { status_aktif },
+const updateProduk = async (idProduk, dataProduk) => {
+  return prisma.produk.update({
+    where: { id_produk: parseInt(idProduk, 10) },
+    data: dataProduk,
+  });
+};
+
+const ubahStatusProduk = async (idProduk, status) => {
+  return prisma.produk.update({
+    where: { id_produk: parseInt(idProduk, 10) },
+    data: { status_aktif: status },
+  });
+};
+
+const cekKategoriAda = async (idKategori) => {
+  return prisma.kategori_produk.findUnique({
+    where: { id_kategori: parseInt(idKategori, 10) },
   });
 };
 
 module.exports = {
-  findAllProduk,
-  findProdukById,
-  createProduk,
+  ambilSemuaProduk,
+  ambilProdukById,
+  cariProdukByNama,
+  buatProduk,
   updateProduk,
-  updateStatusProduk,
+  ubahStatusProduk,
+  cekKategoriAda,
 };

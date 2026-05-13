@@ -1,21 +1,38 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  getProduk, 
-  getProdukById, 
-  createProduk, 
-  updateProduk, 
-  nonaktifkanProduk 
-} = require('../controllers/produk.controller');
-// Import middleware untuk proteksi route dan upload gambar
+const produkController = require('../controllers/produk.controller');
+const {
+  validasiIdParam,
+  validasiBuatProduk,
+  validasiUpdateProduk,
+} = require('../middlewares/produk.validation');
+const authMiddleware = require('../middlewares/auth.middleware');
+const roleMiddleware = require('../middlewares/role.middleware');
+const upload = require('../middlewares/upload.middleware');
 
-const { verifyToken, isAdmin } = require('../middleware/auth.middleware');
-const upload = require('../middleware/upload');
+router.use(authMiddleware);
 
-router.get('/', verifyToken, getProduk);
-router.get('/:id', verifyToken, getProdukById);
-router.post('/', verifyToken, isAdmin, upload.single('image'), createProduk);
-router.put('/:id', verifyToken, isAdmin, upload.single('image'), updateProduk);
-router.patch('/:id/nonaktifkan', verifyToken, isAdmin, nonaktifkanProduk);
+router.get('/', produkController.ambilSemuaProduk);
+router.get('/:id', validasiIdParam, produkController.ambilProdukById);
+
+router.use(roleMiddleware.izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'));
+
+router.post(
+  '/',
+  upload.single('gambar_produk'),
+  validasiBuatProduk,
+  produkController.buatProduk
+);
+
+router.put(
+  '/:id',
+  upload.single('gambar_produk'),
+  validasiIdParam,
+  validasiUpdateProduk,
+  produkController.updateProduk
+);
+
+router.patch('/:id/nonaktif', validasiIdParam, produkController.nonaktifkanProduk);
+router.patch('/:id/aktif', validasiIdParam, produkController.aktifkanProduk);
 
 module.exports = router;
