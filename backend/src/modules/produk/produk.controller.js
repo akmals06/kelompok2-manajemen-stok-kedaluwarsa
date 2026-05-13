@@ -22,7 +22,7 @@ const createProduk = async (req, res) => {
   };
 
   if (req.file) {
-    data.gambar_url = req.file.path;
+    data.gambar_buffer = req.file.buffer;
   }
 
   const produk = await produkService.tambahProduk(data);
@@ -35,7 +35,7 @@ const updateProduk = async (req, res) => {
     data.status_aktif = data.status_aktif === 'true' || data.status_aktif === true;
   }
   if (req.file) {
-    data.gambar_url = req.file.path;
+    data.gambar_buffer = req.file.buffer;
   }
 
   const produk = await produkService.updateProduk(req.params.id, data);

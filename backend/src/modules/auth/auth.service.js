@@ -1,6 +1,6 @@
 const penggunaRepository = require('../pengguna/pengguna.repository');
 const { comparePassword } = require('../../utils/password');
-const { signToken } = require('../../utils/token');
+const { generateToken } = require('../../utils/token');
 const AppError = require('../../utils/appError');
 
 const loginUser = async (email, password) => {
@@ -15,7 +15,7 @@ const loginUser = async (email, password) => {
     throw new AppError('Email atau password salah.', 401);
   }
 
-  const token = signToken({
+  const token = generateToken({
     id: user.id_pengguna,
     email: user.email,
     role: user.peran,
