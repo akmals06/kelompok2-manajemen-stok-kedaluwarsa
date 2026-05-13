@@ -3,9 +3,4 @@ const TRANSACTION_TYPE = {
   KELUAR: 'KELUAR',
 };
 
-const MOVEMENT_TYPE = {
-  PENAMBAHAN: 'PENAMBAHAN',
-  PENGURANGAN: 'PENGURANGAN',
-};
-
-module.exports = { TRANSACTION_TYPE, MOVEMENT_TYPE };
+module.exports = { TRANSACTION_TYPE };

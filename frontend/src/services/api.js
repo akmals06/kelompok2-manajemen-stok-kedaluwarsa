@@ -1,4 +1,5 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+console.log("API Base URL:", BASE_URL);
 
 /**
  * Centalized fetcher for consistent communication with backend
@@ -28,14 +29,29 @@ async function request(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config);
-    const result = await response.json();
+    
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+      }
+      throw new Error('Invalid JSON response dari server');
+    }
 
     if (!response.ok) {
-      throw new Error(result.message || 'Something went wrong');
+      throw new Error(result.message || result.error || `HTTP Error ${response.status}`);
     }
 
     return result;
   } catch (error) {
+    // Tangani error network (koneksi terputus, server mati, dll)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error(`Network Error [${endpoint}]:`, error.message);
+      throw new Error('Gagal terhubung ke server. Pastikan backend berjalan dan koneksi internet stabil.');
+    }
+    
     console.error(`API Error [${endpoint}]:`, error.message);
     throw error;
   }

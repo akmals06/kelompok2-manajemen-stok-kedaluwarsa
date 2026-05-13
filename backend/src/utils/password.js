@@ -1,13 +1,14 @@
 const bcrypt = require('bcrypt');
 
+// Technical assumption: Salt rounds = 10 (cukup aman untuk MVP)
 const SALT_ROUNDS = 10;
 
 const hashPassword = async (plainPassword) => {
   return bcrypt.hash(plainPassword, SALT_ROUNDS);
 };
 
-const comparePassword = async (plainPassword, hashedPassword) => {
-  return bcrypt.compare(plainPassword, hashedPassword);
+const comparePassword = async (plainPassword, passwordHash) => {
+  return bcrypt.compare(plainPassword, passwordHash);
 };
 
 module.exports = { hashPassword, comparePassword };
