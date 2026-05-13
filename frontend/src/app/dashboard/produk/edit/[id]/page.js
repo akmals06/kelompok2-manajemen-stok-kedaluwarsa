@@ -1,180 +1,131 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { produkService } from "@/services/produk.service";
-import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import produkService from '@/services/produk.service';
+import kategoriService from '@/services/kategori.service';
+import Link from 'next/link';
 
-export default function EditProductPage() {
+export default function EditProdukPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
-  const productId = params?.id;
+  const idProduk = params?.id;
 
-  const [formData, setFormData] = useState({
-    nama_produk: "",
-    id_kategori: "",
-    satuan: "",
-    stok_minimum: ""
-  });
-  const [loading, setLoading] = useState(false);
+  const [kategoriList, setKategoriList] = useState([]);
   const [fetching, setFetching] = useState(true);
-  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({
+    nama_produk: '',
+    id_kategori: '',
+    satuan: '',
+    stok_minimum: '',
+  });
 
-  const fetchProduct = useCallback(async () => {
+  const muatData = useCallback(async () => {
     try {
-      const res = await produkService.getById(productId);
-      if (res.success && res.data) {
-        setFormData({
-          nama_produk: res.data.nama_produk || "",
-          id_kategori: res.data.id_kategori || "",
-          satuan: res.data.satuan || "",
-          stok_minimum: res.data.stok_minimum || ""
+      const [resProduk, resKategori] = await Promise.all([
+        produkService.ambilById(idProduk),
+        kategoriService.ambilSemua(),
+      ]);
+
+      if (resProduk.success && resProduk.data) {
+        setForm({
+          nama_produk: resProduk.data.nama_produk || '',
+          id_kategori: resProduk.data.id_kategori || '',
+          satuan: resProduk.data.satuan || '',
+          stok_minimum: resProduk.data.stok_minimum || '',
         });
       } else {
-        setError("Product not found");
+        setError('Produk tidak ditemukan');
       }
+
+      if (resKategori.success) setKategoriList(resKategori.data || []);
     } catch (err) {
-      setError(err.message || "Failed to fetch product details");
+      setError(err.response?.data?.message || 'Gagal memuat data produk');
     } finally {
       setFetching(false);
     }
-  }, [productId]);
+  }, [idProduk]);
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct();
-    }
-  }, [productId, fetchProduct]);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    if (idProduk) muatData();
+  }, [idProduk, muatData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    setError('');
+    if (!form.nama_produk.trim()) return setError('Nama produk wajib diisi');
 
+    setSubmitting(true);
     try {
-      const data = {
-        ...formData,
-        id_kategori: parseInt(formData.id_kategori, 10),
-        stok_minimum: parseInt(formData.stok_minimum, 10)
-      };
-
-      const res = await produkService.update(productId, data);
-      if (res.success) {
-        router.push("/dashboard");
-      } else {
-        setError(res.message || "Failed to update product");
-      }
+      const res = await produkService.ubah(idProduk, {
+        nama_produk: form.nama_produk,
+        id_kategori: parseInt(form.id_kategori),
+        satuan: form.satuan,
+        stok_minimum: parseInt(form.stok_minimum),
+      });
+      if (res.success) router.push('/dashboard/produk');
     } catch (err) {
-      setError(err.message || "Failed to update product");
+      setError(err.response?.data?.message || 'Gagal mengubah produk');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   if (fetching) {
     return (
-      <div className="flex items-center justify-center p-20">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold text-white tracking-tight">Edit Product</h2>
-          <p className="text-zinc-500 text-sm">Update the information for this inventory item.</p>
-        </div>
-        <Link href="/dashboard" className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-zinc-400 hover:text-white transition-all">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+    <div className="max-w-2xl">
+      <div className="flex items-center gap-3 mb-6">
+        <Link href="/dashboard/produk" className="p-2 rounded-xl bg-white/5 border border-white/5 text-zinc-400 hover:text-white transition-colors">
+          <ArrowLeft className="w-4 h-4" />
         </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Edit Produk</h1>
+          <p className="text-sm text-zinc-500">Ubah informasi produk</p>
+        </div>
       </div>
 
-      <div className="glass-morphism p-8 md:p-10 rounded-3xl border border-white/5 shadow-2xl">
+      <div className="glass-card p-6">
         {error && (
-          <div className="mb-8 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm flex items-center gap-2 animate-in fade-in">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {error}
-          </div>
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Product Designation</label>
-            <input
-              type="text"
-              name="nama_produk"
-              required
-              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-              placeholder="e.g. Beras Premium 5kg"
-              value={formData.nama_produk}
-              onChange={handleChange}
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Nama Produk</label>
+            <input value={form.nama_produk} onChange={(e) => setForm({ ...form, nama_produk: e.target.value })} className="input-dark" disabled={submitting} />
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Category Code</label>
-              <input
-                type="number"
-                name="id_kategori"
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                value={formData.id_kategori}
-                onChange={handleChange}
-              />
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Kategori</label>
+            <select value={form.id_kategori} onChange={(e) => setForm({ ...form, id_kategori: e.target.value })} className="input-dark" disabled={submitting}>
+              <option value="">Pilih kategori</option>
+              {kategoriList.map((k) => <option key={k.id_kategori} value={k.id_kategori}>{k.nama_kategori}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Satuan</label>
+              <input value={form.satuan} onChange={(e) => setForm({ ...form, satuan: e.target.value })} className="input-dark" disabled={submitting} />
             </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Unit of Measure</label>
-              <input
-                type="text"
-                name="satuan"
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="e.g. pcs, karung"
-                value={formData.satuan}
-                onChange={handleChange}
-              />
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Stok Minimum</label>
+              <input type="number" min="0" value={form.stok_minimum} onChange={(e) => setForm({ ...form, stok_minimum: e.target.value })} className="input-dark" disabled={submitting} />
             </div>
           </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Minimum Alert Threshold</label>
-            <input
-              type="number"
-              name="stok_minimum"
-              required
-              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              value={formData.stok_minimum}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="pt-6 flex flex-col sm:flex-row gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-primary text-white font-bold py-4 rounded-2xl hover:bg-primary/80 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
-            >
-              <span className="relative">{loading ? "Processing..." : "Confirm & Update Product"}</span>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={submitting} className="btn-primary">
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Simpan Perubahan
             </button>
-            <Link
-              href="/dashboard"
-              className="flex-1 bg-white/5 text-zinc-400 font-bold py-4 rounded-2xl hover:bg-white/10 hover:text-white transition-all text-center border border-white/5"
-            >
-              Cancel
-            </Link>
+            <Link href="/dashboard/produk" className="btn-secondary">Batal</Link>
           </div>
         </form>
       </div>

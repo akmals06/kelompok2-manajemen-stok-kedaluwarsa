@@ -1,138 +1,143 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { produkService } from "@/services/produk.service";
-import Link from "next/link";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import produkService from '@/services/produk.service';
+import kategoriService from '@/services/kategori.service';
+import Link from 'next/link';
 
-export default function AddProductPage() {
+export default function TambahProdukPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    nama_produk: "",
-    id_kategori: "7", // Default to an existing category ID based on the DB seed (e.g., Sembako)
-    satuan: "pcs",
-    stok_minimum: 10
+  const [kategoriList, setKategoriList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({
+    nama_produk: '',
+    id_kategori: '',
+    satuan: 'pcs',
+    stok_minimum: 10,
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    const muatKategori = async () => {
+      try {
+        const res = await kategoriService.ambilSemua();
+        if (res.success) setKategoriList(res.data || []);
+      } catch (err) {
+        setError('Gagal memuat kategori');
+      } finally {
+        setLoading(false);
+      }
+    };
+    muatKategori();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    setError('');
+    if (!form.nama_produk.trim()) return setError('Nama produk wajib diisi');
+    if (!form.id_kategori) return setError('Pilih kategori');
 
+    setSubmitting(true);
     try {
-      const data = {
-        ...formData,
-        id_kategori: parseInt(formData.id_kategori, 10),
-        stok_minimum: parseInt(formData.stok_minimum, 10)
-      };
-
-      const res = await produkService.create(data);
-      if (res.success) {
-        router.push("/dashboard");
-      }
+      const res = await produkService.tambah({
+        nama_produk: form.nama_produk,
+        id_kategori: parseInt(form.id_kategori),
+        satuan: form.satuan,
+        stok_minimum: parseInt(form.stok_minimum),
+      });
+      if (res.success) router.push('/dashboard/produk');
     } catch (err) {
-      setError(err.message || "Failed to create product");
+      setError(err.response?.data?.message || err.message || 'Gagal menambahkan produk');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold text-white tracking-tight">Register New Product</h2>
-          <p className="text-zinc-500 text-sm">Add a new item to the operational inventory catalog.</p>
-        </div>
-        <Link href="/dashboard" className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-zinc-400 hover:text-white transition-all">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+    <div className="max-w-2xl">
+      <div className="flex items-center gap-3 mb-6">
+        <Link href="/dashboard/produk" className="p-2 rounded-xl bg-white/5 border border-white/5 text-zinc-400 hover:text-white transition-colors">
+          <ArrowLeft className="w-4 h-4" />
         </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Tambah Produk</h1>
+          <p className="text-sm text-zinc-500">Daftarkan produk baru ke inventaris</p>
+        </div>
       </div>
 
-      <div className="glass-morphism p-8 md:p-10 rounded-3xl border border-white/5 shadow-2xl">
+      <div className="glass-card p-6">
         {error && (
-          <div className="mb-8 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm flex items-center gap-2 animate-in fade-in">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {error}
-          </div>
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Product Designation</label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Nama Produk</label>
             <input
-              type="text"
-              name="nama_produk"
-              required
-              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-              placeholder="e.g. Beras Premium 5kg"
-              value={formData.nama_produk}
-              onChange={handleChange}
+              value={form.nama_produk}
+              onChange={(e) => setForm({ ...form, nama_produk: e.target.value })}
+              className="input-dark"
+              placeholder="Contoh: Beras Premium 5kg"
+              disabled={submitting}
             />
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Category Code</label>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Kategori</label>
+            <select
+              value={form.id_kategori}
+              onChange={(e) => setForm({ ...form, id_kategori: e.target.value })}
+              className="input-dark"
+              disabled={submitting}
+            >
+              <option value="">Pilih kategori</option>
+              {kategoriList.map((k) => (
+                <option key={k.id_kategori} value={k.id_kategori}>{k.nama_kategori}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Satuan</label>
+              <input
+                value={form.satuan}
+                onChange={(e) => setForm({ ...form, satuan: e.target.value })}
+                className="input-dark"
+                placeholder="pcs, kg, liter"
+                disabled={submitting}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Stok Minimum</label>
               <input
                 type="number"
-                name="id_kategori"
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                value={formData.id_kategori}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Unit of Measure</label>
-              <input
-                type="text"
-                name="satuan"
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="e.g. pcs, karung"
-                value={formData.satuan}
-                onChange={handleChange}
+                min="0"
+                value={form.stok_minimum}
+                onChange={(e) => setForm({ ...form, stok_minimum: e.target.value })}
+                className="input-dark"
+                disabled={submitting}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Minimum Alert Threshold</label>
-            <input
-              type="number"
-              name="stok_minimum"
-              required
-              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              value={formData.stok_minimum}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="pt-6 flex flex-col sm:flex-row gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-primary text-white font-bold py-4 rounded-2xl hover:bg-primary/80 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
-            >
-              <span className="relative">{loading ? "Processing..." : "Confirm & Save Product"}</span>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={submitting} className="btn-primary">
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Simpan Produk
             </button>
-            <Link
-              href="/dashboard"
-              className="flex-1 bg-white/5 text-zinc-400 font-bold py-4 rounded-2xl hover:bg-white/10 hover:text-white transition-all text-center border border-white/5"
-            >
-              Cancel
-            </Link>
+            <Link href="/dashboard/produk" className="btn-secondary">Batal</Link>
           </div>
         </form>
       </div>
