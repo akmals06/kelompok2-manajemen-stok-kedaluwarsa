@@ -37,7 +37,10 @@ model Pengguna {
   password_hash String
   peran         Role            @default(ADMIN_USAHA)
   status_aktif  Boolean         @default(true)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
   TransaksiStok TransaksiStok[]
+  AnalisisEoq   AnalisisEoq[]
 
   @@map("pengguna")
 }
@@ -46,24 +49,30 @@ model KategoriProduk {
   id_kategori   Int      @id @default(autoincrement())
   nama_kategori String   @unique
   deskripsi     String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
   Produk        Produk[]
 
   @@map("kategori_produk")
 }
 
 model Produk {
-  id_produk     Int             @id @default(autoincrement())
-  id_kategori   Int
-  nama_produk   String
-  satuan        String
-  stok_tersedia Int             @default(0)
-  stok_minimum  Int             @default(0)
-  status_aktif  Boolean         @default(true)
-  gambar_url    String?
-  kategori      KategoriProduk  @relation(fields: [id_kategori], references: [id_kategori])
-  BatchProduk   BatchProduk[]
-  TransaksiStok TransaksiStok[]
-  AnalisisEoq   AnalisisEoq[]
+  id_produk             Int                     @id @default(autoincrement())
+  id_kategori           Int
+  nama_produk           String
+  satuan                String
+  stok_tersedia         Int                     @default(0)
+  stok_minimum          Int                     @default(0)
+  status_aktif          Boolean                 @default(true)
+  gambar_url            String?
+  gambar_public_id      String?
+  created_at            DateTime                @default(now())
+  updated_at            DateTime                @updatedAt
+  kategori              KategoriProduk          @relation(fields: [id_kategori], references: [id_kategori])
+  BatchProduk           BatchProduk[]
+  TransaksiStok         TransaksiStok[]
+  RiwayatPergerakanStok RiwayatPergerakanStok[]
+  AnalisisEoq           AnalisisEoq[]
 
   @@map("produk")
 }
@@ -76,6 +85,8 @@ model BatchProduk {
   tanggal_kedaluwarsa DateTime        @db.Date
   jumlah_batch        Int             @default(0)
   status_batch        StatusBatch     @default(AKTIF)
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
   produk              Produk          @relation(fields: [id_produk], references: [id_produk])
   TransaksiStok       TransaksiStok[]
 
@@ -87,17 +98,18 @@ model TransaksiStok {
   id_pengguna           Int
   id_produk             Int
   id_batch              Int?
-  id_laporan            Int?
   jenis_transaksi       JenisTransaksi
   tanggal_transaksi     DateTime                @default(now())
   jumlah                Int
-  status_validasi       Boolean                 @default(true)
+  sumber_masuk          String?
+  tujuan_keluar         String?
   keterangan            String?
+  status_validasi       Boolean                 @default(true)
+  created_at            DateTime                @default(now())
   pengguna              Pengguna                @relation(fields: [id_pengguna], references: [id_pengguna])
   produk                Produk                  @relation(fields: [id_produk], references: [id_produk])
   batch                 BatchProduk?            @relation(fields: [id_batch], references: [id_batch])
   RiwayatPergerakanStok RiwayatPergerakanStok[]
-  laporan_inventaris    LaporanInventaris?      @relation(fields: [id_laporan], references: [id_laporan])
 
   @@map("transaksi_stok")
 }
@@ -105,35 +117,41 @@ model TransaksiStok {
 model RiwayatPergerakanStok {
   id_riwayat       Int             @id @default(autoincrement())
   id_transaksi     Int
+  id_produk        Int
   jenis_pergerakan JenisPergerakan
   jumlah_perubahan Int
+  stok_sebelum     Int
+  stok_sesudah     Int
   waktu_catat      DateTime        @default(now())
   catatan          String?
   transaksi        TransaksiStok   @relation(fields: [id_transaksi], references: [id_transaksi])
+  produk           Produk          @relation(fields: [id_produk], references: [id_produk])
 
   @@map("riwayat_pergerakan_stok")
 }
 
 model AnalisisEoq {
-  id_analisis         Int    @id @default(autoincrement())
+  id_analisis         Int      @id @default(autoincrement())
   id_produk           Int
+  id_pengguna         Int
   kebutuhan_tahunan   Float
   biaya_pesan         Float
   biaya_simpan        Float
   nilai_eoq           Float
   frekuensi_pemesanan Float
   biaya_pesan_tahunan Float
-  produk              Produk @relation(fields: [id_produk], references: [id_produk])
+  created_at          DateTime @default(now())
+  produk              Produk   @relation(fields: [id_produk], references: [id_produk])
+  pengguna            Pengguna @relation(fields: [id_pengguna], references: [id_pengguna])
 
   @@map("analisis_eoq")
 }
 
 model LaporanInventaris {
-  id_laporan       Int             @id @default(autoincrement())
-  periode_awal     DateTime        @db.Date
-  periode_akhir    DateTime        @db.Date
-  tanggal_generate DateTime        @default(now())
-  TransaksiStok    TransaksiStok[]
+  id_laporan       Int      @id @default(autoincrement())
+  periode_awal     DateTime @db.Date
+  periode_akhir    DateTime @db.Date
+  tanggal_generate DateTime @default(now())
 
   @@map("laporan_inventaris")
 }
