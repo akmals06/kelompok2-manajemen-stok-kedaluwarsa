@@ -5,7 +5,7 @@ const {
   validasiIdParam,
   validasiBuatProduk,
   validasiUpdateProduk,
-} = require('../middlewares/produk.validation');
+} = require('../validations/produk.validation');
 const authMiddleware = require('../middlewares/auth.middleware');
 const roleMiddleware = require('../middlewares/role.middleware');
 const upload = require('../middlewares/upload.middleware');
