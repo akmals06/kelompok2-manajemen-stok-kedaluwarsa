@@ -87,13 +87,13 @@ export default function KategoriPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Kategori Produk</h1>
-          <p className="text-sm text-zinc-500 mt-1">Kelola kategori untuk produk sembako</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Kategori Produk</h1>
+          <p className="text-xs sm:text-sm text-zinc-500 mt-1">Kelola kategori untuk produk sembako</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary">
+        <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary self-start">
           <Plus className="w-4 h-4" /> Tambah
         </button>
       </div>
@@ -146,8 +146,8 @@ export default function KategoriPage() {
           <p className="text-sm text-zinc-600 mt-1">Tambahkan kategori pertama untuk mulai.</p>
         </div>
       ) : (
-        <div className="glass-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="border-b border-white/10 text-zinc-400">
                 <th className="text-left py-3 px-4 font-medium">Nama Kategori</th>

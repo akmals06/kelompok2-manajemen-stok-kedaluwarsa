@@ -54,10 +54,10 @@ export default function EoqPage() {
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 text-blue-400 animate-spin" /></div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Analisis EOQ</h1>
-        <p className="text-sm text-zinc-500 mt-1">Hitung Economic Order Quantity untuk optimasi pemesanan</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Analisis EOQ</h1>
+        <p className="text-xs sm:text-sm text-zinc-500 mt-1">Hitung Economic Order Quantity untuk optimasi pemesanan</p>
       </div>
       {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
@@ -81,17 +81,17 @@ export default function EoqPage() {
       {hasil && (
         <div className="glass-card p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Hasil Analisis: {hasil.nama_produk}</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-blue-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Nilai EOQ</p><p className="text-2xl font-bold text-blue-400">{formatAngka(hasil.nilai_eoq)}</p></div>
-            <div className="p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Frekuensi Pesan/Tahun</p><p className="text-2xl font-bold text-white">{formatAngka(hasil.frekuensi_pemesanan)}</p></div>
-            <div className="p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Biaya Pesan/Tahun</p><p className="text-2xl font-bold text-white">Rp {formatAngka(hasil.biaya_pesan_tahunan)}</p></div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-3 sm:p-4 rounded-xl bg-blue-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Nilai EOQ</p><p className="text-xl sm:text-2xl font-bold text-blue-400">{formatAngka(hasil.nilai_eoq)}</p></div>
+            <div className="p-3 sm:p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Frekuensi Pesan/Tahun</p><p className="text-xl sm:text-2xl font-bold text-white">{formatAngka(hasil.frekuensi_pemesanan)}</p></div>
+            <div className="p-3 sm:p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Biaya Pesan/Tahun</p><p className="text-xl sm:text-2xl font-bold text-white">Rp {formatAngka(hasil.biaya_pesan_tahunan)}</p></div>
           </div>
         </div>
       )}
 
       {riwayat.length > 0 && (
-        <div className="glass-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead><tr className="border-b border-white/10 text-zinc-400">
               <th className="text-left py-3 px-4 font-medium">Produk</th>
               <th className="text-right py-3 px-4 font-medium">EOQ</th>

@@ -1,6 +1,11 @@
 import api from './api';
 
 const laporanService = {
+  ringkasanDashboard: async () => {
+    const res = await api.get('/laporan/dashboard');
+    return res.data;
+  },
+
   ringkasanStok: async () => {
     const res = await api.get('/laporan/ringkasan-stok');
     return res.data;
