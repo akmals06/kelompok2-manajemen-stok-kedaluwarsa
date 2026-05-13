@@ -22,7 +22,7 @@ const ambilProdukById = async (idProduk) => {
   const produk = await produkRepository.ambilProdukById(idProduk);
   if (!produk) {
     const error = new Error('Produk tidak ditemukan');
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
   return produk;
@@ -32,14 +32,14 @@ const buatProduk = async (dataProduk, fileBuffer) => {
   const kategoriAda = await produkRepository.cekKategoriAda(dataProduk.id_kategori);
   if (!kategoriAda) {
     const error = new Error('Kategori tidak valid atau tidak ditemukan');
-    error.status = 400;
+    error.statusCode = 400;
     throw error;
   }
 
   const produkAda = await produkRepository.cariProdukByNama(dataProduk.nama_produk);
   if (produkAda) {
     const error = new Error('Nama produk sudah digunakan');
-    error.status = 409;
+    error.statusCode = 409;
     throw error;
   }
 
@@ -49,7 +49,7 @@ const buatProduk = async (dataProduk, fileBuffer) => {
       gambar_produk = await uploadBufferToCloudinary(fileBuffer);
     } catch (uploadError) {
       const error = new Error('Gagal mengunggah gambar produk');
-      error.status = 500;
+      error.statusCode = 500;
       throw error;
     }
   }
@@ -71,7 +71,7 @@ const updateProduk = async (idProduk, dataProduk, fileBuffer) => {
     const kategoriAda = await produkRepository.cekKategoriAda(dataProduk.id_kategori);
     if (!kategoriAda) {
       const error = new Error('Kategori tidak valid atau tidak ditemukan');
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
   }
@@ -80,7 +80,7 @@ const updateProduk = async (idProduk, dataProduk, fileBuffer) => {
     const produkAda = await produkRepository.cariProdukByNama(dataProduk.nama_produk);
     if (produkAda) {
       const error = new Error('Nama produk sudah digunakan oleh produk lain');
-      error.status = 409;
+      error.statusCode = 409;
       throw error;
     }
   }
@@ -91,7 +91,7 @@ const updateProduk = async (idProduk, dataProduk, fileBuffer) => {
       gambar_produk = await uploadBufferToCloudinary(fileBuffer);
     } catch (uploadError) {
       const error = new Error('Gagal mengunggah gambar produk');
-      error.status = 500;
+      error.statusCode = 500;
       throw error;
     }
   }

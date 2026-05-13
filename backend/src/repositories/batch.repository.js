@@ -1,0 +1,40 @@
+const prisma = require('../config/prisma');
+
+const ambilSemuaBatch = async () => {
+  return prisma.batch_produk.findMany({
+    include: {
+      produk: { select: { nama_produk: true, satuan: true } },
+    },
+    orderBy: { tanggal_kedaluwarsa: 'asc' },
+  });
+};
+
+const ambilBatchById = async (idBatch) => {
+  return prisma.batch_produk.findUnique({
+    where: { id_batch: parseInt(idBatch, 10) },
+    include: {
+      produk: { select: { nama_produk: true, satuan: true } },
+    },
+  });
+};
+
+const updateBatch = async (idBatch, data) => {
+  return prisma.batch_produk.update({
+    where: { id_batch: parseInt(idBatch, 10) },
+    data,
+  });
+};
+
+const updateStatusBatch = async (idBatch, status) => {
+  return prisma.batch_produk.update({
+    where: { id_batch: parseInt(idBatch, 10) },
+    data: { status_batch: status },
+  });
+};
+
+module.exports = {
+  ambilSemuaBatch,
+  ambilBatchById,
+  updateBatch,
+  updateStatusBatch,
+};
