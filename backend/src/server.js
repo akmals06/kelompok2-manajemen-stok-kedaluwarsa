@@ -1,8 +1,16 @@
+require('dotenv').config();
 const app = require('./app');
-const env = require('./config/env');
 
-const PORT = env.PORT;
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server berjalan di port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`=================================`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`=================================`);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.log(`Error: ${err.message}`);
+  server.close(() => process.exit(1));
 });

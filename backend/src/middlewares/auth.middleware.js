@@ -1,21 +1,28 @@
-const { verifyToken } = require('../utils/token');
-const { errorResponse } = require('../utils/response');
+const { verifikasiToken } = require('../utils/jwt');
 
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const header = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return errorResponse(res, 'Akses ditolak. Token tidak ditemukan.', 401);
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: 'Token tidak ditemukan',
+      errors: [],
+    });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = header.split(' ')[1];
 
   try {
-    const decoded = verifyToken(token);
+    const decoded = verifikasiToken(token);
     req.user = decoded;
     next();
-  } catch (error) {
-    return errorResponse(res, 'Token tidak valid atau sudah expired.', 401);
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: 'Token tidak valid atau sudah kedaluwarsa',
+      errors: [],
+    });
   }
 };
 

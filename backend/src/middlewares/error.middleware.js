@@ -1,25 +1,19 @@
-const env = require('../config/env');
-const STATUS_CODE = require('../constants/status.constant');
-
 const errorMiddleware = (err, req, res, next) => {
-  const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER_ERROR;
-  const message = err.isOperational ? err.message : 'Terjadi kesalahan pada server.';
+  let { statusCode, message } = err;
 
-  const response = {
-    success: false,
-    message,
-  };
+  if (!statusCode) statusCode = 500;
 
-  // Hanya tampilkan stack trace jika sedang development
-  if (env.isDevelopment) {
-    response.stack = err.stack;
-    response.errorDetails = err; // Optional: raw error details for easier debugging
+  console.error(`[ERROR] ${req.method} ${req.path} - ${message}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.error(err.stack);
   }
 
-  // Jika error Prisma atau error yang bukan instance AppError, pastikan formatnya aman
-  // Tidak boleh log info sensitif
-
-  res.status(statusCode).json(response);
+  res.status(statusCode).json({
+    success: false,
+    message: statusCode === 500 ? 'Internal Server Error' : message,
+    errors: err.errors || [],
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
 };
 
 module.exports = errorMiddleware;

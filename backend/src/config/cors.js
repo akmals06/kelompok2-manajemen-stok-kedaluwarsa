@@ -1,10 +1,21 @@
-const env = require('./env');
+const config = require('./env');
 
 const corsOptions = {
-  origin: env.isProduction ? env.FRONTEND_URL : [env.FRONTEND_URL, 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [config.frontendUrl];
+
+    if (allowedOrigins.indexOf(origin) !== -1 || config.nodeEnv === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Needed if we decide to use cookies later
+  credentials: true,
+  maxAge: 86400, // 24 hours
 };
 
 module.exports = corsOptions;

@@ -1,32 +1,18 @@
 const multer = require('multer');
-const AppError = require('../utils/appError');
 
-const simpan_di_memori = multer.memoryStorage();
-
-const filter_gambar = (req, file, cb) => {
-  const tipe_valid = ['image/jpeg', 'image/png', 'image/webp'];
-
-  if (!tipe_valid.includes(file.mimetype)) {
-    return cb(
-      new AppError('File harus berupa gambar JPG, PNG, atau WEBP.', 400),
-      false
-    );
-  }
-
-  cb(null, true);
-};
-
+const storage = multer.memoryStorage();
 const upload = multer({
-  storage: simpan_di_memori,
+  storage,
   limits: {
-    fileSize: 2 * 1024 * 1024,
+    fileSize: 5 * 1024 * 1024,
   },
-  fileFilter: filter_gambar,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipe file ditolak. Hanya file gambar yang diizinkan.'));
+    }
+  },
 });
 
-const uploadProdukImage = upload.single('gambar');
-
-module.exports = {
-  upload,
-  uploadProdukImage,
-};
+module.exports = upload;
