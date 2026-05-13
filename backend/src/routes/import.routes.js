@@ -3,7 +3,23 @@ const router = express.Router();
 const importController = require('../controllers/import.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const { izinkanRole } = require('../middlewares/role.middleware');
-const upload = require('../middlewares/upload.middleware');
+const multer = require('multer');
+const uploadExcel = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv',
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Hanya file Excel (.xlsx, .xls) atau CSV yang diizinkan.'));
+    }
+  },
+});
 const {
   validasiUploadImport,
   validasiModeImport,
@@ -15,7 +31,7 @@ router.use(izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'));
 
 router.post(
   '/preview',
-  upload.single('file'),
+  uploadExcel.single('file'),
   validasiModeImport,
   validasiUploadImport,
   importController.previewImport

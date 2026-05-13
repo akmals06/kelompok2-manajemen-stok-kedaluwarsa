@@ -33,4 +33,3 @@ router.use('/label', labelRoutes);
 router.use('/notifikasi', notifikasiRoutes);
 
 module.exports = router;
-

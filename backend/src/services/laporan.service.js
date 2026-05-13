@@ -45,4 +45,48 @@ const ambilSemuaLaporan = async () => {
   return laporanRepo.ambilSemuaLaporan();
 };
 
-module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan };
+const ambilRingkasanDashboard = async () => {
+  const [ringkasanStok, keuanganHariIni, keuanganBulanIni, transaksiTerakhir, batchAkanExpiry, pergerakanStok] = await Promise.all([
+    ambilRingkasanStok(),
+    laporanRepo.hitungKeuanganHariIni(),
+    laporanRepo.hitungKeuanganBulanIni(),
+    laporanRepo.ambilTransaksiTerakhir(10),
+    laporanRepo.ambilBatchAkanExpiry(30),
+    laporanRepo.hitungPergerakanStok7Hari(),
+  ]);
+
+  const totalProduk = ringkasanStok.length;
+  const stokRendah = ringkasanStok.filter((p) => p.status_stok === 'STOK_RENDAH');
+
+  const { isExpired, isNearExpiry } = require('../utils/date');
+  const { NEAR_EXPIRY_DAYS } = require('../constants/batch.constant');
+
+  const batchDenganStatus = batchAkanExpiry.map((b) => {
+    let status = 'AKTIF';
+    if (isExpired(b.tanggal_kedaluwarsa)) status = 'KEDALUWARSA';
+    else if (isNearExpiry(b.tanggal_kedaluwarsa, NEAR_EXPIRY_DAYS)) status = 'MENDEKATI_KEDALUWARSA';
+    return { ...b, status_terhitung: status };
+  });
+
+  return {
+    stok: {
+      total_produk: totalProduk,
+      stok_rendah: stokRendah.length,
+      daftar_stok_rendah: stokRendah.slice(0, 5),
+    },
+    keuangan: {
+      hari_ini: keuanganHariIni,
+      bulan_ini: keuanganBulanIni,
+    },
+    batch: {
+      hampir_kedaluwarsa: batchDenganStatus.filter((b) => b.status_terhitung === 'MENDEKATI_KEDALUWARSA').length,
+      kedaluwarsa: batchDenganStatus.filter((b) => b.status_terhitung === 'KEDALUWARSA').length,
+      daftar: batchDenganStatus.slice(0, 10),
+    },
+    transaksi_terakhir: transaksiTerakhir,
+    pergerakan_7_hari: pergerakanStok,
+    waktu_server: new Date().toISOString(),
+  };
+};
+
+module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan, ambilRingkasanDashboard };
