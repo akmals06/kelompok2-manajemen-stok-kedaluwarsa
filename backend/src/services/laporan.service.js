@@ -45,6 +45,32 @@ const ambilSemuaLaporan = async () => {
   return laporanRepo.ambilSemuaLaporan();
 };
 
+const ambilLaporanById = async (id) => {
+  const laporan = await laporanRepo.ambilLaporanById(id);
+  if (!laporan) {
+    throw Object.assign(new Error('Laporan tidak ditemukan'), { statusCode: 404 });
+  }
+
+  const transaksi = await laporanRepo.ambilTransaksiByPeriode(laporan.periode_awal, laporan.periode_akhir);
+
+  let totalMasuk = 0;
+  let totalKeluar = 0;
+  transaksi.forEach((t) => {
+    if (t.jenis_transaksi === 'MASUK') totalMasuk += t.jumlah;
+    if (t.jenis_transaksi === 'KELUAR') totalKeluar += t.jumlah;
+  });
+
+  return {
+    laporan,
+    ringkasan: {
+      total_transaksi: transaksi.length,
+      total_masuk: totalMasuk,
+      total_keluar: totalKeluar,
+    },
+    transaksi,
+  };
+};
+
 const ambilRingkasanDashboard = async () => {
   const [ringkasanStok, keuanganHariIni, keuanganBulanIni, transaksiTerakhir, batchAkanExpiry, pergerakanStok] = await Promise.all([
     ambilRingkasanStok(),
@@ -89,4 +115,4 @@ const ambilRingkasanDashboard = async () => {
   };
 };
 
-module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan, ambilRingkasanDashboard };
+module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan, ambilRingkasanDashboard, ambilLaporanById };

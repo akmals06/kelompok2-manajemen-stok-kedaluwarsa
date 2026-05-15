@@ -20,6 +20,11 @@ const laporanService = {
     const res = await api.post('/laporan', data);
     return res.data;
   },
+
+  ambilById: async (id) => {
+    const res = await api.get(`/laporan/${id}`);
+    return res.data;
+  },
 };
 
 export default laporanService;

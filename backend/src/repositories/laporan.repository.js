@@ -15,6 +15,12 @@ const ambilSemuaLaporan = async () => {
   });
 };
 
+const ambilLaporanById = async (id) => {
+  return prisma.laporan_inventaris.findUnique({
+    where: { id_laporan: parseInt(id, 10) },
+  });
+};
+
 const ambilRingkasanStok = async () => {
   return prisma.produk.findMany({
     select: {
@@ -168,4 +174,5 @@ module.exports = {
   ambilTransaksiTerakhir,
   ambilBatchAkanExpiry,
   hitungPergerakanStok7Hari,
+  ambilLaporanById,
 };
