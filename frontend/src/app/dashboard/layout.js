@@ -30,7 +30,7 @@ function DashboardShell({ children }) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-[#E1FF01]/20 border-t-[#E1FF01] rounded-full animate-spin" />
           <p className="text-zinc-400 font-medium text-sm animate-pulse">Memuat sistem...</p>
         </div>
       </div>
@@ -49,7 +49,7 @@ function DashboardShell({ children }) {
       <Sidebar user={user} onLogout={logout} mobileOpen={mobileOpen} onToggleMobile={() => setMobileOpen(false)} />
 
       <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
-        <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-[#E1FF01]/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-slate-500/5 blur-[120px] rounded-full pointer-events-none" />
 
         <header className="h-14 lg:h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-4 lg:px-8 z-10 shrink-0 gap-3">

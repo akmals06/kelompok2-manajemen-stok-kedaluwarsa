@@ -42,6 +42,21 @@ const ambilSemuaLaporan = async (req, res, next) => {
   }
 };
 
+const ambilLaporanById = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const hasil = await laporanService.ambilLaporanById(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Detail laporan berhasil diambil',
+      data: hasil,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const ambilRingkasanDashboard = async (req, res, next) => {
   try {
     const hasil = await laporanService.ambilRingkasanDashboard();
@@ -56,4 +71,4 @@ const ambilRingkasanDashboard = async (req, res, next) => {
   }
 };
 
-module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan, ambilRingkasanDashboard };
+module.exports = { ambilRingkasanStok, buatLaporanInventaris, ambilSemuaLaporan, ambilRingkasanDashboard, ambilLaporanById };
