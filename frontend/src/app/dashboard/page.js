@@ -184,83 +184,101 @@ export default function DashboardPage() {
             </div>
 
             {/* Chart Area */}
-            <div className="relative">
-              {/* Horizontal Grid Lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-10">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="w-full border-b border-dashed border-white/[0.04]" />
-                ))}
-              </div>
-
-              {/* Bars */}
-              <div className="flex items-end gap-2 sm:gap-4 h-44 sm:h-52 relative z-10 pb-10">
-                {pergerakan_7_hari.map((hari, i) => {
-                  const tgl = new Date(hari.tanggal);
-                  const namaH = namaHari[tgl.getDay()];
-                  const hMasuk = Math.max((hari.masuk / maxPergerakan) * 100, 5);
-                  const hKeluar = Math.max((hari.keluar / maxPergerakan) * 100, 5);
+            <div className="relative flex">
+              {/* Y-Axis Labels */}
+              <div className="flex flex-col justify-between h-44 sm:h-52 pb-10 pr-2 sm:pr-3 shrink-0 relative z-10">
+                {[...Array(5)].map((_, i) => {
+                  const value = Math.round(maxPergerakan - (maxPergerakan / 4) * i);
                   return (
-                    <div key={hari.tanggal} className="flex-1 flex flex-col items-center gap-0 group relative">
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-[#1a1a1d] border border-white/[0.08] p-3 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-30 w-max pointer-events-none">
-                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1d] border-b border-r border-white/[0.08] rotate-45" />
-                        <p className="text-[11px] font-bold text-white mb-2">{namaH}, {tgl.getDate()}/{tgl.getMonth() + 1}</p>
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#E1FF01]" />
-                              <span className="text-[11px] text-zinc-400">Masuk</span>
-                            </div>
-                            <span className="text-[11px] font-bold text-white">{hari.masuk}</span>
-                          </div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                              <span className="text-[11px] text-zinc-400">Keluar</span>
-                            </div>
-                            <span className="text-[11px] font-bold text-white">{hari.keluar}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Bar Group */}
-                      <div className="flex gap-1 items-end h-32 sm:h-40 w-full justify-center">
-                        {/* Masuk Bar — Electric Lime Gradient */}
-                        <div
-                          className="w-3 sm:w-5 rounded-t-lg transition-all duration-500 ease-out group-hover:scale-x-110 group-hover:brightness-110"
-                          style={{ 
-                            height: `${hMasuk}%`,
-                            background: 'linear-gradient(to top, #E1FF01, #c5e600, #a8cc0060)'
-                          }}
-                        />
-                        {/* Keluar Bar — Amber/Gold Gradient */}
-                        <div
-                          className="w-3 sm:w-5 rounded-t-lg transition-all duration-500 ease-out group-hover:scale-x-110 group-hover:brightness-110"
-                          style={{ 
-                            height: `${hKeluar}%`,
-                            background: 'linear-gradient(to top, #F59E0B, #fbbf24, #fcd34d60)'
-                          }}
-                        />
-                      </div>
-
-                      {/* Date Label */}
-                      <div className="mt-2.5 text-center">
-                        <span className="text-[10px] sm:text-[11px] text-zinc-400 font-semibold group-hover:text-white transition-colors">{namaH}</span>
-                      </div>
-                    </div>
+                    <span key={i} className="text-[9px] sm:text-[10px] text-zinc-500 font-mono tabular-nums leading-none text-right min-w-[24px] sm:min-w-[30px]">
+                      {value}
+                    </span>
                   );
                 })}
+                <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono tabular-nums leading-none text-right min-w-[24px] sm:min-w-[30px]">
+                  0
+                </span>
               </div>
 
-              {/* Bottom Legend */}
-              <div className="flex items-center justify-center gap-6 pt-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#E1FF01]" />
-                  <span className="text-[11px] font-medium text-zinc-400">Masuk</span>
+              {/* Chart Body */}
+              <div className="flex-1 relative">
+                {/* Horizontal Grid Lines */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-10">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-full border-b border-dashed border-white/[0.04]" />
+                  ))}
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                  <span className="text-[11px] font-medium text-zinc-400">Keluar</span>
+
+                {/* Bars */}
+                <div className="flex items-end gap-2 sm:gap-4 h-44 sm:h-52 relative z-10 pb-10">
+                  {pergerakan_7_hari.map((hari, i) => {
+                    const tgl = new Date(hari.tanggal);
+                    const namaH = namaHari[tgl.getDay()];
+                    const hMasuk = Math.max((hari.masuk / maxPergerakan) * 100, 5);
+                    const hKeluar = Math.max((hari.keluar / maxPergerakan) * 100, 5);
+                    return (
+                      <div key={hari.tanggal} className="flex-1 flex flex-col items-center gap-0 group relative">
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-[#1a1a1d] border border-white/[0.08] p-3 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-30 w-max pointer-events-none">
+                          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1d] border-b border-r border-white/[0.08] rotate-45" />
+                          <p className="text-[11px] font-bold text-white mb-2">{namaH}, {tgl.getDate()}/{tgl.getMonth() + 1}</p>
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#E1FF01]" />
+                                <span className="text-[11px] text-zinc-400">Masuk</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-white">{hari.masuk}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                <span className="text-[11px] text-zinc-400">Keluar</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-white">{hari.keluar}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bar Group */}
+                        <div className="flex gap-1 items-end h-32 sm:h-40 w-full justify-center">
+                          {/* Masuk Bar — Electric Lime Gradient */}
+                          <div
+                            className="w-3 sm:w-5 rounded-t-lg transition-all duration-500 ease-out group-hover:scale-x-110 group-hover:brightness-110"
+                            style={{ 
+                              height: `${hMasuk}%`,
+                              background: 'linear-gradient(to top, #E1FF01, #c5e600, #a8cc0060)'
+                            }}
+                          />
+                          {/* Keluar Bar — Amber/Gold Gradient */}
+                          <div
+                            className="w-3 sm:w-5 rounded-t-lg transition-all duration-500 ease-out group-hover:scale-x-110 group-hover:brightness-110"
+                            style={{ 
+                              height: `${hKeluar}%`,
+                              background: 'linear-gradient(to top, #F59E0B, #fbbf24, #fcd34d60)'
+                            }}
+                          />
+                        </div>
+
+                        {/* Date Label */}
+                        <div className="mt-2.5 text-center">
+                          <span className="text-[10px] sm:text-[11px] text-zinc-400 font-semibold group-hover:text-white transition-colors">{namaH}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Bottom Legend */}
+                <div className="flex items-center justify-center gap-6 pt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#E1FF01]" />
+                    <span className="text-[11px] font-medium text-zinc-400">Masuk</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                    <span className="text-[11px] font-medium text-zinc-400">Keluar</span>
+                  </div>
                 </div>
               </div>
             </div>
