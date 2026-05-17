@@ -48,7 +48,7 @@ function DashboardShell({ children }) {
     <div className="flex h-screen bg-[#0a0a0a] text-foreground overflow-hidden">
       <Sidebar user={user} onLogout={logout} mobileOpen={mobileOpen} onToggleMobile={() => setMobileOpen(false)} />
 
-      <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col relative overflow-hidden min-w-0" style={{ transform: 'translateZ(0)' }}>
         <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-[#E1FF01]/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-slate-500/5 blur-[120px] rounded-full pointer-events-none" />
 
@@ -85,6 +85,9 @@ function DashboardShell({ children }) {
             {children}
           </div>
         </main>
+
+        {/* Portal root for right-column modals to render above everything else in this column without being trapped by intermediate stacking contexts */}
+        <div id="right-column-portal" className="absolute inset-0 pointer-events-none z-[100]" />
       </div>
     </div>
   );

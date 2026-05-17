@@ -20,6 +20,20 @@ const notifikasiService = {
     const res = await api.patch('/notifikasi/baca-semua');
     return res.data;
   },
+
+  // MOCKUP FRONTEND ONLY: Fungsi hapus untuk simulasi UI
+  // Backend belum menyediakan endpoint ini
+  hapus: async (id) => {
+    // Simulasi delay jaringan
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return { success: true, message: 'Notifikasi berhasil dihapus (Mock)' };
+  },
+
+  hapusSemua: async () => {
+    // Simulasi delay jaringan
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return { success: true, message: 'Semua notifikasi berhasil dihapus (Mock)' };
+  },
 };
 
 export default notifikasiService;

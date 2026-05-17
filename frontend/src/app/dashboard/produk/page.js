@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Package, Plus, Loader2, AlertTriangle } from 'lucide-react';
 import produkService from '@/services/produk.service';
 import kategoriService from '@/services/kategori.service';
@@ -19,8 +20,10 @@ export default function ProdukPage() {
   const [form, setForm] = useState({
     nama_produk: '', id_kategori: '', satuan: 'pcs', stok_minimum: 10,
   });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const muatData = async () => {
       try {
         const [resProduk, resKategori] = await Promise.all([
@@ -101,9 +104,9 @@ export default function ProdukPage() {
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
       {/* ── Modal Popup ── */}
-      {showForm && (
+      {showForm && mounted && document.getElementById('right-column-portal') && createPortal(
         <div
-          className="fixed inset-0 flex items-center justify-center p-4"
+          className="absolute inset-0 flex items-center justify-center p-4 pointer-events-auto"
           style={{ zIndex: 100 }}
           onClick={() => !submitting && setShowForm(false)}
         >
@@ -253,7 +256,8 @@ export default function ProdukPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.getElementById('right-column-portal')
       )}
 
       {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
