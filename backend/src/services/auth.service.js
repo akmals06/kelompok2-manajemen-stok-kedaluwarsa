@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { buatToken } = require('../utils/jwt');
+const { buatAccessToken, buatRefreshToken } = require('../utils/jwt');
 const penggunaRepo = require('../repositories/pengguna.repository');
 
 const login = async (email, password) => {
@@ -25,14 +25,50 @@ const login = async (email, password) => {
     throw error;
   }
 
-  const token = buatToken({
+  const payloadAccess = {
+    id_pengguna: pengguna.id_pengguna,
+    email: pengguna.email,
+    peran: pengguna.peran,
+  };
+
+  const accessToken = buatAccessToken(payloadAccess);
+  const refreshToken = buatRefreshToken({ id_pengguna: pengguna.id_pengguna });
+
+  return {
+    accessToken,
+    refreshToken,
+    pengguna: {
+      id_pengguna: pengguna.id_pengguna,
+      nama: pengguna.nama,
+      email: pengguna.email,
+      peran: pengguna.peran,
+    },
+  };
+};
+
+const refreshSession = async (idPengguna) => {
+  const pengguna = await penggunaRepo.ambilPenggunaById(idPengguna);
+
+  if (!pengguna) {
+    const error = new Error('Pengguna tidak ditemukan');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  if (!pengguna.status_aktif) {
+    const error = new Error('Akun tidak aktif');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const accessToken = buatAccessToken({
     id_pengguna: pengguna.id_pengguna,
     email: pengguna.email,
     peran: pengguna.peran,
   });
 
   return {
-    token,
+    accessToken,
     pengguna: {
       id_pengguna: pengguna.id_pengguna,
       nama: pengguna.nama,
@@ -54,4 +90,4 @@ const ambilProfil = async (idPengguna) => {
   return pengguna;
 };
 
-module.exports = { login, ambilProfil };
+module.exports = { login, refreshSession, ambilProfil };

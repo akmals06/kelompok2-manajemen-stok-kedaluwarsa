@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Sidebar from '@/components/Sidebar';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
 
 const BREADCRUMB_MAP = {
@@ -24,9 +24,16 @@ const BREADCRUMB_MAP = {
 function DashboardShell({ children }) {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [loading, user, router]);
+
+  if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -35,11 +42,6 @@ function DashboardShell({ children }) {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    if (typeof window !== 'undefined') window.location.href = '/login';
-    return null;
   }
 
   const breadcrumbLabel = BREADCRUMB_MAP[pathname] || 'Dashboard';

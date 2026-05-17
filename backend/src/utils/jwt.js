@@ -1,14 +1,29 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/env');
 
-const buatToken = (payload) => {
-  return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
+const buatAccessToken = (payload) => {
+  return jwt.sign(payload, config.jwt.accessSecret, {
+    expiresIn: config.jwt.accessExpiresIn,
   });
 };
 
-const verifikasiToken = (token) => {
-  return jwt.verify(token, config.jwt.secret);
+const buatRefreshToken = (payload) => {
+  return jwt.sign(payload, config.jwt.refreshSecret, {
+    expiresIn: config.jwt.refreshExpiresIn,
+  });
 };
 
-module.exports = { buatToken, verifikasiToken };
+const verifikasiAccessToken = (token) => {
+  return jwt.verify(token, config.jwt.accessSecret);
+};
+
+const verifikasiRefreshToken = (token) => {
+  return jwt.verify(token, config.jwt.refreshSecret);
+};
+
+module.exports = {
+  buatAccessToken,
+  buatRefreshToken,
+  verifikasiAccessToken,
+  verifikasiRefreshToken,
+};

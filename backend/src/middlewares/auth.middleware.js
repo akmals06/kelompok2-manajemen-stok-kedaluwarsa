@@ -1,4 +1,4 @@
-const { verifikasiToken } = require('../utils/jwt');
+const { verifikasiAccessToken } = require('../utils/jwt');
 
 const authMiddleware = (req, res, next) => {
   const header = req.headers.authorization;
@@ -14,7 +14,7 @@ const authMiddleware = (req, res, next) => {
   const token = header.split(' ')[1];
 
   try {
-    const decoded = verifikasiToken(token);
+    const decoded = verifikasiAccessToken(token);
     req.user = decoded;
     next();
   } catch (err) {

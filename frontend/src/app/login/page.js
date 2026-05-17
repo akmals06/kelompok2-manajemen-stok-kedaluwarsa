@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import authService from '@/services/auth.service';
+import { setAccessToken } from '@/services/api';
 import './login.css';
 
 // ── Render Alert ──────────────────────────
@@ -84,8 +85,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authService.login(email, password);
-      if (res.success && res.data?.token) {
-        localStorage.setItem('token', res.data.token);
+      if (res.success && res.data?.accessToken) {
+        setAccessToken(res.data.accessToken);
         router.push('/dashboard');
       } else {
         setAlertLogin({ type: 'danger', msg: res.message || 'Login gagal' });

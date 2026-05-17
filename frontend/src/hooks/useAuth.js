@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import authService from '@/services/auth.service';
+import { setAccessToken, clearAccessToken } from '@/services/api';
 
 const AuthContext = createContext(null);
 
@@ -11,44 +12,43 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const muatProfil = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
+  const muatSesiAwal = useCallback(async () => {
     try {
-      const res = await authService.ambilProfil();
-      if (res.success && res.data) {
-        setUser(res.data);
-      } else {
-        localStorage.removeItem('token');
+      const res = await authService.refresh();
+      if (res.success && res.data?.accessToken) {
+        setAccessToken(res.data.accessToken);
+        setUser(res.data.pengguna);
       }
     } catch {
-      localStorage.removeItem('token');
+      clearAccessToken();
+      setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    muatProfil();
-  }, [muatProfil]);
+    muatSesiAwal();
+  }, [muatSesiAwal]);
 
   const login = async (email, password) => {
     const res = await authService.login(email, password);
-    if (res.success && res.data?.token) {
-      localStorage.setItem('token', res.data.token);
-      await muatProfil();
+    if (res.success && res.data?.accessToken) {
+      setAccessToken(res.data.accessToken);
+      setUser(res.data.pengguna);
       router.push('/dashboard');
       return res;
     }
     throw new Error(res.message || 'Login gagal');
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // Tetap lanjut logout meskipun request gagal
+    }
+    clearAccessToken();
     setUser(null);
     router.push('/login');
   };

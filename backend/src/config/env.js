@@ -6,7 +6,8 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const requiredEnvs = [
   'DATABASE_URL',
   'DIRECT_URL',
-  'JWT_SECRET',
+  'JWT_ACCESS_SECRET',
+  'JWT_REFRESH_SECRET',
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET'
@@ -26,8 +27,10 @@ module.exports = {
     directUrl: process.env.DIRECT_URL,
   },
   jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    accessSecret: process.env.JWT_ACCESS_SECRET,
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES || '15m',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES || '7d',
   },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,

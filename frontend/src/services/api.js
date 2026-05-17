@@ -1,21 +1,99 @@
 import axios from 'axios';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+let accessToken = null;
+let isRefreshing = false;
+let antrianGagal = [];
+
+const prosesAntrian = (token) => {
+  antrianGagal.forEach((cb) => cb(token));
+  antrianGagal = [];
+};
+
+const tolakAntrian = (error) => {
+  antrianGagal.forEach((cb) => cb(null, error));
+  antrianGagal = [];
+};
+
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
+export const clearAccessToken = () => {
+  accessToken = null;
+};
+
 api.interceptors.request.use(
   (config) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Refresh endpoint sendiri gagal → langsung reject, jangan infinite loop
+    if (originalRequest.url?.includes('/auth/refresh')) {
+      clearAccessToken();
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          antrianGagal.push((token, err) => {
+            if (err) return reject(err);
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const res = await axios.post(`${BASE_URL}/auth/refresh`, {}, {
+          withCredentials: true,
+        });
+
+        const tokenBaru = res.data.data.accessToken;
+        setAccessToken(tokenBaru);
+        prosesAntrian(tokenBaru);
+
+        originalRequest.headers.Authorization = `Bearer ${tokenBaru}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        tolakAntrian(refreshError);
+        clearAccessToken();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default api;
