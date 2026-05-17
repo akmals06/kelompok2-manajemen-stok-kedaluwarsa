@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const PRODUCTION_API_URL = 'https://uas-softdev-production.up.railway.app/api';
+const LOCAL_API_URL = 'http://localhost:5000/api';
+
+const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : LOCAL_API_URL);
 
 const api = axios.create({
   baseURL: BASE_URL,
