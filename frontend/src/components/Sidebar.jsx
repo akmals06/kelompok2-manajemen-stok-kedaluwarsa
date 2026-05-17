@@ -193,11 +193,11 @@ export default function Sidebar({ user, onLogout, mobileOpen, onToggleMobile }) 
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Link href="/dashboard/stok-masuk" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/10 transition-colors">
+              <Link href="/dashboard/stok-masuk?action=new" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/10 transition-colors">
                 <ArrowDownToLine className="w-4 h-4" />
                 <span className="text-[10px] font-bold">Masuk</span>
               </Link>
-              <Link href="/dashboard/stok-keluar" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 transition-colors">
+              <Link href="/dashboard/stok-keluar?action=new" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 transition-colors">
                 <ArrowUpFromLine className="w-4 h-4" />
                 <span className="text-[10px] font-bold">Keluar</span>
               </Link>

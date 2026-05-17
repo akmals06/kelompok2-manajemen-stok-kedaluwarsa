@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { ArrowUpFromLine, Loader2, Plus, X, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { createPortal } from 'react-dom';
+import { ArrowUpFromLine, Loader2, Plus, X, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import stokService from '@/services/stok.service';
 import produkService from '@/services/produk.service';
 import batchService from '@/services/batch.service';
@@ -190,6 +192,8 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
   );
 }
 
+const ROWS_PER_PAGE = 10;
+
 export default function StokKeluarPage() {
   const [transaksiList, setTransaksiList] = useState([]);
   const [produkList, setProdukList] = useState([]);
@@ -204,8 +208,47 @@ export default function StokKeluarPage() {
     id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '',
   });
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* ── Pagination Logic ── */
+  const totalPages = Math.max(1, Math.ceil(transaksiList.length / ROWS_PER_PAGE));
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    return transaksiList.slice(start, start + ROWS_PER_PAGE);
+  }, [transaksiList, currentPage]);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [transaksiList.length]);
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setMounted(true);
+    if (searchParams.get('action') === 'new') {
+      setShowForm(true);
+    }
     const muatData = async () => {
       try {
         const [resTrx, resProduk, resBatch] = await Promise.all([
@@ -273,9 +316,9 @@ export default function StokKeluarPage() {
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
       {/* ── Modal Popup ── */}
-      {showForm && (
+      {showForm && mounted && document.getElementById('right-column-portal') && createPortal(
         <div
-          className="fixed inset-0 flex items-center justify-center p-4"
+          className="absolute inset-0 flex items-center justify-center p-4 pointer-events-auto"
           style={{ zIndex: 100 }}
           onClick={() => !submitting && setShowForm(false)}
         >
@@ -343,26 +386,24 @@ export default function StokKeluarPage() {
                   </div>
                   
                   {/* Dimmer container for rest of the form */}
-                  <div className={`transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
-                    <div className="grid grid-cols-2 gap-3 mb-2.5">
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                          Batch <span className="text-red-400">*</span>
-                        </label>
-                        <BatchDropdown
-                          batchList={batchFiltered}
-                          value={form.id_batch}
-                          onChange={(val) => setForm({ ...form, id_batch: val })}
-                          disabled={submitting || !form.id_produk}
-                          onOpenChange={setDropdownOpen}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                          Jumlah <span className="text-red-400">*</span>
-                        </label>
-                        <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark" placeholder="0" disabled={submitting} />
-                      </div>
+                  <div className={`space-y-2.5 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        Batch <span className="text-red-400">*</span>
+                      </label>
+                      <BatchDropdown
+                        batchList={batchFiltered}
+                        value={form.id_batch}
+                        onChange={(val) => setForm({ ...form, id_batch: val })}
+                        disabled={submitting || !form.id_produk}
+                        onOpenChange={setDropdownOpen}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        Jumlah <span className="text-red-400">*</span>
+                      </label>
+                      <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark" placeholder="0" disabled={submitting} />
                     </div>
                   </div>
                 </div>
@@ -452,7 +493,8 @@ export default function StokKeluarPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.getElementById('right-column-portal')
       )}
 
       {transaksiList.length === 0 ? (
@@ -461,29 +503,222 @@ export default function StokKeluarPage() {
           <h3 className="text-lg font-semibold text-zinc-400">Belum ada stok keluar</h3>
         </div>
       ) : (
-        <div className="glass-card overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
-            <thead>
-              <tr className="border-b border-white/10 text-zinc-400">
-                <th className="text-left py-3 px-4 font-medium">Tanggal</th>
-                <th className="text-left py-3 px-4 font-medium">Produk</th>
-                <th className="text-right py-3 px-4 font-medium">Jumlah</th>
-                <th className="text-left py-3 px-4 font-medium">Tujuan</th>
-                <th className="text-left py-3 px-4 font-medium">Operator</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transaksiList.map((t) => (
-                <tr key={t.id_transaksi} className="border-b border-white/5 hover:bg-white/[0.02]">
-                  <td className="py-3 px-4 text-zinc-400">{formatTanggal(t.tanggal_transaksi)}</td>
-                  <td className="py-3 px-4 text-white font-medium">{t.produk?.nama_produk}</td>
-                  <td className="py-3 px-4 text-right text-red-400 font-medium">-{t.jumlah}</td>
-                  <td className="py-3 px-4 text-zinc-400">{t.tujuan_keluar || '-'}</td>
-                  <td className="py-3 px-4 text-zinc-400">{t.pengguna?.nama}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-0">
+          {/* ── Glassmorphic Table Container ── */}
+          <div
+            className="overflow-hidden"
+            style={{
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.07)',
+              background: 'rgba(255,255,255,0.02)',
+              backdropFilter: 'blur(20px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.25), 0 0 0 0.5px rgba(255,255,255,0.05) inset',
+            }}
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[560px]" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+                <thead>
+                  <tr>
+                    <th
+                      className="text-left py-3.5 px-5 text-xs font-semibold"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.55)',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      Tanggal
+                    </th>
+                    <th
+                      className="text-left py-3.5 px-5 text-xs font-semibold"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.55)',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      Produk
+                    </th>
+                    <th
+                      className="text-right py-3.5 px-5 text-xs font-semibold"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.55)',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      Jumlah
+                    </th>
+                    <th
+                      className="text-left py-3.5 px-5 text-xs font-semibold"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.55)',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      Tujuan
+                    </th>
+                    <th
+                      className="text-left py-3.5 px-5 text-xs font-semibold"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'rgba(255,255,255,0.55)',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      Operator
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedData.map((t, idx) => (
+                    <tr
+                      key={t.id_transaksi}
+                      className="group transition-colors duration-200"
+                      style={{
+                        borderBottom: idx < paginatedData.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                        background: 'transparent',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
+                        {formatTanggal(t.tanggal_transaksi)}
+                      </td>
+                      <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.72)', fontSize: '13px', fontWeight: 500 }}>
+                        {t.produk?.nama_produk}
+                      </td>
+                      <td className="py-3.5 px-5 text-right" style={{ fontSize: '13px' }}>
+                        <span
+                          style={{
+                            color: '#F87171',
+                            fontWeight: 600,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: '12px',
+                            padding: '3px 10px',
+                            borderRadius: '8px',
+                            background: 'rgba(248,113,113,0.08)',
+                            border: '1px solid rgba(248,113,113,0.12)',
+                          }}
+                        >
+                          -{t.jumlah}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
+                        {t.tujuan_keluar || '—'}
+                      </td>
+                      <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
+                        {t.pengguna?.nama}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Pagination Bar ── */}
+          <div
+            className="flex items-center justify-between gap-4 flex-wrap"
+              style={{
+                padding: '14px 20px',
+                marginTop: '12px',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.025)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              {/* Info text */}
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Sans', sans-serif" }}>
+                Menampilkan {((currentPage - 1) * ROWS_PER_PAGE) + 1}–{Math.min(currentPage * ROWS_PER_PAGE, transaksiList.length)} dari {transaksiList.length} transaksi
+              </span>
+
+              {/* Page buttons */}
+              <div className="flex items-center gap-1.5">
+                {/* Previous */}
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center justify-center transition-all duration-200"
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '10px',
+                    background: currentPage === 1 ? 'transparent' : 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: currentPage === 1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => { if (currentPage !== 1) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = currentPage === 1 ? 'transparent' : 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {/* Page Numbers */}
+                {getPageNumbers().map((page, index) =>
+                  page === '...' ? (
+                    <span key={`dots-${index}`} className="flex items-center justify-center" style={{ width: '34px', color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>...</span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => goToPage(page)}
+                      className="flex items-center justify-center transition-all duration-200"
+                      style={{
+                        width: '34px',
+                        height: '34px',
+                        borderRadius: '10px',
+                        fontFamily: "'Sora', sans-serif",
+                        fontSize: '13px',
+                        fontWeight: page === currentPage ? 600 : 400,
+                        background: page === currentPage ? '#E1FF01' : 'transparent',
+                        color: page === currentPage ? '#18181B' : 'rgba(255,255,255,0.6)',
+                        border: page === currentPage ? 'none' : '1px solid transparent',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (page !== currentPage) {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (page !== currentPage) {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.borderColor = 'transparent';
+                        }
+                      }}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+
+                {/* Next */}
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center justify-center transition-all duration-200"
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '10px',
+                    background: currentPage === totalPages ? 'transparent' : 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: currentPage === totalPages ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => { if (currentPage !== totalPages) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = currentPage === totalPages ? 'transparent' : 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
         </div>
       )}
     </div>
