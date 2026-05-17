@@ -1,17 +1,17 @@
 const config = require('./env');
 
-const VERCEL_PRODUCTION_URL = 'https://kelompok2-manajemen-stok-kedaluwarsa-4d4iynfte.vercel.app';
-
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
       config.frontendUrl,
-      VERCEL_PRODUCTION_URL,
+      'http://localhost:3000',
     ].filter(Boolean);
 
-    if (allowedOrigins.indexOf(origin) !== -1 || config.nodeEnv === 'development') {
+    const isVercelDeploy = /^https:\/\/kelompok2-manajemen-stok-kedaluwarsa.*\.vercel\.app$/.test(origin);
+
+    if (allowedOrigins.includes(origin) || isVercelDeploy || config.nodeEnv === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
