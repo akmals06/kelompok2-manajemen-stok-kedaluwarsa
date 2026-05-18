@@ -11,6 +11,7 @@ const eoqRoutes = require('./eoq.routes');
 const importRoutes = require('./import.routes');
 const labelRoutes = require('./label.routes');
 const notifikasiRoutes = require('./notifikasi.routes');
+const penggunaRoutes = require('./pengguna.routes');
 
 router.get('/health', (req, res) => {
   res.status(200).json({
@@ -31,5 +32,6 @@ router.use('/eoq', eoqRoutes);
 router.use('/import', importRoutes);
 router.use('/label', labelRoutes);
 router.use('/notifikasi', notifikasiRoutes);
+router.use('/pengguna', penggunaRoutes);
 
 module.exports = router;
