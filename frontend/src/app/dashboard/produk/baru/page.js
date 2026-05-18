@@ -20,6 +20,9 @@ export default function TambahProdukPage() {
     stok_minimum: 10,
   });
 
+  // Opsi satuan siap pakai untuk dropdown
+  const opsiSatuan = ['pcs', 'kg', 'liter', 'pack', 'dus', 'botol', 'karung'];
+
   useEffect(() => {
     const muatKategori = async () => {
       try {
@@ -82,43 +85,72 @@ export default function TambahProdukPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Input Nama Produk */}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">Nama Produk</label>
             <input
               value={form.nama_produk}
               onChange={(e) => setForm({ ...form, nama_produk: e.target.value })}
-              className="input-dark"
+              className="input-dark w-full"
               placeholder="Contoh: Beras Premium 5kg"
               disabled={submitting}
             />
           </div>
 
+          {/* Dropdown Kategori */}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">Kategori</label>
-            <select
-              value={form.id_kategori}
-              onChange={(e) => setForm({ ...form, id_kategori: e.target.value })}
-              className="input-dark"
-              disabled={submitting}
-            >
-              <option value="">Pilih kategori</option>
-              {kategoriList.map((k) => (
-                <option key={k.id_kategori} value={k.id_kategori}>{k.nama_kategori}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={form.id_kategori}
+                onChange={(e) => setForm({ ...form, id_kategori: e.target.value })}
+                className="input-dark w-full appearance-none pr-10 cursor-pointer text-white"
+                disabled={submitting}
+              >
+                <option value="" className="bg-zinc-900 text-zinc-400">Pilih kategori</option>
+                {kategoriList.map((k) => (
+                  <option key={k.id_kategori} value={k.id_kategori} className="bg-zinc-900 text-white">
+                    {k.nama_kategori}
+                  </option>
+                ))}
+              </select>
+              {/* Panah Indikator khusus Dark Mode */}
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
 
+          {/* Grid Satuan dan Stok Minimum */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Dropdown Satuan */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Satuan</label>
-              <input
-                value={form.satuan}
-                onChange={(e) => setForm({ ...form, satuan: e.target.value })}
-                className="input-dark"
-                placeholder="pcs, kg, liter"
-                disabled={submitting}
-              />
+              <div className="relative">
+                <select
+                  value={form.satuan}
+                  onChange={(e) => setForm({ ...form, satuan: e.target.value })}
+                  className="input-dark w-full appearance-none pr-10 cursor-pointer text-white"
+                  disabled={submitting}
+                >
+                  {opsiSatuan.map((sat) => (
+                    <option key={sat} value={sat} className="bg-zinc-900 text-white">
+                      {sat}
+                    </option>
+                  ))}
+                </select>
+                {/* Panah Indikator khusus Dark Mode */}
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
+
+            {/* Input Stok Minimum */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Stok Minimum</label>
               <input
@@ -126,12 +158,13 @@ export default function TambahProdukPage() {
                 min="0"
                 value={form.stok_minimum}
                 onChange={(e) => setForm({ ...form, stok_minimum: e.target.value })}
-                className="input-dark"
+                className="input-dark w-full"
                 disabled={submitting}
               />
             </div>
           </div>
 
+          {/* Tombol Simpan & Batal */}
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={submitting} className="btn-primary">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

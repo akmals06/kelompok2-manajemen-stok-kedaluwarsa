@@ -77,63 +77,119 @@ export default function StokKeluarPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Header Utama */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-white">Stok Keluar</h1>
           <p className="text-xs sm:text-sm text-zinc-500 mt-1">Catat pengeluaran barang dari gudang</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary self-start"><Plus className="w-4 h-4" /> Catat Keluar</button>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)} className="btn-primary self-start">
+            <Plus className="w-4 h-4" /> Catat Keluar
+          </button>
+        )}
       </div>
 
       {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
+      {/* Form Card Input */}
       {showForm && (
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="glass-card p-6 border-zinc-800 shadow-xl">
+          <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold text-white">Form Stok Keluar</h2>
-            <button onClick={() => setShowForm(false)} className="text-zinc-400 hover:text-white"><X className="w-5 h-5" /></button>
+            <button onClick={() => setShowForm(false)} className="text-zinc-400 hover:text-white transition-colors">
+              <X className="w-5 h-5" />
+            </button>
           </div>
+          
           {formError && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{formError}</div>}
+          
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Dropdown Produk */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Produk</label>
-              <select value={form.id_produk} onChange={(e) => setForm({ ...form, id_produk: e.target.value, id_batch: '' })} className="input-dark" disabled={submitting}>
-                <option value="">Pilih produk</option>
-                {produkList.map((p) => <option key={p.id_produk} value={p.id_produk}>{p.nama_produk} (stok: {p.stok_tersedia})</option>)}
-              </select>
+              <div className="relative">
+                <select 
+                  value={form.id_produk} 
+                  onChange={(e) => setForm({ ...form, id_produk: e.target.value, id_batch: '' })} 
+                  className="input-dark w-full appearance-none pr-10 cursor-pointer text-white" 
+                  disabled={submitting}
+                >
+                  <option value="" className="bg-zinc-900 text-zinc-400">Pilih produk</option>
+                  {produkList.map((p) => (
+                    <option key={p.id_produk} value={p.id_produk} className="bg-zinc-900 text-white">
+                      {p.nama_produk} (stok: {p.stok_tersedia})
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
+
+            {/* Dropdown Batch */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Batch</label>
-              <select value={form.id_batch} onChange={(e) => setForm({ ...form, id_batch: e.target.value })} className="input-dark" disabled={submitting || !form.id_produk}>
-                <option value="">Pilih batch</option>
-                {batchFiltered.map((b) => <option key={b.id_batch} value={b.id_batch}>{b.kode_batch} (sisa: {b.jumlah_batch})</option>)}
-              </select>
+              <div className="relative">
+                <select 
+                  value={form.id_batch} 
+                  onChange={(e) => setForm({ ...form, id_batch: e.target.value })} 
+                  className="input-dark w-full appearance-none pr-10 cursor-pointer text-white disabled:opacity-50 disabled:cursor-not-allowed" 
+                  disabled={submitting || !form.id_produk}
+                >
+                  <option value="" className="bg-zinc-900 text-zinc-400">Pilih batch</option>
+                  {batchFiltered.map((b) => (
+                    <option key={b.id_batch} value={b.id_batch} className="bg-zinc-900 text-white">
+                      {b.kode_batch} (sisa: {b.jumlah_batch})
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
+
+            {/* Input Jumlah */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Jumlah</label>
-              <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark" disabled={submitting} />
+              <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark w-full" disabled={submitting} />
             </div>
+
+            {/* Input Tujuan Keluar */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Tujuan Keluar</label>
-              <input value={form.tujuan_keluar} onChange={(e) => setForm({ ...form, tujuan_keluar: e.target.value })} className="input-dark" placeholder="Contoh: Penjualan" disabled={submitting} />
+              <input value={form.tujuan_keluar} onChange={(e) => setForm({ ...form, tujuan_keluar: e.target.value })} className="input-dark w-full" placeholder="Contoh: Penjualan" disabled={submitting} />
             </div>
+
+            {/* Input Keterangan */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Keterangan</label>
-              <input value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} className="input-dark" placeholder="Opsional" disabled={submitting} />
+              <input value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} className="input-dark w-full" placeholder="Opsional (Contoh: Retur barang rusak)" disabled={submitting} />
             </div>
-            <div className="md:col-span-2 flex gap-3">
-              <button type="submit" disabled={submitting} className="btn-primary">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Simpan</button>
+
+            {/* Tombol Aksi */}
+            <div className="md:col-span-2 flex gap-3 pt-2 border-t border-white/5 mt-2">
+              <button type="submit" disabled={submitting} className="btn-primary">
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Simpan Transaksi
+              </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">Batal</button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Tabel Riwayat Transaksi */}
       {transaksiList.length === 0 ? (
         <div className="glass-card p-12 text-center">
           <ArrowUpFromLine className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-zinc-400">Belum ada stok keluar</h3>
+          <h3 className="text-lg font-semibold text-zinc-400">Belum ada data stok keluar</h3>
         </div>
       ) : (
         <div className="glass-card overflow-x-auto">
@@ -149,10 +205,10 @@ export default function StokKeluarPage() {
             </thead>
             <tbody>
               {transaksiList.map((t) => (
-                <tr key={t.id_transaksi} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr key={t.id_transaksi} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td className="py-3 px-4 text-zinc-400">{formatTanggal(t.tanggal_transaksi)}</td>
                   <td className="py-3 px-4 text-white font-medium">{t.produk?.nama_produk}</td>
-                  <td className="py-3 px-4 text-right text-red-400 font-medium">-{t.jumlah}</td>
+                  <td className="py-3 px-4 text-right text-red-400 font-semibold">-{t.jumlah}</td>
                   <td className="py-3 px-4 text-zinc-400">{t.tujuan_keluar || '-'}</td>
                   <td className="py-3 px-4 text-zinc-400">{t.pengguna?.nama}</td>
                 </tr>
