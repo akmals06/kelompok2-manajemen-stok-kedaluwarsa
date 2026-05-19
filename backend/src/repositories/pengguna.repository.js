@@ -14,6 +14,8 @@ const ambilPenggunaById = async (id) => {
       nama: true,
       email: true,
       peran: true,
+      foto_profil: true,
+      no_telepon: true,
       status_aktif: true,
       created_at: true,
       updated_at: true,
