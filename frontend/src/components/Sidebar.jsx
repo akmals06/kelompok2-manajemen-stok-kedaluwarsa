@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FolderOpen, Package, ArrowDownToLine, ArrowUpFromLine,
   History, CalendarClock, FileBarChart2, Calculator, FileSpreadsheet,
-  Tags, Bell, LogOut, Menu, X, ChevronLeft, Search, Zap
+  Tags, Bell, LogOut, Menu, X, ChevronLeft, Zap, User
 } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
-import ProfileDropdown from '@/components/ProfileDropdown';
 
 const MENU_GROUPS = [
   {
@@ -75,8 +74,10 @@ function ModuleIcon({ icon: Icon, href, tooltip, isActive, isAction, onClick }) 
 
 export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onToggleMobile }) {
   const pathname = usePathname();
+  const dropdownRef = useRef(null);
   const [belumDibaca, setBelumDibaca] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const ambilJumlah = async () => {
@@ -90,15 +91,31 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
     return () => clearInterval(interval);
   }, []);
 
+  // Menutup dropdown jika klik di luar area profil
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (mobileOpen) onToggleMobile?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const filteredGroups = MENU_GROUPS.map(group => ({
     ...group,
     items: group.items.filter(item => !item.role || item.role === user?.peran)
   })).filter(group => group.items.length > 0);
+
+  // Mengambil inisial huruf nama (Contoh: Abah Andi -> AA)
+  const dapatkanInisial = (nama) => {
+    if (!nama) return 'U';
+    return nama.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  };
 
   // For the desktop sidebar
   const desktopSidebar = (
@@ -121,7 +138,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
           </div>
 
           {/* Bottom Area */}
-          <div className="w-full flex flex-col items-center gap-2 mt-auto">
+          <div className="w-full flex flex-col items-center gap-2 mt-auto relative" ref={dropdownRef}>
             {/* Notification */}
             <div className="relative w-full flex justify-center cursor-pointer group mb-1">
               <Link href="/dashboard/notifikasi" className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${pathname === '/dashboard/notifikasi' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}>
@@ -140,10 +157,23 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
             {/* Logout */}
             <ModuleIcon icon={LogOut} isAction onClick={onLogout} tooltip="Keluar" />
 
-            {/* Avatar */}
-            <div className="mt-1">
-              <ProfileDropdown user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
-            </div>
+            {/* Custom Avatar Clean */}
+            <button 
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="mt-1 w-10 h-10 rounded-xl bg-gradient-to-tr from-zinc-800 to-zinc-700 hover:from-zinc-700 hover:to-zinc-600 border border-white/[0.08] flex items-center justify-center text-sm font-bold text-white transition-all shadow-md focus:outline-none"
+            >
+              {dapatkanInisial(user?.nama)}
+            </button>
+
+            {/* Floating Dropdown Menu */}
+            {showDropdown && (
+              <div className="absolute bottom-0 left-16 w-56 rounded-xl bg-[#18181b] border border-white/[0.08] shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2 z-[70] animate-in fade-in slide-in-from-left-2 duration-150">
+                <div className="px-4 py-2.5 border-b border-white/[0.05]">
+                  <p className="text-xs font-bold text-white truncate">{user?.nama || 'Pengguna'}</p>
+                  <p className="text-[10px] text-zinc-400 font-medium truncate mt-0.5">{user?.peran || 'Pemilik Usaha'}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -178,7 +208,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
             ))}
           </div>
 
-          {/* Quick Actions (Replaced System Progress Bar) */}
+          {/* Quick Actions */}
           <div className="p-4 shrink-0 border-t border-white/[0.03] bg-[#0f0f11]">
             <div className="flex items-center gap-2 mb-3">
               <Zap className="w-4 h-4 text-[#E1FF01]" />
@@ -208,7 +238,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
     <>
       {desktopSidebar}
 
-      {/* Mobile overlay (keep simple) */}
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onToggleMobile} />
@@ -217,7 +247,9 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E1FF01]/20 to-[#E1FF01]/5 flex items-center justify-center text-[#E1FF01] mr-3">
                 <Package className="w-4 h-4" />
               </div>
-              <span className="text-sm font-bold text-white tracking-wide">Abah Andi</span>
+              <span className="text-sm font-bold text-white tracking-wide">
+                {user?.nama || 'Pengguna'}
+              </span>
               <button onClick={onToggleMobile} className="ml-auto p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -241,6 +273,13 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
               ))}
             </div>
             <div className="p-4 border-t border-white/[0.05]">
+              {/* Tambahkan navigasi profil untuk tampilan mobile di sini jika diperlukan */}
+              <Link 
+                href="/dashboard/pengaturan" 
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 mb-2 rounded-xl bg-white/[0.04] text-zinc-300 hover:text-white transition-all text-sm font-semibold"
+              >
+                <User className="w-4 h-4" /> Profil Saya
+              </Link>
               <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold">
                 <LogOut className="w-4 h-4" /> Keluar
               </button>
