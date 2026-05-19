@@ -35,6 +35,8 @@ model pengguna {
   password_hash String
   peran         Role
   status_aktif  Boolean  @default(true)
+  foto_profil  String?
+  no_telepon   String?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 

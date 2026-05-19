@@ -9,6 +9,7 @@ import {
   Tags, Bell, LogOut, Menu, X, ChevronLeft, Search, Zap
 } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
+import ProfileDropdown from '@/components/ProfileDropdown';
 
 const MENU_GROUPS = [
   {
@@ -72,7 +73,7 @@ function ModuleIcon({ icon: Icon, href, tooltip, isActive, isAction, onClick }) 
   );
 }
 
-export default function Sidebar({ user, onLogout, mobileOpen, onToggleMobile }) {
+export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onToggleMobile }) {
   const pathname = usePathname();
   const [belumDibaca, setBelumDibaca] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -140,15 +141,8 @@ export default function Sidebar({ user, onLogout, mobileOpen, onToggleMobile }) 
             <ModuleIcon icon={LogOut} isAction onClick={onLogout} tooltip="Keluar" />
 
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden relative group mt-1">
-              {user?.avatar ? (
-                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-xs font-bold text-zinc-300">{user?.nama?.charAt(0) || 'U'}</span>
-              )}
-              <div className="absolute left-14 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-[#E1FF01] text-black text-xs font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60] whitespace-nowrap shadow-[0_4px_15px_rgba(225,255,1,0.2)]">
-                {user?.nama || 'Profil'}
-              </div>
+            <div className="mt-1">
+              <ProfileDropdown user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
             </div>
           </div>
         </div>

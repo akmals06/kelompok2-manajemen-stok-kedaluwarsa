@@ -42,6 +42,10 @@ export function AuthProvider({ children }) {
     throw new Error(res.message || 'Login gagal');
   };
 
+  const updateUser = (dataBaru) => {
+  setUser(prev => ({ ...prev, ...dataBaru }));
+  };
+
   const logout = async () => {
     try {
       await authService.logout();
@@ -54,7 +58,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
