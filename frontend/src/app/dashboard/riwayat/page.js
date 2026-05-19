@@ -19,6 +19,8 @@ export default function RiwayatPage() {
   useEffect(() => {
     const muatData = async () => {
       try {
+        setError(''); // Bersihkan error sebelum memulai fetch baru
+        setLoading(true);
         const res = await riwayatService.ambilSemua();
         if (res.success) {
           setRiwayatList(res.data || []);
@@ -44,8 +46,11 @@ export default function RiwayatPage() {
 
   // Memproses filter data menggunakan useMemo untuk optimasi performa
   const filteredRiwayat = useMemo(() => {
+    // Validasi tambahan: Jika tanggal mulai lebih besar dari tanggal selesai, balikkan atau abaikan filter rentang
+    const isValidDateRange = startDate && endDate ? startDate <= endDate : true;
+
     return riwayatList.filter((item) => {
-      // 1. Filter Pencarian Nama Barang
+      // 1. Filter Pencarian Nama Barang (Aman dari null/undefined)
       const namaBarang = (item.transaksi?.produk?.nama_produk || '').toLowerCase();
       const cocokSearch = namaBarang.includes(searchQuery.toLowerCase());
 
@@ -54,16 +59,20 @@ export default function RiwayatPage() {
 
       // 3. Filter Rentang Tanggal
       let cocokTanggal = true;
-      if (item.waktu_catat) {
-        // Ambil bagian tanggal saja (YYYY-MM-DD) dari string ISO atau timestamp
-        const tanggalItem = item.waktu_catat.substring(0, 10);
-        
+      
+      // Ambil bagian tanggal saja secara aman menggunakan optional chaining
+      const tanggalItem = item.waktu_catat?.substring(0, 10);
+      
+      if (tanggalItem && isValidDateRange) {
         if (startDate && tanggalItem < startDate) {
           cocokTanggal = false;
         }
         if (endDate && tanggalItem > endDate) {
           cocokTanggal = false;
         }
+      } else if ((startDate || endDate) && !tanggalItem) {
+        // Jika user memfilter tanggal tapi data tidak memiliki waktu_catat, sembunyikan data
+        cocokTanggal = false;
       }
 
       return cocokSearch && cocokJenis && cocokTanggal;
@@ -73,7 +82,10 @@ export default function RiwayatPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+        <div className="text-center space-y-2">
+          <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto" />
+          <p className="text-xs text-zinc-500">Memuat data riwayat...</p>
+        </div>
       </div>
     );
   }
@@ -88,7 +100,7 @@ export default function RiwayatPage() {
 
       {/* Alert Error */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-in fade-in duration-200">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -149,10 +161,15 @@ export default function RiwayatPage() {
 
         {/* Tombol Reset Filter (Hanya muncul jika ada filter yang aktif) */}
         {(searchQuery || filterJenis !== 'SEMUA' || startDate || endDate) && (
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <div className="text-xs text-zinc-500">
+              {startDate && endDate && startDate > endDate && (
+                <span className="text-amber-400/80">⚠️ Rentang tanggal terbalik (Mulai {'>'} Selesai).</span>
+              )}
+            </div>
             <button
               onClick={resetFilter}
-              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors ml-auto"
             >
               <X className="w-3.5 h-3.5" />
               Bersihkan Filter
@@ -191,14 +208,16 @@ export default function RiwayatPage() {
                   return (
                     <tr key={r.id_riwayat} className="hover:bg-white/[0.02] transition-colors">
                       <td className="py-3.5 px-4 text-zinc-400 whitespace-nowrap">
-                        {formatTanggal(r.waktu_catat)}
+                        {r.waktu_catat ? formatTanggal(r.waktu_catat) : '-'}
                       </td>
                       <td className="py-3.5 px-4 text-white font-medium">
                         {r.transaksi?.produk?.nama_produk || 'Barang Tidak Diketahui'}
                       </td>
                       <td className="py-3.5 px-4">
                         <span className={`text-xs font-bold px-2.5 py-1 rounded-md inline-block ${
-                          isPenambahan ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15' : 'bg-red-500/10 text-red-400 border border-red-500/15'
+                          isPenambahan 
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15' 
+                            : 'bg-red-500/10 text-red-400 border border-red-500/15'
                         }`}>
                           {isPenambahan ? 'Masuk' : 'Keluar'}
                         </span>

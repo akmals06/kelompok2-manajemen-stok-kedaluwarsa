@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FolderOpen, Package, ArrowDownToLine, ArrowUpFromLine,
   History, CalendarClock, FileBarChart2, Calculator, FileSpreadsheet,
-  Tags, Bell, LogOut, Menu, X, ChevronLeft, Zap, User
+  Tags, Bell, LogOut, Menu, X, ChevronLeft, Zap, User, Settings
 } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
 
@@ -47,7 +47,7 @@ const MENU_GROUPS = [
 
 function ModuleIcon({ icon: Icon, href, tooltip, isActive, isAction, onClick }) {
   const content = (
-    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${isActive ? 'bg-white/10 text-white shadow-inner' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}>
+    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${isActive ? 'bg-[#E1FF01]/10 text-[#E1FF01] font-semibold border border-[#E1FF01]/20' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}>
       <Icon className="w-5 h-5" />
     </div>
   );
@@ -55,9 +55,9 @@ function ModuleIcon({ icon: Icon, href, tooltip, isActive, isAction, onClick }) 
   return (
     <div className="relative group flex justify-center w-full mb-1">
       {isAction ? (
-        <div onClick={onClick} className="w-full flex justify-center">
+        <button onClick={onClick} className="w-full flex justify-center focus:outline-none">
           {content}
-        </div>
+        </button>
       ) : (
         <Link href={href} className="w-full flex justify-center">
           {content}
@@ -111,30 +111,43 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
     items: group.items.filter(item => !item.role || item.role === user?.peran)
   })).filter(group => group.items.length > 0);
 
-  // Mengambil inisial huruf nama (Contoh: Abah Andi -> AA)
   const dapatkanInisial = (nama) => {
     if (!nama) return 'U';
     return nama.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   };
 
-  // For the desktop sidebar
+  // Logika pembuka panel otomatis saat ikon kiri di-klik dalam posisi tertutup
+  const handleModuleClick = (href) => {
+    if (isCollapsed) {
+      setIsCollapsed(false);
+    }
+  };
+
   const desktopSidebar = (
     <div className={`hidden lg:flex flex-col h-full z-50 shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[72px]' : 'w-[304px]'}`}>
       <aside className="w-full h-full bg-[#131315] border-r border-white/[0.08] flex flex-row relative">
 
         {/* === LEFT PANE (ICONS) === */}
-        <div className="w-[72px] shrink-0 h-full bg-[#0a0a0b] flex flex-col items-center py-4 border-r border-white/[0.05] relative z-10">
+        <div className="w-[72px] shrink-0 h-full bg-[#0a0a0b] flex flex-col items-center py-4 border-r border-r-white/[0.05] relative z-20">
           {/* Expand Toggle Logo */}
-          <button onClick={() => setIsCollapsed(!isCollapsed)} className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E1FF01]/20 to-[#E1FF01]/5 flex items-center justify-center text-[#E1FF01] mb-6 hover:bg-[#E1FF01]/20 transition-all shadow-[0_0_15px_rgba(225,255,1,0.1)] group">
+          <button onClick={() => setIsCollapsed(!isCollapsed)} className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E1FF01]/20 to-[#E1FF01]/5 flex items-center justify-center text-[#E1FF01] mb-6 hover:bg-[#E1FF01]/20 transition-all shadow-[0_0_15px_rgba(225,255,1,0.1)] group focus:outline-none">
             <Menu className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </button>
 
           {/* Module Links */}
           <div className="flex-1 w-full flex flex-col items-center gap-1.5">
-            <ModuleIcon icon={LayoutDashboard} href="/dashboard" tooltip="Dashboard" isActive={pathname === '/dashboard'} />
-            <ModuleIcon icon={Package} href="/dashboard/produk" tooltip="Inventaris" isActive={pathname.startsWith('/dashboard/produk') || pathname.startsWith('/dashboard/kategori') || pathname.startsWith('/dashboard/batch')} />
-            <ModuleIcon icon={History} href="/dashboard/riwayat" tooltip="Transaksi" isActive={pathname.startsWith('/dashboard/stok') || pathname.startsWith('/dashboard/riwayat')} />
-            <ModuleIcon icon={FileBarChart2} href="/dashboard/laporan" tooltip="Analisa" isActive={pathname.startsWith('/dashboard/laporan') || pathname.startsWith('/dashboard/eoq') || pathname.startsWith('/dashboard/import')} />
+            <div className="w-full" onClick={() => handleModuleClick('/dashboard')}>
+              <ModuleIcon icon={LayoutDashboard} href="/dashboard" tooltip="Dashboard" isActive={pathname === '/dashboard'} />
+            </div>
+            <div className="w-full" onClick={() => handleModuleClick('/dashboard/produk')}>
+              <ModuleIcon icon={Package} href="/dashboard/produk" tooltip="Inventaris" isActive={pathname.startsWith('/dashboard/produk') || pathname.startsWith('/dashboard/kategori') || pathname.startsWith('/dashboard/batch') || pathname.startsWith('/dashboard/label')} />
+            </div>
+            <div className="w-full" onClick={() => handleModuleClick('/dashboard/riwayat')}>
+              <ModuleIcon icon={History} href="/dashboard/riwayat" tooltip="Transaksi" isActive={pathname.startsWith('/dashboard/stok') || pathname.startsWith('/dashboard/riwayat')} />
+            </div>
+            <div className="w-full" onClick={() => handleModuleClick('/dashboard/laporan')}>
+              <ModuleIcon icon={FileBarChart2} href="/dashboard/laporan" tooltip="Analisa" isActive={pathname.startsWith('/dashboard/laporan') || pathname.startsWith('/dashboard/eoq') || pathname.startsWith('/dashboard/import')} />
+            </div>
           </div>
 
           {/* Bottom Area */}
@@ -154,9 +167,6 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
               </div>
             </div>
 
-            {/* Logout */}
-            <ModuleIcon icon={LogOut} isAction onClick={onLogout} tooltip="Keluar" />
-
             {/* Custom Avatar Clean */}
             <button 
               onClick={() => setShowDropdown(!showDropdown)}
@@ -165,12 +175,22 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
               {dapatkanInisial(user?.nama)}
             </button>
 
-            {/* Floating Dropdown Menu */}
+            {/* Floating Dropdown Menu (Aman dari kolaps karena shadow & stacking context yang tepat) */}
             {showDropdown && (
-              <div className="absolute bottom-0 left-16 w-56 rounded-xl bg-[#18181b] border border-white/[0.08] shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2 z-[70] animate-in fade-in slide-in-from-left-2 duration-150">
+              <div className="absolute bottom-12 left-2 w-56 rounded-xl bg-[#18181b] border border-white/[0.08] shadow-[0_10px_30px_rgba(0,0,0,0.6)] py-1.5 z-[70] animate-in fade-in slide-in-from-bottom-2 duration-150">
                 <div className="px-4 py-2.5 border-b border-white/[0.05]">
                   <p className="text-xs font-bold text-white truncate">{user?.nama || 'Pengguna'}</p>
                   <p className="text-[10px] text-zinc-400 font-medium truncate mt-0.5">{user?.peran || 'Pemilik Usaha'}</p>
+                </div>
+                <div className="p-1 space-y-0.5">
+                  <Link href="/dashboard/pengaturan" onClick={() => setShowDropdown(false)} className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    <Settings className="w-3.5 h-3.5 text-zinc-500" />
+                    Pengaturan Profil
+                  </Link>
+                  <button onClick={() => { setShowDropdown(false); onLogout(); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-left focus:outline-none">
+                    <LogOut className="w-3.5 h-3.5" />
+                    Keluar Aplikasi
+                  </button>
                 </div>
               </div>
             )}
@@ -178,11 +198,11 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
         </div>
 
         {/* === RIGHT PANE (TEXT MENUS) === */}
-        <div className={`flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out bg-[#131315] relative ${isCollapsed ? 'w-0 opacity-0' : 'w-[232px] opacity-100'}`}>
+        <div className={`flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out bg-[#131315] relative z-10 ${isCollapsed ? 'w-0 opacity-0' : 'w-[232px] opacity-100'}`}>
 
           {/* Header */}
           <div className="h-[72px] flex items-center px-4 shrink-0 border-b border-white/[0.03]">
-            <button onClick={() => setIsCollapsed(true)} className="p-1.5 -ml-1.5 mr-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-colors">
+            <button onClick={() => setIsCollapsed(true)} className="p-1.5 -ml-1.5 mr-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-colors focus:outline-none">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="text-sm font-bold text-white tracking-wide">Menu Utama</span>
@@ -247,10 +267,15 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E1FF01]/20 to-[#E1FF01]/5 flex items-center justify-center text-[#E1FF01] mr-3">
                 <Package className="w-4 h-4" />
               </div>
-              <span className="text-sm font-bold text-white tracking-wide">
-                {user?.nama || 'Pengguna'}
-              </span>
-              <button onClick={onToggleMobile} className="ml-auto p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">
+              <div>
+                <span className="text-sm font-bold text-white tracking-wide block truncate max-w-[160px]">
+                  {user?.nama || 'Pengguna'}
+                </span>
+                <span className="text-[10px] text-zinc-400 block -mt-0.5 uppercase tracking-wider">
+                  {user?.peran || 'Staff'}
+                </span>
+              </div>
+              <button onClick={onToggleMobile} className="ml-auto p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors focus:outline-none">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -272,15 +297,14 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
                 </div>
               ))}
             </div>
-            <div className="p-4 border-t border-white/[0.05]">
-              {/* Tambahkan navigasi profil untuk tampilan mobile di sini jika diperlukan */}
+            <div className="p-4 border-t border-white/[0.05] space-y-2">
               <Link 
                 href="/dashboard/pengaturan" 
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 mb-2 rounded-xl bg-white/[0.04] text-zinc-300 hover:text-white transition-all text-sm font-semibold"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.04] text-zinc-300 hover:text-white transition-all text-sm font-semibold"
               >
                 <User className="w-4 h-4" /> Profil Saya
               </Link>
-              <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold">
+              <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold focus:outline-none">
                 <LogOut className="w-4 h-4" /> Keluar
               </button>
             </div>
