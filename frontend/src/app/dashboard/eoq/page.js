@@ -59,53 +59,112 @@ export default function EoqPage() {
         <h1 className="text-xl sm:text-2xl font-bold text-white">Analisis EOQ</h1>
         <p className="text-xs sm:text-sm text-zinc-500 mt-1">Hitung Economic Order Quantity untuk optimasi pemesanan</p>
       </div>
+      
       {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
-      <div className="glass-card p-6">
+      {/* Card Form Perhitungan */}
+      <div className="glass-card p-6 border-zinc-800 shadow-xl">
         <h2 className="text-lg font-semibold text-white mb-4">Hitung EOQ</h2>
         {formError && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{formError}</div>}
+        
         <form onSubmit={handleHitung} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Produk</label>
-            <select value={form.id_produk} onChange={(e) => setForm({ ...form, id_produk: e.target.value })} className="input-dark" disabled={submitting}>
-              <option value="">Pilih produk</option>
-              {produkList.map((p) => <option key={p.id_produk} value={p.id_produk}>{p.nama_produk}</option>)}
-            </select></div>
-          <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Kebutuhan Tahunan</label><input type="number" step="any" value={form.kebutuhan_tahunan} onChange={(e) => setForm({ ...form, kebutuhan_tahunan: e.target.value })} className="input-dark" disabled={submitting} /></div>
-          <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Biaya Pesan (Rp)</label><input type="number" step="any" value={form.biaya_pesan} onChange={(e) => setForm({ ...form, biaya_pesan: e.target.value })} className="input-dark" disabled={submitting} /></div>
-          <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Biaya Simpan (Rp)</label><input type="number" step="any" value={form.biaya_simpan} onChange={(e) => setForm({ ...form, biaya_simpan: e.target.value })} className="input-dark" disabled={submitting} /></div>
-          <div className="md:col-span-2"><button type="submit" disabled={submitting} className="btn-primary">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />} Hitung EOQ</button></div>
+          {/* Dropdown Pilihan Produk */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Produk</label>
+            <div className="relative">
+              <select 
+                value={form.id_produk} 
+                onChange={(e) => setForm({ ...form, id_produk: e.target.value })} 
+                className="input-dark w-full appearance-none pr-10 cursor-pointer text-white" 
+                disabled={submitting}
+              >
+                <option value="" className="bg-zinc-900 text-zinc-400">Pilih produk</option>
+                {produkList.map((p) => (
+                  <option key={p.id_produk} value={p.id_produk} className="bg-zinc-900 text-white">
+                    {p.nama_produk}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Kebutuhan Tahunan */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Kebutuhan Tahunan</label>
+            <input type="number" step="any" min="0" value={form.kebutuhan_tahunan} onChange={(e) => setForm({ ...form, kebutuhan_tahunan: e.target.value })} className="input-dark w-full" disabled={submitting} placeholder="Masukkan total kebutuhan" />
+          </div>
+
+          {/* Biaya Pesan */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Biaya Pesan (Rp)</label>
+            <input type="number" step="any" min="0" value={form.biaya_pesan} onChange={(e) => setForm({ ...form, biaya_pesan: e.target.value })} className="input-dark w-full" disabled={submitting} placeholder="Contoh: 50000" />
+          </div>
+
+          {/* Biaya Simpan */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Biaya Simpan (Rp)</label>
+            <input type="number" step="any" min="0" value={form.biaya_simpan} onChange={(e) => setForm({ ...form, biaya_simpan: e.target.value })} className="input-dark w-full" disabled={submitting} placeholder="Contoh: 2000" />
+          </div>
+
+          {/* Tombol Submit */}
+          <div className="md:col-span-2 pt-2">
+            <button type="submit" disabled={submitting} className="btn-primary flex items-center gap-2">
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />} 
+              Hitung EOQ
+            </button>
+          </div>
         </form>
       </div>
 
+      {/* Tampilan Hasil Analisis */}
       {hasil && (
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Hasil Analisis: {hasil.nama_produk}</h2>
+        <div className="glass-card p-6 border-blue-500/10 shadow-lg">
+          <h2 className="text-lg font-semibold text-white mb-4">Hasil Analisis: <span className="text-blue-400">{hasil.nama_produk}</span></h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="p-3 sm:p-4 rounded-xl bg-blue-500/5 text-center"><p className="text-zinc-400 text-xs mb-1">Nilai EOQ</p><p className="text-xl sm:text-2xl font-bold text-blue-400">{formatAngka(hasil.nilai_eoq)}</p></div>
-            <div className="p-3 sm:p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Frekuensi Pesan/Tahun</p><p className="text-xl sm:text-2xl font-bold text-white">{formatAngka(hasil.frekuensi_pemesanan)}</p></div>
-            <div className="p-3 sm:p-4 rounded-xl bg-white/5 text-center"><p className="text-zinc-400 text-xs mb-1">Biaya Pesan/Tahun</p><p className="text-xl sm:text-2xl font-bold text-white">Rp {formatAngka(hasil.biaya_pesan_tahunan)}</p></div>
+            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/10 text-center">
+              <p className="text-zinc-400 text-xs mb-1 uppercase tracking-wider font-medium">Nilai EOQ</p>
+              <p className="text-2xl font-bold text-blue-400">{formatAngka(hasil.nilai_eoq)}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+              <p className="text-zinc-400 text-xs mb-1 uppercase tracking-wider font-medium">Frekuensi Pesan / Tahun</p>
+              <p className="text-2xl font-bold text-white">{formatAngka(hasil.frekuensi_pemesanan)} x</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+              <p className="text-zinc-400 text-xs mb-1 uppercase tracking-wider font-medium">Biaya Pesan / Tahun</p>
+              <p className="text-2xl font-bold text-emerald-400">Rp {formatAngka(hasil.biaya_pesan_tahunan)}</p>
+            </div>
           </div>
         </div>
       )}
 
+      {/* Tabel Riwayat */}
       {riwayat.length > 0 && (
         <div className="glass-card overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">
-            <thead><tr className="border-b border-white/10 text-zinc-400">
-              <th className="text-left py-3 px-4 font-medium">Produk</th>
-              <th className="text-right py-3 px-4 font-medium">EOQ</th>
-              <th className="text-right py-3 px-4 font-medium">Frekuensi</th>
-              <th className="text-right py-3 px-4 font-medium">Biaya/Tahun</th>
-            </tr></thead>
-            <tbody>{riwayat.map((r) => (
-              <tr key={r.id_analisis} className="border-b border-white/5 hover:bg-white/[0.02]">
-                <td className="py-3 px-4 text-white">{r.produk?.nama_produk}</td>
-                <td className="py-3 px-4 text-right text-blue-400 font-medium">{formatAngka(r.nilai_eoq)}</td>
-                <td className="py-3 px-4 text-right text-zinc-400">{formatAngka(r.frekuensi_pemesanan)}</td>
-                <td className="py-3 px-4 text-right text-zinc-400">Rp {formatAngka(r.biaya_pesan_tahunan)}</td>
+            <thead>
+              <tr className="border-b border-white/10 text-zinc-400">
+                <th className="text-left py-3 px-4 font-medium">Produk</th>
+                <th className="text-right py-3 px-4 font-medium">EOQ</th>
+                <th className="text-right py-3 px-4 font-medium">Frekuensi</th>
+                <th className="text-right py-3 px-4 font-medium">Biaya / Tahun</th>
               </tr>
-            ))}</tbody>
+            </thead>
+            <tbody>
+              {riwayat.map((r) => (
+                <tr key={r.id_analisis} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3 px-4 text-white font-medium">{r.produk?.nama_produk}</td>
+                  <td className="py-3 px-4 text-right text-blue-400 font-semibold">{formatAngka(r.nilai_eoq)}</td>
+                  <td className="py-3 px-4 text-right text-zinc-300">{formatAngka(r.frekuensi_pemesanan)} x</td>
+                  <td className="py-3 px-4 text-right text-emerald-400 font-medium">Rp {formatAngka(r.biaya_pesan_tahunan)}</td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}
