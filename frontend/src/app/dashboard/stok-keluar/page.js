@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ArrowUpFromLine, Loader2, Plus, X } from 'lucide-react';
 import stokService from '@/services/stok.service';
 import produkService from '@/services/produk.service';
@@ -8,6 +9,7 @@ import batchService from '@/services/batch.service';
 import { formatTanggal } from '@/utils/format';
 
 export default function StokKeluarPage() {
+  const searchParams = useSearchParams();
   const [transaksiList, setTransaksiList] = useState([]);
   const [produkList, setProdukList] = useState([]);
   const [batchList, setBatchList] = useState([]);
@@ -20,6 +22,13 @@ export default function StokKeluarPage() {
   const [form, setForm] = useState({
     id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '',
   });
+
+  // Membaca trigger parameter '?action=new' dari Aksi Cepat Sidebar
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setShowForm(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const muatData = async () => {
@@ -45,12 +54,21 @@ export default function StokKeluarPage() {
     (b) => String(b.id_produk) === String(form.id_produk) && b.status_batch !== 'DIARSIPKAN' && b.jumlah_batch > 0
   );
 
+  // Menemukan data batch yang saat ini dipilih pengguna untuk divalidasi kapasitasnya
+  const batchTerpilih = batchFiltered.find((b) => String(b.id_batch) === String(form.id_batch));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-    if (!form.id_produk) return setFormError('Pilih produk');
-    if (!form.id_batch) return setFormError('Pilih batch');
-    if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah harus > 0');
+    
+    if (!form.id_produk) return setFormError('Pilih produk terlebih dahulu');
+    if (!form.id_batch) return setFormError('Pilih batch produksi terlebih dahulu');
+    if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah pengeluaran harus lebih dari 0');
+    
+    // VALIDASI BARU: Mencegah pengeluaran barang melebihi kuantitas sisa batch
+    if (batchTerpilih && parseInt(form.jumlah) > batchTerpilih.jumlah_batch) {
+      return setFormError(`Jumlah keluar (${form.jumlah}) melebihi sisa stok pada batch ini (${batchTerpilih.jumlah_batch})`);
+    }
 
     setSubmitting(true);
     try {
@@ -63,8 +81,15 @@ export default function StokKeluarPage() {
       setSukses('Stok keluar berhasil dicatat');
       setShowForm(false);
       setForm({ id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '' });
-      const res = await stokService.ambilTransaksiKeluar();
-      if (res.success) setTransaksiList(res.data || []);
+      
+      // Ambil ulang data transaksi terbaru & data batch terupdate
+      const [resTrx, resBatch] = await Promise.all([
+        stokService.ambilTransaksiKeluar(),
+        batchService.ambilSemua()
+      ]);
+      if (resTrx.success) setTransaksiList(resTrx.data || []);
+      if (resBatch.success) setBatchList(resBatch.data || []);
+      
       setTimeout(() => setSukses(''), 3000);
     } catch (err) {
       setFormError(err.response?.data?.message || 'Gagal mencatat stok keluar');
@@ -119,7 +144,7 @@ export default function StokKeluarPage() {
                   <option value="" className="bg-zinc-900 text-zinc-400">Pilih produk</option>
                   {produkList.map((p) => (
                     <option key={p.id_produk} value={p.id_produk} className="bg-zinc-900 text-white">
-                      {p.nama_produk} (stok: {p.stok_tersedia})
+                      {p.nama_produk} (total stok: {p.stok_tersedia})
                     </option>
                   ))}
                 </select>
@@ -144,7 +169,7 @@ export default function StokKeluarPage() {
                   <option value="" className="bg-zinc-900 text-zinc-400">Pilih batch</option>
                   {batchFiltered.map((b) => (
                     <option key={b.id_batch} value={b.id_batch} className="bg-zinc-900 text-white">
-                      {b.kode_batch} (sisa: {b.jumlah_batch})
+                      {b.kode_batch} (sisa batch: {b.jumlah_batch})
                     </option>
                   ))}
                 </select>
@@ -156,22 +181,38 @@ export default function StokKeluarPage() {
               </div>
             </div>
 
-            {/* Input Jumlah */}
+            {/* Input Jumlah dengan Informasi Maksimal */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Jumlah</label>
-              <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark w-full" disabled={submitting} />
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-sm font-medium text-zinc-300">Jumlah</label>
+                {batchTerpilih && (
+                  <span className="text-[11px] font-medium text-amber-400">
+                    Maks. {batchTerpilih.jumlah_batch} pcs
+                  </span>
+                )}
+              </div>
+              <input 
+                type="number" 
+                min="1" 
+                max={batchTerpilih ? batchTerpilih.jumlah_batch : undefined}
+                value={form.jumlah} 
+                onChange={(e) => setForm({ ...form, jumlah: e.target.value })} 
+                className="input-dark w-full" 
+                placeholder="0"
+                disabled={submitting || !form.id_batch} 
+              />
             </div>
 
             {/* Input Tujuan Keluar */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Tujuan Keluar</label>
-              <input value={form.tujuan_keluar} onChange={(e) => setForm({ ...form, tujuan_keluar: e.target.value })} className="input-dark w-full" placeholder="Contoh: Penjualan" disabled={submitting} />
+              <input value={form.tujuan_keluar} onChange={(e) => setForm({ ...form, tujuan_keluar: e.target.value })} className="input-dark w-full" placeholder="Contoh: Penjualan, Expired, Retur" disabled={submitting} />
             </div>
 
             {/* Input Keterangan */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Keterangan</label>
-              <input value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} className="input-dark w-full" placeholder="Opsional (Contoh: Retur barang rusak)" disabled={submitting} />
+              <input value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} className="input-dark w-full" placeholder="Opsional (Contoh: Retur barang rusak toko)" disabled={submitting} />
             </div>
 
             {/* Tombol Aksi */}

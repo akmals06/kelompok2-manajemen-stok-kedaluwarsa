@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ArrowDownToLine, Loader2, Plus, X } from 'lucide-react';
 import stokService from '@/services/stok.service';
 import produkService from '@/services/produk.service';
 import { formatTanggal } from '@/utils/format';
 
 export default function StokMasukPage() {
+  const searchParams = useSearchParams();
   const [transaksiList, setTransaksiList] = useState([]);
   const [produkList, setProdukList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +20,13 @@ export default function StokMasukPage() {
   const [form, setForm] = useState({
     id_produk: '', jumlah: '', kode_batch: '', tanggal_kedaluwarsa: '', sumber_masuk: '', keterangan: '',
   });
+
+  // Membaca trigger parameter '?action=new' dari Aksi Cepat Sidebar
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setShowForm(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const muatData = async () => {
@@ -40,10 +49,20 @@ export default function StokMasukPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-    if (!form.id_produk) return setFormError('Pilih produk');
-    if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah harus > 0');
-    if (!form.kode_batch) return setFormError('Kode batch wajib');
-    if (!form.tanggal_kedaluwarsa) return setFormError('Tanggal kedaluwarsa wajib');
+    
+    if (!form.id_produk) return setFormError('Pilih produk terlebih dahulu');
+    if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah harus lebih dari 0');
+    if (!form.kode_batch.trim()) return setFormError('Kode batch wajib diisi');
+    if (!form.tanggal_kedaluwarsa) return setFormError('Tanggal kedaluwarsa wajib diisi');
+
+    // VALIDASI BARU: Mencegah input barang yang sudah kedaluwarsa ke dalam sistem gudang
+    const hariIni = new Date();
+    hariIni.setHours(0, 0, 0, 0); // Reset jam ke 00:00 untuk perbandingan tanggal murni
+    const tglExpiredInput = new Date(form.tanggal_kedaluwarsa);
+    
+    if (tglExpiredInput <= hariIni) {
+      return setFormError('Gagal: Tanggal kedaluwarsa produk harus di masa depan (tidak boleh hari ini atau tanggal lampau).');
+    }
 
     setSubmitting(true);
     try {
@@ -55,6 +74,7 @@ export default function StokMasukPage() {
       setSukses('Stok masuk berhasil dicatat');
       setShowForm(false);
       setForm({ id_produk: '', jumlah: '', kode_batch: '', tanggal_kedaluwarsa: '', sumber_masuk: '', keterangan: '' });
+      
       const res = await stokService.ambilTransaksiMasuk();
       if (res.success) setTransaksiList(res.data || []);
       setTimeout(() => setSukses(''), 3000);
@@ -63,6 +83,13 @@ export default function StokMasukPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Mendapatkan string format YYYY-MM-DD untuk batas minimal input date picker (Besok)
+  const dapatkanMinimalTanggalJual = () => {
+    const besok = new Date();
+    besok.setDate(besok.getDate() + 1);
+    return besok.toISOString().split('T')[0];
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 text-blue-400 animate-spin" /></div>;
@@ -126,7 +153,7 @@ export default function StokMasukPage() {
             {/* Input Jumlah */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Jumlah</label>
-              <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark w-full" disabled={submitting} />
+              <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark w-full" placeholder="0" disabled={submitting} />
             </div>
 
             {/* Input Kode Batch */}
@@ -135,11 +162,12 @@ export default function StokMasukPage() {
               <input value={form.kode_batch} onChange={(e) => setForm({ ...form, kode_batch: e.target.value })} className="input-dark w-full" placeholder="Contoh: BTH-001" disabled={submitting} />
             </div>
 
-            {/* Input Tanggal Kedaluwarsa */}
+            {/* Input Tanggal Kedaluwarsa dengan Pembatas Kalender Minimum */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Tanggal Kedaluwarsa</label>
               <input 
                 type="date" 
+                min={dapatkanMinimalTanggalJual()}
                 value={form.tanggal_kedaluwarsa} 
                 onChange={(e) => setForm({ ...form, tanggal_kedaluwarsa: e.target.value })} 
                 className="input-dark w-full text-white cursor-pointer scheme-dark" 
