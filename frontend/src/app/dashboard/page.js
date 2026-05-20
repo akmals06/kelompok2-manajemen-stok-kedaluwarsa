@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine,
-  Loader2, TrendingUp, Clock, Wallet,
+  Loader2, Clock,
   CalendarClock, Activity, ShieldCheck, BarChart3,
 } from 'lucide-react';
 import laporanService from '@/services/laporan.service';
 import StatCard from '@/components/StatCard';
 import StatusBadge from '@/components/StatusBadge';
-import { formatRupiah, formatTanggal } from '@/utils/format';
+import { formatTanggal } from '@/utils/format';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -70,9 +70,7 @@ export default function DashboardPage() {
 
   if (!data) return null;
 
-  const { stok, keuangan, batch, transaksi_terakhir, pergerakan_7_hari } = data;
-  const labaBulanIni = keuangan.bulan_ini.pemasukan - keuangan.bulan_ini.pengeluaran;
-  const labaHariIni = keuangan.hari_ini.pemasukan - keuangan.hari_ini.pengeluaran;
+  const { stok, batch, transaksi_terakhir, pergerakan_7_hari } = data;
   const maxPergerakan = Math.max(...pergerakan_7_hari.flatMap((h) => [h.masuk, h.keluar]), 1);
   const namaHari = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
   const formatJam = waktuSekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -139,35 +137,12 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* ── Main Grid: Finance + Chart | Health ── */}
+      {/* ── Main Grid: Chart | Health ── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
 
         {/* Left Column — 2/3 */}
         <div className="xl:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* Finance Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FinanceCard
-              judul="Hari Ini"
-              icon={<Wallet className="w-4 h-4 text-[#E1FF01]" />}
-              pemasukan={keuangan.hari_ini.pemasukan}
-              pengeluaran={keuangan.hari_ini.pengeluaran}
-              laba={labaHariIni}
-              txMasuk={keuangan.hari_ini.jumlah_transaksi_masuk}
-              txKeluar={keuangan.hari_ini.jumlah_transaksi_keluar}
-              delay={300}
-            />
-            <FinanceCard
-              judul="Bulan Ini"
-              icon={<TrendingUp className="w-4 h-4 text-[#E1FF01]" />}
-              pemasukan={keuangan.bulan_ini.pemasukan}
-              pengeluaran={keuangan.bulan_ini.pengeluaran}
-              laba={labaBulanIni}
-              txMasuk={keuangan.bulan_ini.jumlah_transaksi_masuk}
-              txKeluar={keuangan.bulan_ini.jumlah_transaksi_keluar}
-              delay={380}
-            />
-          </div>
 
           {/* Stock Movement Chart */}
           <div className="glass-card p-5 sm:p-6 animate-fade-in-up" style={{ animationDelay: '450ms' }}>
@@ -450,35 +425,6 @@ export default function DashboardPage() {
 
 /* ── Sub-components ── */
 
-function FinanceCard({ judul, icon, pemasukan, pengeluaran, laba, txMasuk, txKeluar, delay = 0 }) {
-  return (
-    <div className="glass-card p-5 animate-fade-in-up" style={{ animationDelay: `${delay}ms` }}>
-      <div className="flex items-center gap-2.5 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#E1FF01]/10 flex items-center justify-center">{icon}</div>
-        <h2 className="text-sm font-semibold text-white font-heading">{judul}</h2>
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <div className="p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/10">
-          <p className="text-[10px] text-zinc-500 mb-1">Masuk</p>
-          <p className="text-sm font-bold text-emerald-400 break-all">{formatRupiah(pemasukan)}</p>
-          <p className="text-[9px] text-zinc-600 mt-1">{txMasuk} tx</p>
-        </div>
-        <div className="p-3 rounded-xl bg-red-500/[0.06] border border-red-500/10">
-          <p className="text-[10px] text-zinc-500 mb-1">Keluar</p>
-          <p className="text-sm font-bold text-red-400 break-all">{formatRupiah(pengeluaran)}</p>
-          <p className="text-[9px] text-zinc-600 mt-1">{txKeluar} tx</p>
-        </div>
-        <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-          <p className="text-[10px] text-zinc-500 mb-1">Laba</p>
-          <p className={`text-sm font-bold break-all ${laba >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {formatRupiah(laba)}
-          </p>
-          <p className="text-[9px] text-zinc-600 mt-1">{laba >= 0 ? 'Untung' : 'Rugi'}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function HealthBar({ label, value, total, color = 'emerald' }) {
   const persen = total > 0 ? Math.round((value / total) * 100) : 0;

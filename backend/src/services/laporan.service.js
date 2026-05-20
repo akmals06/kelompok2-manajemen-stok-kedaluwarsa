@@ -72,10 +72,8 @@ const ambilLaporanById = async (id) => {
 };
 
 const ambilRingkasanDashboard = async () => {
-  const [ringkasanStok, keuanganHariIni, keuanganBulanIni, transaksiTerakhir, batchAkanExpiry, pergerakanStok] = await Promise.all([
+  const [ringkasanStok, transaksiTerakhir, batchAkanExpiry, pergerakanStok] = await Promise.all([
     ambilRingkasanStok(),
-    laporanRepo.hitungKeuanganHariIni(),
-    laporanRepo.hitungKeuanganBulanIni(),
     laporanRepo.ambilTransaksiTerakhir(10),
     laporanRepo.ambilBatchAkanExpiry(30),
     laporanRepo.hitungPergerakanStok7Hari(),
@@ -99,10 +97,6 @@ const ambilRingkasanDashboard = async () => {
       total_produk: totalProduk,
       stok_rendah: stokRendah.length,
       daftar_stok_rendah: stokRendah.slice(0, 5),
-    },
-    keuangan: {
-      hari_ini: keuanganHariIni,
-      bulan_ini: keuanganBulanIni,
     },
     batch: {
       hampir_kedaluwarsa: batchDenganStatus.filter((b) => b.status_terhitung === 'MENDEKATI_KEDALUWARSA').length,
