@@ -105,8 +105,6 @@ export default function LoginPage() {
     }
   };
 
-
-
   // ── Forgot step 1 — send OTP ─────────────
   const handleForgotSend = () => {
     if (!forgotEmail.trim() || !forgotEmail.includes('@')) {
