@@ -16,9 +16,19 @@ const tandaiSemuaDibaca = async () => {
   return notifikasiRepo.tandaiSemuaDibaca();
 };
 
+const hapusNotifikasi = async (idNotifikasi) => {
+  return notifikasiRepo.hapusNotifikasi(idNotifikasi);
+};
+
+const hapusBeberapaNotifikasi = async (ids) => {
+  return notifikasiRepo.hapusBeberapaNotifikasi(ids);
+};
+
 module.exports = {
   ambilSemuaNotifikasi,
   hitungBelumDibaca,
   tandaiSudahDibaca,
   tandaiSemuaDibaca,
+  hapusNotifikasi,
+  hapusBeberapaNotifikasi,
 };

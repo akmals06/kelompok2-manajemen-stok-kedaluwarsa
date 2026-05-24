@@ -9,7 +9,7 @@ import {
   Tags, Bell, LogOut, Menu, X, ChevronLeft, Search, Zap
 } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
-import ProfileDropdown from '@/components/ProfileDropdown';
+
 
 const MENU_GROUPS = [
   {
@@ -140,10 +140,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
             {/* Logout */}
             <ModuleIcon icon={LogOut} isAction onClick={onLogout} tooltip="Keluar" />
 
-            {/* Avatar */}
-            <div className="mt-1">
-              <ProfileDropdown user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
-            </div>
+
           </div>
         </div>
 

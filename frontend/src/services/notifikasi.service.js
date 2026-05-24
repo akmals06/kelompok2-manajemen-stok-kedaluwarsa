@@ -21,18 +21,14 @@ const notifikasiService = {
     return res.data;
   },
 
-  // MOCKUP FRONTEND ONLY: Fungsi hapus untuk simulasi UI
-  // Backend belum menyediakan endpoint ini
   hapus: async (id) => {
-    // Simulasi delay jaringan
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return { success: true, message: 'Notifikasi berhasil dihapus (Mock)' };
+    const res = await api.delete(`/notifikasi/${id}`);
+    return res.data;
   },
 
-  hapusSemua: async () => {
-    // Simulasi delay jaringan
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return { success: true, message: 'Semua notifikasi berhasil dihapus (Mock)' };
+  hapusBanyak: async (ids) => {
+    const res = await api.post('/notifikasi/delete-many', { ids });
+    return res.data;
   },
 };
 
