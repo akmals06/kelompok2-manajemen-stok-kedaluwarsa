@@ -6,6 +6,7 @@ import { Package, Plus, Loader2, AlertTriangle } from 'lucide-react';
 import produkService from '@/services/produk.service';
 import kategoriService from '@/services/kategori.service';
 import StatusBadge from '@/components/StatusBadge';
+import CustomSelect from '@/components/CustomSelect';
 import Link from 'next/link';
 
 export default function ProdukPage() {
@@ -170,10 +171,16 @@ export default function ProdukPage() {
                     <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       Kategori <span className="text-red-400">*</span>
                     </label>
-                    <select value={form.id_kategori} onChange={(e) => setForm({ ...form, id_kategori: e.target.value })} className="input-dark" disabled={submitting}>
-                      <option value="">Pilih kategori</option>
-                      {kategoriList.map((k) => <option key={k.id_kategori} value={k.id_kategori}>{k.nama_kategori}</option>)}
-                    </select>
+                    <div className="h-[42px]">
+                      <CustomSelect
+                        value={form.id_kategori ? parseInt(form.id_kategori) : ""}
+                        onChange={(val) => setForm({ ...form, id_kategori: val })}
+                        options={kategoriList.map(k => ({ label: k.nama_kategori, value: k.id_kategori }))}
+                        placeholder="Pilih kategori"
+                        className="w-full h-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center justify-between focus:outline-none focus:border-[#E1FF01]/50"
+                        dropdownClassName="absolute top-full mt-2 left-0 z-50 bg-[#1a1a1d] border border-white/[0.08] rounded-xl shadow-2xl py-1.5 w-full flex flex-col animate-fade-in-up"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

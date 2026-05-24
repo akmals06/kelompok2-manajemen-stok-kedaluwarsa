@@ -331,21 +331,21 @@ export default function StokMasukPage() {
                   </div>
                   
                   {/* Dimmer container for rest of the form */}
-                  <div className={`space-y-2.5 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+                  <div className={`grid grid-cols-2 gap-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                     <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                      Jumlah <span className="text-red-400">*</span>
-                    </label>
-                    <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark" placeholder="0" disabled={submitting} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                      Kode Batch <span className="text-red-400">*</span>
-                    </label>
-                    <input value={form.kode_batch} onChange={(e) => setForm({ ...form, kode_batch: e.target.value })} className="input-dark" placeholder="BTH-001" disabled={submitting} />
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        Jumlah <span className="text-red-400">*</span>
+                      </label>
+                      <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark" placeholder="0" disabled={submitting} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        Kode Batch <span className="text-red-400">*</span>
+                      </label>
+                      <input value={form.kode_batch} onChange={(e) => setForm({ ...form, kode_batch: e.target.value })} className="input-dark" placeholder="BTH-001" disabled={submitting} />
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Divider */}
               <div className="border-t border-white/[0.06] my-3" />
@@ -353,7 +353,7 @@ export default function StokMasukPage() {
               {/* ─── Section 2: Info Pelacakan ─── */}
               <div className="mb-3">
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Info Pelacakan</p>
-                <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       Tanggal Kedaluwarsa <span className="text-red-400">*</span>
