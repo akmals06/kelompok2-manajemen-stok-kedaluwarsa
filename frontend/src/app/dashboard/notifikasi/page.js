@@ -124,6 +124,28 @@ export default function NotifikasiPage() {
     );
   };
 
+  const badgeTipe = (tipe) => {
+    if (tipe === 'KEDALUWARSA') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest">
+          {tipe}
+        </span>
+      );
+    }
+    if (tipe === 'LAPORAN') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#E1FF01]/10 border border-[#E1FF01]/20 text-[#E1FF01] text-[10px] font-bold uppercase tracking-widest">
+          {tipe}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest">
+        {tipe}
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -152,7 +174,7 @@ export default function NotifikasiPage() {
       )}
 
       {/* Notification Table Layout */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="glass-card overflow-hidden">
         {notifikasi.length === 0 ? (
           <div className="p-16 text-center">
             <Bell className="w-16 h-16 text-zinc-700 mx-auto mb-6" />
@@ -163,14 +185,14 @@ export default function NotifikasiPage() {
           <div className="w-full overflow-x-auto custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                  <th className="p-4 w-24 text-center">
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  <th className="px-4 py-2 w-20 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <input
                         type="checkbox"
                         checked={notifikasi.length > 0 && selectedIds.length === notifikasi.length}
                         onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-[#E1FF01] focus:ring-[#E1FF01] focus:ring-offset-zinc-900 cursor-pointer accent-[#E1FF01] shrink-0 z-10"
+                        className="w-4 h-4 rounded border-white/10 bg-black/20 text-[#E1FF01] focus:ring-[#E1FF01] focus:ring-offset-zinc-900 cursor-pointer accent-[#E1FF01] shrink-0 z-10"
                       />
                       <div 
                         className={`flex items-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${selectedIds.length > 0 ? 'w-8 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-4'}`}
@@ -182,13 +204,13 @@ export default function NotifikasiPage() {
                       </div>
                     </div>
                   </th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Notifikasi</th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-wider hidden md:table-cell w-32">Tipe</th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-wider hidden sm:table-cell w-40">Waktu</th>
-                  <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-wider w-24">Status</th>
+                  <th className="px-4 py-2 text-[11px] font-bold text-zinc-500 uppercase tracking-wide">Notifikasi</th>
+                  <th className="px-4 py-2 text-[11px] font-bold text-zinc-500 uppercase tracking-wide hidden md:table-cell w-28">Tipe</th>
+                  <th className="px-4 py-2 text-[11px] font-bold text-zinc-500 uppercase tracking-wide hidden sm:table-cell w-32">Waktu</th>
+                  <th className="px-4 py-2 text-[11px] font-bold text-zinc-500 uppercase tracking-wide w-24">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/50">
+              <tbody className="divide-y divide-white/5">
                 {notifikasi.map((n) => (
                   <tr
                     key={n.id_notifikasi}
@@ -199,7 +221,7 @@ export default function NotifikasiPage() {
                         type="checkbox"
                         checked={selectedIds.includes(n.id_notifikasi)}
                         onChange={() => handleSelectOne(n.id_notifikasi)}
-                        className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-[#E1FF01] focus:ring-[#E1FF01] focus:ring-offset-zinc-900 cursor-pointer accent-[#E1FF01]"
+                        className="w-4 h-4 rounded border-white/10 bg-black/20 text-[#E1FF01] focus:ring-[#E1FF01] focus:ring-offset-zinc-900 cursor-pointer accent-[#E1FF01]"
                       />
                     </td>
                     <td className="p-4">
@@ -216,9 +238,7 @@ export default function NotifikasiPage() {
                           </p>
                           {/* Mobile-only time & type display */}
                           <div className="flex items-center gap-3 mt-2 sm:hidden">
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 uppercase">
-                              {n.tipe}
-                            </span>
+                            {badgeTipe(n.tipe)}
                             <span className="text-[10px] text-zinc-500">
                               {waktuRelatif(n.created_at)}
                             </span>
@@ -227,9 +247,7 @@ export default function NotifikasiPage() {
                       </div>
                     </td>
                     <td className="p-4 hidden md:table-cell">
-                      <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                        {n.tipe}
-                      </span>
+                      {badgeTipe(n.tipe)}
                     </td>
                     <td className="p-4 hidden sm:table-cell">
                       <span className="text-xs text-zinc-400">
