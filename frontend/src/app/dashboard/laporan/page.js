@@ -119,14 +119,7 @@ export default function LaporanPage() {
   const maxPergerakan = Math.max(...dataGrafik.flatMap(d => [d.masuk, d.keluar]), 1);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#E1FF01]/20 border-t-[#E1FF01] rounded-full animate-spin" />
-          <p className="text-zinc-500 text-sm font-medium animate-pulse">Memuat data laporan...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   // ================= VIEW: HASIL LAPORAN (Report Results) =================

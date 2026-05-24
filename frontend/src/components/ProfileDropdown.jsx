@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Settings, Lock, Mail, LogOut, Upload, X, ChevronDown } from 'lucide-react';
+import { Settings, Lock, Mail, LogOut, Upload, X, ChevronDown , User } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import penggunaService from '@/services/pengguna.service';
 
@@ -184,19 +184,54 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
   ];
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#131315] border border-white/[0.08] rounded-2xl w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-auto" onClick={onTutup}>
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'rgba(0,0,0,0.55)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          animation: 'fade-in-up 0.2s ease-out both',
+        }}
+      />
+      {/* Glass modal card */}
+      <div 
+        className="relative w-full max-w-md overflow-hidden"
+        style={{
+          background: 'rgba(39, 39, 42, 0.4)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '24px',
+          backdropFilter: 'blur(32px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(255,255,255,0.08) inset, 0 1px 0 rgba(255,255,255,0.12) inset',
+          animation: 'scale-in 0.25s ease-out both',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top shine line */}
+        <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)', borderRadius: '50%' }} />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-          <h2 className="text-sm font-bold text-white">Pengaturan Akun</h2>
-          <button onClick={onTutup} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+                    {/* Minimal header */}
+            <div className="flex items-center gap-2.5 mb-2 px-6 pt-5">
+              <div
+                className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
+                style={{ background: 'linear-gradient(135deg, #E9FF3D, #C7E600)', boxShadow: '0 2px 8px rgba(225,255,1,0.15)' }}
+              >
+                <User className="w-4 h-4 text-zinc-900" />
+              </div>
+              <div className="flex-1">
+                <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: '15px', fontWeight: 700, color: 'rgba(255,255,255,0.96)', letterSpacing: '-0.2px', lineHeight: 1.2 }}>Pengaturan Akun</h2>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '1px' }}>Kelola profil dan keamanan</p>
+              </div>
+              <button onClick={onTutup} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-white/[0.06]">
+        <div className="flex border-b border-white/[0.08] px-2">
           {tabs.map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); setPesan({ tipe: '', teks: '' }); }}
               className={`flex-1 py-3 text-xs font-semibold transition-all ${tab === t.id ? 'text-[#E1FF01] border-b-2 border-[#E1FF01]' : 'text-zinc-500 hover:text-zinc-300'}`}>
@@ -205,7 +240,7 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
           ))}
         </div>
 
-        <div className="p-5">
+        <div className="p-6">
           {/* Pesan sukses/error */}
           {pesan.teks && (
             <div className={`mb-4 px-3 py-2.5 rounded-xl text-xs font-medium ${pesan.tipe === 'sukses' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
@@ -235,7 +270,7 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
               </div>
 
               {/* Badge role */}
-              <div className="flex items-center justify-between px-3 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+              <div className="flex items-center justify-between px-4 py-3 bg-black/40 border border-white/10 rounded-xl mb-4">
                 <span className="text-xs text-zinc-500">Role</span>
                 <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-[#E1FF01]/10 text-[#E1FF01]">
                   {user?.peran === 'PEMILIK_USAHA' ? 'Pemilik Usaha' : 'Admin Usaha'}
@@ -245,19 +280,38 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
               {/* Input nama & telepon */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1.5 font-medium">Nama Lengkap</label>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Nama Lengkap</label>
                   <input value={nama} onChange={e => setNama(e.target.value)}
-                    className="w-full bg-[#0a0a0b] border border-white/[0.08] focus:border-[#E1FF01]/50 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-zinc-600" />
+                    className="input-dark" />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-zinc-500 mb-1.5 font-medium">No. Telepon</label>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>No. Telepon</label>
                   <input value={noTelepon} onChange={e => setNoTelepon(e.target.value)}
-                    placeholder="08xx..." className="w-full bg-[#0a0a0b] border border-white/[0.08] focus:border-[#E1FF01]/50 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-zinc-600" />
+                    placeholder="08xx..." className="input-dark" />
                 </div>
               </div>
 
               <button onClick={simpanProfil} disabled={loading}
-                className="w-full bg-[#E1FF01] hover:bg-[#cce600] text-black font-bold rounded-xl py-2.5 text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                className="w-full flex items-center justify-center gap-2 mt-4"
+                style={{
+                  padding: '11px 24px',
+                  background: '#E1FF01',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: '12px',
+                  color: '#18181B',
+                  fontFamily: "'Sora', sans-serif",
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  letterSpacing: '0.2px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 4px 14px rgba(225,255,1,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+                  opacity: loading ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = '#E9FF3D'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,255,1,0.25), inset 0 1px 0 rgba(255,255,255,0.6)'; }}}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#E1FF01'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(225,255,1,0.15), inset 0 1px 0 rgba(255,255,255,0.5)'; }}
+                onMouseDown={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#C7E600'; e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)'; }}}
+                onMouseUp={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = '#E9FF3D'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,255,1,0.25), inset 0 1px 0 rgba(255,255,255,0.6)'; }}}>
                 {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
               </button>
             </div>
@@ -272,13 +326,32 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
                 ['Konfirmasi Password Baru', passKonfirmasi, setPassKonfirmasi],
               ].map(([label, val, setVal]) => (
                 <div key={label}>
-                  <label className="block text-[11px] text-zinc-500 mb-1.5 font-medium">{label}</label>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>{label}</label>
                   <input type="password" value={val} onChange={e => setVal(e.target.value)}
-                    placeholder="••••••••" className="w-full bg-[#0a0a0b] border border-white/[0.08] focus:border-[#E1FF01]/50 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors" />
+                    placeholder="••••••••" className="input-dark" />
                 </div>
               ))}
               <button onClick={simpanPassword} disabled={loading}
-                className="w-full bg-[#E1FF01] hover:bg-[#cce600] text-black font-bold rounded-xl py-2.5 text-sm transition-all disabled:opacity-50 mt-1">
+                className="w-full flex items-center justify-center gap-2 mt-4"
+                style={{
+                  padding: '11px 24px',
+                  background: '#E1FF01',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: '12px',
+                  color: '#18181B',
+                  fontFamily: "'Sora', sans-serif",
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  letterSpacing: '0.2px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 4px 14px rgba(225,255,1,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+                  opacity: loading ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = '#E9FF3D'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,255,1,0.25), inset 0 1px 0 rgba(255,255,255,0.6)'; }}}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#E1FF01'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(225,255,1,0.15), inset 0 1px 0 rgba(255,255,255,0.5)'; }}
+                onMouseDown={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#C7E600'; e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)'; }}}
+                onMouseUp={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = '#E9FF3D'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,255,1,0.25), inset 0 1px 0 rgba(255,255,255,0.6)'; }}}>
                 {loading ? 'Memproses...' : 'Ubah Password'}
               </button>
             </div>
@@ -287,23 +360,42 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
           {/* TAB: EMAIL */}
           {tab === 'email' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between px-3 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+              <div className="flex items-center justify-between px-4 py-3 bg-black/40 border border-white/10 rounded-xl mb-4">
                 <span className="text-xs text-zinc-500">Email saat ini</span>
                 <span className="text-xs text-zinc-300 font-medium">{user?.email}</span>
               </div>
               <div>
-                <label className="block text-[11px] text-zinc-500 mb-1.5 font-medium">Email Baru</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Email Baru</label>
                 <input type="email" value={emailBaru} onChange={e => setEmailBaru(e.target.value)}
-                  placeholder="email@baru.com" className="w-full bg-[#0a0a0b] border border-white/[0.08] focus:border-[#E1FF01]/50 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-zinc-600" />
+                  placeholder="email@baru.com" className="input-dark" />
               </div>
               <div>
-                <label className="block text-[11px] text-zinc-500 mb-1.5 font-medium">Konfirmasi Password</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Konfirmasi Password</label>
                 <input type="password" value={passEmail} onChange={e => setPassEmail(e.target.value)}
-                  placeholder="Masukkan password untuk konfirmasi" className="w-full bg-[#0a0a0b] border border-white/[0.08] focus:border-[#E1FF01]/50 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors" />
+                  placeholder="Masukkan password untuk konfirmasi" className="input-dark" />
               </div>
               <p className="text-[10px] text-zinc-600">⚠️ Setelah email diubah, kamu akan otomatis logout.</p>
               <button onClick={simpanEmail} disabled={loading}
-                className="w-full bg-[#E1FF01] hover:bg-[#cce600] text-black font-bold rounded-xl py-2.5 text-sm transition-all disabled:opacity-50">
+                className="w-full flex items-center justify-center gap-2 mt-4"
+                style={{
+                  padding: '11px 24px',
+                  background: '#E1FF01',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: '12px',
+                  color: '#18181B',
+                  fontFamily: "'Sora', sans-serif",
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  letterSpacing: '0.2px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 4px 14px rgba(225,255,1,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+                  opacity: loading ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = '#E9FF3D'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,255,1,0.25), inset 0 1px 0 rgba(255,255,255,0.6)'; }}}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#E1FF01'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(225,255,1,0.15), inset 0 1px 0 rgba(255,255,255,0.5)'; }}
+                onMouseDown={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#C7E600'; e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)'; }}}
+                onMouseUp={(e) => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = '#E9FF3D'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,255,1,0.25), inset 0 1px 0 rgba(255,255,255,0.6)'; }}}>
                 {loading ? 'Memproses...' : 'Ubah Email'}
               </button>
             </div>

@@ -1,4 +1,5 @@
 'use client';
+import Loader from '@/components/Loader';
 
 import { useState, useEffect, useMemo } from 'react';
 import { Bell, Check, CheckCheck, Loader2, AlertTriangle, CalendarClock, Trash2, ClipboardList, X } from 'lucide-react';
@@ -94,13 +95,7 @@ export default function NotifikasiPage() {
 
   const belumDibaca = notifikasi.filter((n) => !n.dibaca).length;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 text-[#E1FF01] animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
   const ikonTipe = (tipe) => {
     if (tipe === 'KEDALUWARSA') {
