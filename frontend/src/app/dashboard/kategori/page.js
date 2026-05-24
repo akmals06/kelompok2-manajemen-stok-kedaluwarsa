@@ -1,4 +1,5 @@
 'use client';
+import Loader from '@/components/Loader';
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -84,11 +85,7 @@ export default function KategoriPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-      </div>
-    );
+    return <Loader />;
   }
 
   return (

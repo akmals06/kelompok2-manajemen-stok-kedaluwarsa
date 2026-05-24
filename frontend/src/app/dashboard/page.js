@@ -1,4 +1,5 @@
 "use client";
+import Loader from '@/components/Loader';
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -149,18 +150,7 @@ export default function DashboardPage() {
 
   const hasActiveFilter = filterDateFrom || filterDateTo || filterAdmin || filterType !== "ALL";
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#E1FF01]/20 border-t-[#E1FF01] rounded-full animate-spin" />
-          <p className="text-zinc-500 text-sm font-medium animate-pulse">
-            Memuat dashboard...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
   if (error) {
     return (

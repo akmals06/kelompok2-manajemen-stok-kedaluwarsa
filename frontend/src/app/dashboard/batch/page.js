@@ -1,4 +1,5 @@
 'use client';
+import Loader from '@/components/Loader';
 
 import { useState, useEffect } from 'react';
 import { CalendarClock, Loader2, Archive } from 'lucide-react';
@@ -36,7 +37,7 @@ export default function BatchPage() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 text-blue-400 animate-spin" /></div>;
+  if (loading) return <Loader />;
 
   return (
     <div className="space-y-4 sm:space-y-6">
