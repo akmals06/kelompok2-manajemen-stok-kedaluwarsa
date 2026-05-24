@@ -50,9 +50,40 @@ const tandaiSemuaDibaca = async (req, res, next) => {
   }
 };
 
+const hapusNotifikasi = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await notifikasiService.hapusNotifikasi(id);
+    res.status(200).json({
+      success: true,
+      message: 'Notifikasi berhasil dihapus',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const hapusBeberapaNotifikasi = async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ success: false, message: 'IDs tidak valid' });
+    }
+    await notifikasiService.hapusBeberapaNotifikasi(ids);
+    res.status(200).json({
+      success: true,
+      message: 'Notifikasi terpilih berhasil dihapus',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   ambilSemuaNotifikasi,
   hitungBelumDibaca,
   tandaiSudahDibaca,
   tandaiSemuaDibaca,
+  hapusNotifikasi,
+  hapusBeberapaNotifikasi,
 };
