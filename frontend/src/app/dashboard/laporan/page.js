@@ -1,5 +1,6 @@
 'use client';
 
+import Loader from '@/components/Loader';
 import { useState, useEffect, useMemo } from 'react';
 import {
   FileBarChart2, Loader2, Plus, ArrowLeft, Download,
