@@ -208,7 +208,8 @@ export default function StokKeluarPage() {
   const [form, setForm] = useState({
     id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '',
   });
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [produkDropdownOpen, setProdukDropdownOpen] = useState(false);
+  const [batchDropdownOpen, setBatchDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -353,7 +354,7 @@ export default function StokKeluarPage() {
             <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)', borderRadius: '50%' }} />
 
             {/* Minimal header */}
-            <div className={`flex items-center gap-2.5 mb-4 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`}>
+            <div className={`flex items-center gap-2.5 mb-4 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`}>
               <div
                 className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
                 style={{ background: 'linear-gradient(135deg, #E9FF3D, #C7E600)', boxShadow: '0 2px 8px rgba(225,255,1,0.15)' }}
@@ -371,10 +372,10 @@ export default function StokKeluarPage() {
             <form onSubmit={handleSubmit}>
               {/* ─── Section 1: Informasi Produk ─── */}
               <div className="mb-3">
-                <p className={`text-[10px] font-semibold uppercase tracking-widest mb-2.5 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(225,255,1,0.5)' }}>Informasi Produk</p>
+                <p className={`text-[10px] font-semibold uppercase tracking-widest mb-2.5 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(225,255,1,0.5)' }}>Informasi Produk</p>
                 <div className="space-y-2.5">
-                  <div className={`relative ${dropdownOpen ? 'z-50' : 'z-10'}`}>
-                    <label className={`block text-xs font-medium mb-1 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <div className={`relative ${produkDropdownOpen ? 'z-50' : 'z-10'}`}>
+                    <label className={`block text-xs font-medium mb-1 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(255,255,255,0.6)' }}>
                       Produk <span className="text-red-400">*</span>
                     </label>
                     <ProdukDropdown
@@ -382,12 +383,12 @@ export default function StokKeluarPage() {
                       value={form.id_produk}
                       onChange={(val) => setForm({ ...form, id_produk: val, id_batch: '' })}
                       disabled={submitting}
-                      onOpenChange={setDropdownOpen}
+                      onOpenChange={setProdukDropdownOpen}
                     />
                   </div>
                   
                   {/* Dimmer container for rest of the form */}
-                  <div className={`space-y-2.5 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+                  <div className={`space-y-2.5 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         Batch <span className="text-red-400">*</span>
@@ -397,7 +398,7 @@ export default function StokKeluarPage() {
                         value={form.id_batch}
                         onChange={(val) => setForm({ ...form, id_batch: val })}
                         disabled={submitting || !form.id_produk}
-                        onOpenChange={setDropdownOpen}
+                        onOpenChange={setBatchDropdownOpen}
                       />
                     </div>
                     <div>
@@ -411,10 +412,10 @@ export default function StokKeluarPage() {
               </div>
 
               {/* Divider */}
-              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
+              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
 
               {/* ─── Section 2: Info Pelacakan ─── */}
-              <div className={`mb-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+              <div className={`mb-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Info Pelacakan</p>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -425,10 +426,10 @@ export default function StokKeluarPage() {
               </div>
 
               {/* Divider */}
-              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
+              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
 
               {/* ─── Section 3: Catatan Tambahan ─── */}
-              <div className={`mb-4 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+              <div className={`mb-4 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Catatan Tambahan</p>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -439,7 +440,7 @@ export default function StokKeluarPage() {
               </div>
 
               {/* Action buttons */}
-              <div className={`flex gap-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+              <div className={`flex gap-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                 <button
                   type="submit"
                   disabled={submitting}
