@@ -21,15 +21,17 @@ const getCategoryDetails = (nama) => {
       icon: Wheat,
       bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%)',
       border: 'rgba(245, 158, 11, 0.2)',
-      color: '#F59E0B'
+      color: '#F59E0B',
+      image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur')) {
+  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur') || cleanNama.includes('rempah') || cleanNama.includes('kecap') || cleanNama.includes('saus')) {
     return {
       icon: ChefHat,
       bg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%)',
       border: 'rgba(239, 68, 68, 0.2)',
-      color: '#EF4444'
+      color: '#EF4444',
+      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=120&auto=format&fit=crop'
     };
   }
   if (cleanNama.includes('gula') || cleanNama.includes('garam')) {
@@ -37,23 +39,26 @@ const getCategoryDetails = (nama) => {
       icon: Sparkles,
       bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%)',
       border: 'rgba(6, 182, 212, 0.2)',
-      color: '#06B6D4'
+      color: '#06B6D4',
+      image: 'https://images.unsplash.com/photo-1622484211148-716598e04042?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('mie') || cleanNama.includes('instan')) {
+  if (cleanNama.includes('mie') || cleanNama.includes('instan') || cleanNama.includes('ramen')) {
     return {
       icon: Soup,
       bg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(253, 224, 71, 0.05) 100%)',
       border: 'rgba(234, 179, 8, 0.2)',
-      color: '#EAB308'
+      color: '#EAB308',
+      image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh')) {
+  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh') || cleanNama.includes('sirup')) {
     return {
       icon: Coffee,
       bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)',
       border: 'rgba(59, 130, 246, 0.2)',
-      color: '#3B82F6'
+      color: '#3B82F6',
+      image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=120&auto=format&fit=crop'
     };
   }
   if (cleanNama.includes('minyak') || cleanNama.includes('goreng')) {
@@ -61,23 +66,26 @@ const getCategoryDetails = (nama) => {
       icon: Droplet,
       bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.05) 100%)',
       border: 'rgba(249, 115, 22, 0.2)',
-      color: '#F97316'
+      color: '#F97316',
+      image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci')) {
+  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci') || cleanNama.includes('sampo') || cleanNama.includes('pembersih')) {
     return {
       icon: Sparkles,
       bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(192, 132, 252, 0.05) 100%)',
       border: 'rgba(168, 85, 247, 0.2)',
-      color: '#A855F7'
+      color: '#A855F7',
+      image: 'https://images.unsplash.com/photo-1585060544812-6b45742d762f?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju')) {
+  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju') || cleanNama.includes('mentega')) {
     return {
       icon: Milk,
       bg: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(45, 212, 191, 0.05) 100%)',
       border: 'rgba(20, 184, 166, 0.2)',
-      color: '#20B8A6'
+      color: '#20B8A6',
+      image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=120&auto=format&fit=crop'
     };
   }
   
@@ -85,8 +93,50 @@ const getCategoryDetails = (nama) => {
     icon: Package,
     bg: 'linear-gradient(135deg, rgba(161, 161, 170, 0.15) 0%, rgba(212, 212, 216, 0.05) 100%)',
     border: 'rgba(161, 161, 170, 0.2)',
-    color: '#A1A1AA'
+    color: '#A1A1AA',
+    image: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=120&auto=format&fit=crop'
   };
+};
+
+const getProductDetails = (productName, categoryName) => {
+  const pName = (productName || '').toLowerCase();
+  const catDetails = getCategoryDetails(categoryName);
+  
+  if (pName.includes('so klin') || pName.includes('soklin') || pName.includes('liquid')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?q=80&w=120&auto=format&fit=crop'
+    };
+  }
+  if (pName.includes('sunlight') || pName.includes('cuci piring')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=120&auto=format&fit=crop'
+    };
+  }
+  if (pName.includes('lux') || pName.includes('sabun cair') || pName.includes('dettol') || pName.includes('mandi')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=120&auto=format&fit=crop'
+    };
+  }
+  if (pName.includes('rejoice') || pName.includes('sampo') || pName.includes('shampoo')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?q=80&w=120&auto=format&fit=crop'
+    };
+  }
+  if (pName.includes('downy') || pName.includes('pelembut') || pName.includes('pewangi')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=120&auto=format&fit=crop'
+    };
+  }
+  if (pName.includes('wipol') || pName.includes('super pell') || pName.includes('karbol') || pName.includes('lantai') || pName.includes('cling') || pName.includes('pelembut') || pName.includes('pewangi') || pName.includes('molto')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?q=80&w=120&auto=format&fit=crop'
+    };
+  }
+  
+  return {
+    image: catDetails.image
+  };
+};
 };
 
 export default function ProdukPage() {
@@ -377,10 +427,30 @@ export default function ProdukPage() {
                 {paginatedProduk.map((p) => {
                   const catName = p.kategori?.nama_kategori || '';
                   const details = getCategoryDetails(catName);
+                  const prodDetails = getProductDetails(p.nama_produk, catName);
                   const IconComp = details.icon;
+                  const finalProductImage = p.gambar_produk || prodDetails.image;
+                  
                   return (
                     <tr key={p.id_produk} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                      <td className="py-4 px-4 text-white font-semibold tracking-tight">{p.nama_produk}</td>
+                      {/* Premium E-Commerce Style Product Thumbnail + Name Column */}
+                      <td className="py-4 px-4 text-white">
+                        <div className="flex items-center gap-3.5">
+                          <div className="relative w-12 h-12 rounded-2xl border border-white/10 overflow-hidden shrink-0 bg-zinc-900 shadow-md group transition-transform duration-300 hover:scale-105">
+                            <img 
+                              src={finalProductImage} 
+                              alt={p.nama_produk} 
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                            />
+                            {/* Overlay glow */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-40" />
+                          </div>
+                          
+                          <span className="font-semibold text-white tracking-tight text-[14.5px] max-w-[260px] truncate" title={p.nama_produk}>
+                            {p.nama_produk}
+                          </span>
+                        </div>
+                      </td>
                       <td className="py-4 px-4">
                         {catName ? (
                           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-900/50 border border-white/5 shadow-sm">

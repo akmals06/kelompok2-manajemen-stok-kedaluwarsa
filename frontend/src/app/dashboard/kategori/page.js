@@ -17,15 +17,17 @@ const getCategoryDetails = (nama) => {
       icon: Wheat,
       bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%)',
       border: 'rgba(245, 158, 11, 0.2)',
-      color: '#F59E0B'
+      color: '#F59E0B',
+      image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur')) {
+  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur') || cleanNama.includes('rempah') || cleanNama.includes('kecap') || cleanNama.includes('saus')) {
     return {
       icon: ChefHat,
       bg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%)',
       border: 'rgba(239, 68, 68, 0.2)',
-      color: '#EF4444'
+      color: '#EF4444',
+      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=120&auto=format&fit=crop'
     };
   }
   if (cleanNama.includes('gula') || cleanNama.includes('garam')) {
@@ -33,23 +35,26 @@ const getCategoryDetails = (nama) => {
       icon: Sparkles,
       bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%)',
       border: 'rgba(6, 182, 212, 0.2)',
-      color: '#06B6D4'
+      color: '#06B6D4',
+      image: 'https://images.unsplash.com/photo-1622484211148-716598e04042?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('mie') || cleanNama.includes('instan')) {
+  if (cleanNama.includes('mie') || cleanNama.includes('instan') || cleanNama.includes('ramen')) {
     return {
       icon: Soup,
       bg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(253, 224, 71, 0.05) 100%)',
       border: 'rgba(234, 179, 8, 0.2)',
-      color: '#EAB308'
+      color: '#EAB308',
+      image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh')) {
+  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh') || cleanNama.includes('sirup')) {
     return {
       icon: Coffee,
       bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)',
       border: 'rgba(59, 130, 246, 0.2)',
-      color: '#3B82F6'
+      color: '#3B82F6',
+      image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=120&auto=format&fit=crop'
     };
   }
   if (cleanNama.includes('minyak') || cleanNama.includes('goreng')) {
@@ -57,23 +62,26 @@ const getCategoryDetails = (nama) => {
       icon: Droplet,
       bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.05) 100%)',
       border: 'rgba(249, 115, 22, 0.2)',
-      color: '#F97316'
+      color: '#F97316',
+      image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci')) {
+  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci') || cleanNama.includes('sampo') || cleanNama.includes('pembersih')) {
     return {
       icon: Sparkles,
       bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(192, 132, 252, 0.05) 100%)',
       border: 'rgba(168, 85, 247, 0.2)',
-      color: '#A855F7'
+      color: '#A855F7',
+      image: 'https://images.unsplash.com/photo-1585060544812-6b45742d762f?q=80&w=120&auto=format&fit=crop'
     };
   }
-  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju')) {
+  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju') || cleanNama.includes('mentega')) {
     return {
       icon: Milk,
       bg: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(45, 212, 191, 0.05) 100%)',
       border: 'rgba(20, 184, 166, 0.2)',
-      color: '#20B8A6'
+      color: '#20B8A6',
+      image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=120&auto=format&fit=crop'
     };
   }
   
@@ -81,8 +89,10 @@ const getCategoryDetails = (nama) => {
     icon: FolderOpen,
     bg: 'linear-gradient(135deg, rgba(161, 161, 170, 0.15) 0%, rgba(212, 212, 216, 0.05) 100%)',
     border: 'rgba(161, 161, 170, 0.2)',
-    color: '#A1A1AA'
+    color: '#A1A1AA',
+    image: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=120&auto=format&fit=crop'
   };
+};
 };
 
 export default function KategoriPage() {
@@ -357,18 +367,32 @@ export default function KategoriPage() {
                   return (
                     <tr key={k.id_kategori} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                       <td className="py-4 px-4 text-white">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="flex items-center justify-center w-9 h-9 rounded-xl border shrink-0 transition-transform duration-300 hover:scale-105"
-                            style={{ 
-                              background: details.bg, 
-                              borderColor: details.border,
-                              boxShadow: `0 4px 12px ${details.border}`
-                            }}
-                          >
-                            <IconComp className="w-5 h-5" style={{ color: details.color }} />
+                        <div className="flex items-center gap-4">
+                          {/* Beautiful Category Image Thumbnail Container (Tokopedia Style) */}
+                          <div className="relative w-12 h-12 rounded-2xl border border-white/10 overflow-hidden shrink-0 group transition-transform duration-300 hover:scale-105">
+                            <img 
+                              src={details.image} 
+                              alt={k.nama_kategori} 
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                            />
+                            {/* Overlay glow */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                            
+                            {/* Dynamic Glassmorphic Floating Icon Badge */}
+                            <div 
+                              className="absolute bottom-1 right-1 flex items-center justify-center w-5 h-5 rounded-md border"
+                              style={{ 
+                                background: details.bg, 
+                                borderColor: details.border,
+                                backdropFilter: 'blur(4px)',
+                                WebkitBackdropFilter: 'blur(4px)'
+                              }}
+                            >
+                              <IconComp className="w-3 h-3" style={{ color: details.color }} />
+                            </div>
                           </div>
-                          <span className="font-semibold text-white tracking-tight">{k.nama_kategori}</span>
+                          
+                          <span className="font-semibold text-white tracking-tight text-[15px]">{k.nama_kategori}</span>
                         </div>
                       </td>
                       <td className="py-4 px-4 text-zinc-400 font-normal">{k.deskripsi || '-'}</td>
