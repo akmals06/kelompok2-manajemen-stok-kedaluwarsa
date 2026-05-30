@@ -1,13 +1,13 @@
 'use client';
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Package, Plus, Loader2, AlertTriangle } from 'lucide-react';
+import { Package, Plus, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import produkService from '@/services/produk.service';
 import kategoriService from '@/services/kategori.service';
-import StatusBadge from '@/components/StatusBadge';
-import CustomSelect from '@/components/CustomSelect';
+import StatusBadge from '@/components/ui/StatusBadge';
+import CustomSelect from '@/components/ui/CustomSelect';
 import Link from 'next/link';
 
 export default function ProdukPage() {
@@ -23,6 +23,10 @@ export default function ProdukPage() {
     nama_produk: '', id_kategori: '', satuan: 'pcs', stok_minimum: 10,
   });
   const [mounted, setMounted] = useState(false);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +89,11 @@ export default function ProdukPage() {
   if (loading) {
     return <Loader />;
   }
+
+  // Paginated Data Calculation
+  const totalItems = produkList.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const paginatedProduk = produkList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -264,9 +273,6 @@ export default function ProdukPage() {
         document.getElementById('right-column-portal')
       )}
 
-      {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
-      {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>}
-
       {produkList.length === 0 ? (
         <div className="glass-card p-12 text-center">
           <Package className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
@@ -274,42 +280,106 @@ export default function ProdukPage() {
           <p className="text-sm text-zinc-600 mt-1">Tambahkan produk pertama untuk memulai inventaris.</p>
         </div>
       ) : (
-        <div className="glass-card overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead>
-              <tr className="border-b border-white/10 text-zinc-400">
-                <th className="text-left py-3 px-4 font-medium">Produk</th>
-                <th className="text-left py-3 px-4 font-medium">Kategori</th>
-                <th className="text-left py-3 px-4 font-medium">Satuan</th>
-                <th className="text-right py-3 px-4 font-medium">Stok</th>
-                <th className="text-right py-3 px-4 font-medium">Minimum</th>
-                <th className="text-center py-3 px-4 font-medium">Status</th>
-                <th className="text-center py-3 px-4 font-medium">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {produkList.map((p) => (
-                <tr key={p.id_produk} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3 px-4 text-white font-medium">{p.nama_produk}</td>
-                  <td className="py-3 px-4 text-zinc-400">{p.kategori?.nama_kategori || '-'}</td>
-                  <td className="py-3 px-4 text-zinc-400">{p.satuan}</td>
-                  <td className="py-3 px-4 text-right text-white">{p.stok_tersedia}</td>
-                  <td className="py-3 px-4 text-right text-zinc-400">{p.stok_minimum}</td>
-                  <td className="py-3 px-4 text-center"><StatusBadge status={p.status_aktif} type="active" /></td>
-                  <td className="py-3 px-4 text-center">
-                    <button
-                      onClick={() => toggleStatus(p)}
-                      className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
-                        p.status_aktif ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                      }`}
-                    >
-                      {p.status_aktif ? 'Nonaktifkan' : 'Aktifkan'}
-                    </button>
-                  </td>
+        <div className="glass-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="border-b border-white/10 text-zinc-400">
+                  <th className="text-left py-3 px-4 font-medium">Produk</th>
+                  <th className="text-left py-3 px-4 font-medium">Kategori</th>
+                  <th className="text-left py-3 px-4 font-medium">Satuan</th>
+                  <th className="text-right py-3 px-4 font-medium">Stok</th>
+                  <th className="text-right py-3 px-4 font-medium">Minimum</th>
+                  <th className="text-center py-3 px-4 font-medium">Status</th>
+                  <th className="text-center py-3 px-4 font-medium">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedProduk.map((p) => (
+                  <tr key={p.id_produk} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3 px-4 text-white font-medium">{p.nama_produk}</td>
+                    <td className="py-3 px-4 text-zinc-400">{p.kategori?.nama_kategori || '-'}</td>
+                    <td className="py-3 px-4 text-zinc-400">{p.satuan}</td>
+                    <td className="py-3 px-4 text-right text-white">{p.stok_tersedia}</td>
+                    <td className="py-3 px-4 text-right text-zinc-400">{p.stok_minimum}</td>
+                    <td className="py-3 px-4 text-center"><StatusBadge status={p.status_aktif} type="active" /></td>
+                    <td className="py-3 px-4 text-center">
+                      <button
+                        onClick={() => toggleStatus(p)}
+                        className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
+                          p.status_aktif ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                        }`}
+                      >
+                        {p.status_aktif ? 'Nonaktifkan' : 'Aktifkan'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-white/5 px-4 py-3 mt-2 sm:px-6">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className="relative inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-white/5"
+                >
+                  Sebelumnya
+                </button>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="relative ml-3 inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-white/5"
+                >
+                  Selanjutnya
+                </button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs text-zinc-400">
+                    Menampilkan <span className="font-semibold text-white">{(currentPage - 1) * itemsPerPage + 1}</span> sampai <span className="font-semibold text-white">{Math.min(currentPage * itemsPerPage, totalItems)}</span> dari <span className="font-semibold text-white">{totalItems}</span> data
+                  </p>
+                </div>
+                <div>
+                  <nav className="isolate inline-flex -space-x-px rounded-xl shadow-sm gap-1.5" aria-label="Pagination">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      className="relative inline-flex items-center rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    
+                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`relative inline-flex items-center justify-center rounded-lg w-8 h-8 text-xs font-semibold transition-all ${
+                          currentPage === page
+                            ? 'bg-[#E1FF01] text-zinc-950 font-bold shadow-md shadow-[#E1FF01]/10'
+                            : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      className="relative inline-flex items-center rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,10 +1,10 @@
 'use client';
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect, useMemo } from 'react';
 import { Bell, Check, CheckCheck, Loader2, AlertTriangle, CalendarClock, Trash2, ClipboardList, X } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
-import AnimatedTrashButton from '@/components/AnimatedTrashButton';
+import AnimatedTrashButton from '@/components/ui/AnimatedTrashButton';
 
 // ── Helper: relative time string ──
 function waktuRelatif(dateStr) {

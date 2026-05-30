@@ -5,12 +5,8 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const requiredEnvs = [
   'DATABASE_URL',
-  'DIRECT_URL',
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
-  'CLOUDINARY_CLOUD_NAME',
-  'CLOUDINARY_API_KEY',
-  'CLOUDINARY_API_SECRET'
 ];
 
 const missingEnvs = requiredEnvs.filter((key) => !process.env[key]);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/layout/Sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import ProfileDropdown from '@/components/ProfileDropdown';

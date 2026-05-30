@@ -1,7 +1,7 @@
 'use client';
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { ArrowUpFromLine, Loader2, Plus, X, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -182,7 +182,7 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
                   }`}
                 >
                   <div className="text-sm font-semibold text-white">{b.kode_batch}</div>
-                  <div className="text-xs text-zinc-500">Sisa: {b.jumlah_batch}</div>
+                  <div className="text-xs text-zinc-500">Sisa: {b.jumlah_sisa}</div>
                 </button>
               ))
             )}
@@ -195,7 +195,7 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
 
 const ROWS_PER_PAGE = 10;
 
-export default function StokKeluarPage() {
+function StokKeluarContent() {
   const [transaksiList, setTransaksiList] = useState([]);
   const [produkList, setProdukList] = useState([]);
   const [batchList, setBatchList] = useState([]);
@@ -271,7 +271,7 @@ export default function StokKeluarPage() {
   }, []);
 
   const batchFiltered = batchList.filter(
-    (b) => String(b.id_produk) === String(form.id_produk) && b.status_batch !== 'DIARSIPKAN' && b.jumlah_batch > 0
+    (b) => String(b.id_produk) === String(form.id_produk) && b.status_batch !== 'DIARSIPKAN' && b.jumlah_sisa > 0
   );
 
   const handleSubmit = async (e) => {
@@ -724,5 +724,13 @@ export default function StokKeluarPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StokKeluarPage() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <StokKeluarContent />
+    </Suspense>
   );
 }

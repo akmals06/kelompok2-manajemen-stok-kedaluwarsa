@@ -1,6 +1,6 @@
 'use client';
 
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 import { useState, useEffect, useMemo } from 'react';
 import {
   FileBarChart2, Loader2, Plus, ArrowLeft, Download,
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import laporanService from '@/services/laporan.service';
 import { formatTanggal, formatAngka } from '@/utils/format';
-import StatCard from '@/components/StatCard';
+import StatCard from '@/components/ui/StatCard';
 
 export default function LaporanPage() {
   const [laporanList, setLaporanList] = useState([]);
