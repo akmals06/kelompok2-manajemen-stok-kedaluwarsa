@@ -5,8 +5,11 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [config.frontendUrl];
+    
+    // Izinkan semua sub-domain preview dan domain produksi Vercel untuk proyek ini secara dinamis
+    const isVercelOrigin = origin.startsWith('https://kelompok2-manajemen-stok-kedaluwarsa') && origin.endsWith('.vercel.app');
 
-    if (allowedOrigins.indexOf(origin) !== -1 || config.nodeEnv === 'development') {
+    if (allowedOrigins.indexOf(origin) !== -1 || isVercelOrigin || config.nodeEnv === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
