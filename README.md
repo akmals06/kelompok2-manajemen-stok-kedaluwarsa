@@ -30,27 +30,44 @@ Sistem ini dirancang khusus untuk membantu pemilik usaha ritel (UMKM) dalam meng
 
 Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi di lingkungan pengembangan lokal:
 
-### 1. Inisialisasi Database (Prisma)
-Pastikan Anda sudah mengonfigurasi berkas `.env` di dalam folder `backend/`, kemudian jalankan migrasi database:
+### 1. Salin & Konfigurasi Berkas Lingkungan (`.env`)
+Proyek ini memiliki berkas `.env.example` sebagai referensi konfigurasi. Salin berkas tersebut menjadi `.env` di masing-masing direktori:
+
+*   **Backend (`backend/`)**:
+    ```bash
+    # Salin berkas example menjadi .env
+    cp backend/.env.example backend/.env
+    ```
+    *(Buka berkas `backend/.env` tersebut dan isi kredensial database PostgreSQL, rahasia JWT, serta API Cloudinary Anda).*
+
+*   **Frontend (`frontend/`)**:
+    ```bash
+    # Salin berkas example menjadi .env
+    cp frontend/.env.example frontend/.env
+    ```
+    *(Berkas ini secara default sudah terarah ke API backend lokal `http://localhost:5000/api`).*
+
+### 2. Inisialisasi Database (Prisma)
+Setelah berkas `backend/.env` terkonfigurasi dengan database PostgreSQL lokal Anda, jalankan migrasi database:
 ```bash
 cd backend
 npx prisma migrate dev
 ```
 
-### 2. Jalankan Backend Server
+### 3. Jalankan Backend Server
 Buka terminal baru, kemudian pasang dependensi dan jalankan server Express:
 ```bash
 cd backend
 npm install
 npm run dev
 ```
-*Server akan berjalan di `http://localhost:5000`*
+*Server API backend akan berjalan aktif di `http://localhost:5000`*
 
-### 3. Jalankan Frontend Web
+### 4. Jalankan Frontend Web
 Buka terminal baru, pasang dependensi dan jalankan aplikasi Next.js:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*Aplikasi web dapat diakses melalui `http://localhost:3000`*
+*Aplikasi web dapat diakses melalui browser di `http://localhost:3000`*
