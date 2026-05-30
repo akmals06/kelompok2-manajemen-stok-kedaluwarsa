@@ -6,7 +6,6 @@ import authService from '@/services/auth.service';
 import { setAccessToken } from '@/services/api';
 import './login.css';
 
-// ── Render Alert ──────────────────────────
 const Alert = ({ alert }) => {
   if (!alert.msg) return null;
   return (
@@ -19,10 +18,8 @@ const Alert = ({ alert }) => {
 export default function LoginPage() {
   const router = useRouter();
 
-  // Active view: 'login' | 'forgot-1' | 'forgot-2' | 'forgot-3'
   const [activeView, setActiveView] = useState('login');
 
-  // Login state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,13 +27,11 @@ export default function LoginPage() {
   const [isError, setIsError] = useState(false);
   const [isErrorShake, setIsErrorShake] = useState(false);
 
-  // Alerts
   const [alertLogin, setAlertLogin] = useState({ type: '', msg: '' });
   const [alertForgot1, setAlertForgot1] = useState({ type: '', msg: '' });
   const [alertOtp, setAlertOtp] = useState({ type: '', msg: '' });
   const [alertReset, setAlertReset] = useState({ type: '', msg: '' });
 
-  // Forgot password state
   const [forgotEmail, setForgotEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const otpRefs = useRef([]);
@@ -44,9 +39,6 @@ export default function LoginPage() {
   const [confirmPass, setConfirmPass] = useState('');
   const [showNewPass, setShowNewPass] = useState(false);
 
-
-
-  // Auto-clear alerts
   useEffect(() => {
     if (alertLogin.msg) {
       const t = setTimeout(() => setAlertLogin({ type: '', msg: '' }), 3500);
@@ -72,7 +64,6 @@ export default function LoginPage() {
     }
   }, [alertReset]);
 
-  // ── Login handler (real API) ──────────────
   const handleLogin = async () => {
     if (!email.trim() || !password) {
       setAlertLogin({ type: 'danger', msg: 'Email dan password wajib diisi.' });
@@ -105,7 +96,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── Forgot step 1 — send OTP ─────────────
   const handleForgotSend = () => {
     if (!forgotEmail.trim() || !forgotEmail.includes('@')) {
       setAlertForgot1({ type: 'danger', msg: 'Masukkan email yang valid.' });
@@ -120,7 +110,6 @@ export default function LoginPage() {
     }, 1600);
   };
 
-  // ── OTP auto-advance ──────────────────────
   const handleOtpChange = (idx, value) => {
     const v = value.replace(/\D/g, '');
     const next = [...otp];
@@ -140,7 +129,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── Forgot step 2 — verify OTP ────────────
   const handleOTPVerify = () => {
     const code = otp.join('');
     if (code.length < 6) {
@@ -158,7 +146,6 @@ export default function LoginPage() {
     }, 1400);
   };
 
-  // ── Forgot step 3 — reset password ────────
   const handleResetPass = () => {
     if (newPass.length < 8) {
       setAlertReset({ type: 'danger', msg: 'Password minimal 8 karakter.' });
@@ -178,7 +165,6 @@ export default function LoginPage() {
     }, 1600);
   };
 
-  // ── SVG Icons (inline) ────────────────────
   const PackageIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
