@@ -1,5 +1,5 @@
 "use client";
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,9 +23,9 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import laporanService from "@/services/laporan.service";
-import StatCard from "@/components/StatCard";
+import StatCard from "@/components/ui/StatCard";
 import DateRangePicker from "@/components/DateRangePicker";
-import CustomSelect from "@/components/CustomSelect";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { formatTanggal } from "@/utils/format";
 
 function getGreeting() {
@@ -525,7 +525,7 @@ export default function DashboardPage() {
                                   {b.kode_batch}
                                 </span>
                                 <span className="text-[10px] text-zinc-500">
-                                  Stok: {b.jumlah_batch}
+                                  Stok: {b.jumlah_sisa}
                                 </span>
                               </div>
                             </div>

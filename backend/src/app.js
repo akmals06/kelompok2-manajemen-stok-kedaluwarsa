@@ -7,10 +7,12 @@ const path = require('path');
 
 const corsOptions = require('./config/cors');
 const errorMiddleware = require('./middlewares/error.middleware');
-const notFoundMiddleware = require('./middlewares/notFound.middleware');
+const notFoundMiddleware = require('./middlewares/notfound.middleware');
 const routes = require('./routes');
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors(corsOptions));

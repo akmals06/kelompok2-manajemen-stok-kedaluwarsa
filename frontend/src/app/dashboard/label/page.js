@@ -1,5 +1,5 @@
 'use client';
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect } from 'react';
 import { Tags, Download, Loader2, Package, CalendarClock } from 'lucide-react';
@@ -159,7 +159,7 @@ export default function LabelPage() {
                       <p className="text-xs text-zinc-500">
                         {tipe === 'produk'
                           ? `${item.kategori?.nama_kategori || '-'} · ${item.satuan}`
-                          : `Sisa: ${item.jumlah_batch} · Exp: ${new Date(item.tanggal_kedaluwarsa).toLocaleDateString('id-ID')}`
+                          : `Sisa: ${item.jumlah_sisa} · Exp: ${new Date(item.tanggal_kedaluwarsa).toLocaleDateString('id-ID')}`
                         }
                       </p>
                     </div>

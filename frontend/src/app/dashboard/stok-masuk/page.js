@@ -1,7 +1,7 @@
 'use client';
-import Loader from '@/components/Loader';
+import Loader from '@/components/ui/Loader';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { ArrowDownToLine, Loader2, Plus, Package, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -133,7 +133,7 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
 const ROWS_PER_PAGE = 10;
 
 /* ── Main Page ───────────────────────────────────────────── */
-export default function StokMasukPage() {
+function StokMasukContent() {
   const [transaksiList, setTransaksiList] = useState([]);
   const [produkList, setProdukList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -691,5 +691,13 @@ export default function StokMasukPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StokMasukPage() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <StokMasukContent />
+    </Suspense>
   );
 }
