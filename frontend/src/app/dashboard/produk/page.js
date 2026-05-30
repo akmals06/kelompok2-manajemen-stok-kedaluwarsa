@@ -137,7 +137,6 @@ const getProductDetails = (productName, categoryName) => {
     image: catDetails.image
   };
 };
-};
 
 export default function ProdukPage() {
   const [produkList, setProdukList] = useState([]);
@@ -152,6 +151,7 @@ export default function ProdukPage() {
     nama_produk: '', id_kategori: '', satuan: 'pcs', stok_minimum: 10,
   });
   const [mounted, setMounted] = useState(false);
+  const [selectedProduk, setSelectedProduk] = useState(null);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -165,7 +165,13 @@ export default function ProdukPage() {
           produkService.ambilSemua(),
           kategoriService.ambilSemua()
         ]);
-        if (resProduk.success) setProdukList(resProduk.data || []);
+        if (resProduk.success) {
+          const list = resProduk.data || [];
+          setProdukList(list);
+          if (list.length > 0) {
+            setSelectedProduk(list[0]);
+          }
+        }
         if (resKategori.success) setKategoriList(resKategori.data || []);
       } catch (err) {
         setError(err.response?.data?.message || 'Gagal memuat produk');
@@ -402,6 +408,73 @@ export default function ProdukPage() {
         document.getElementById('right-column-portal')
       )}
 
+      {/* Dynamic Product Stock Overview Card (Equip / Tokopedia Style Mockup) */}
+      {selectedProduk && produkList.length > 0 && (
+        <div className="bg-gradient-to-r from-white/[0.04] to-transparent border border-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 transition-all duration-300">
+          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Product Stock Overview</h3>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            {/* Image Container with White/Neutral Backdrop like the mockup! */}
+            <div className="relative w-44 h-44 rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shrink-0 shadow-lg group">
+              <img 
+                src={selectedProduk.gambar_produk || getProductDetails(selectedProduk.nama_produk, selectedProduk.kategori?.nama_kategori).image} 
+                alt={selectedProduk.nama_produk} 
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40" />
+            </div>
+
+            {/* Product Details Grid */}
+            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 text-sm">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-zinc-500 text-xs">Product Name</span>
+                <span className="text-[16px] font-bold text-white tracking-tight">{selectedProduk.nama_produk}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-zinc-500 text-xs">No. SKU</span>
+                <span className="text-[14px] font-semibold text-zinc-300 tracking-mono">PRD-{selectedProduk.id_produk.toString().padStart(3, '0')}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-zinc-500 text-xs">Category</span>
+                <span className="text-[14px] font-semibold text-zinc-300">{selectedProduk.kategori?.nama_kategori || '-'}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-zinc-500 text-xs">Unit/Satuan</span>
+                <span className="text-[14px] font-semibold text-zinc-300">{selectedProduk.satuan}</span>
+              </div>
+              
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-zinc-500 text-xs">Minimum Stock</span>
+                <div>
+                  <span className="inline-flex items-center px-3 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs font-semibold border border-red-500/20">
+                    {selectedProduk.stok_minimum} {selectedProduk.satuan}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-zinc-500 text-xs">Total Stock</span>
+                <div>
+                  <span className="inline-flex items-center px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
+                    {selectedProduk.stok_tersedia} {selectedProduk.satuan}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-zinc-500 text-xs">Status</span>
+                <div>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border ${
+                    selectedProduk.status_aktif 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : 'bg-zinc-800 text-zinc-500 border-zinc-700'
+                  }`}>
+                    {selectedProduk.status_aktif ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {produkList.length === 0 ? (
         <div className="glass-card p-12 text-center">
           <Package className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
@@ -432,7 +505,13 @@ export default function ProdukPage() {
                   const finalProductImage = p.gambar_produk || prodDetails.image;
                   
                   return (
-                    <tr key={p.id_produk} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                    <tr 
+                      key={p.id_produk} 
+                      onClick={() => setSelectedProduk(p)}
+                      className={`border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors ${
+                        selectedProduk?.id_produk === p.id_produk ? 'bg-white/[0.03]' : ''
+                      }`}
+                    >
                       {/* Premium E-Commerce Style Product Thumbnail + Name Column */}
                       <td className="py-4 px-4 text-white">
                         <div className="flex items-center gap-3.5">

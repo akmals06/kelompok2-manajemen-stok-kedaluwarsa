@@ -93,7 +93,6 @@ const getCategoryDetails = (nama) => {
     image: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=120&auto=format&fit=crop'
   };
 };
-};
 
 export default function KategoriPage() {
   const [kategoriList, setKategoriList] = useState([]);
