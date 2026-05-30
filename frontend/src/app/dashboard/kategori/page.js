@@ -3,8 +3,87 @@ import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FolderOpen, Plus, Pencil, Trash2, Loader2, X, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  FolderOpen, Plus, Pencil, Trash2, Loader2, X, AlertTriangle, ChevronLeft, ChevronRight,
+  Wheat, ChefHat, Sparkles, Soup, Coffee, Droplet, Milk
+} from 'lucide-react';
 import kategoriService from '@/services/kategori.service';
+
+const getCategoryDetails = (nama) => {
+  const cleanNama = (nama || '').toLowerCase();
+  
+  if (cleanNama.includes('beras') || cleanNama.includes('tepung')) {
+    return {
+      icon: Wheat,
+      bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%)',
+      border: 'rgba(245, 158, 11, 0.2)',
+      color: '#F59E0B'
+    };
+  }
+  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur')) {
+    return {
+      icon: ChefHat,
+      bg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%)',
+      border: 'rgba(239, 68, 68, 0.2)',
+      color: '#EF4444'
+    };
+  }
+  if (cleanNama.includes('gula') || cleanNama.includes('garam')) {
+    return {
+      icon: Sparkles,
+      bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%)',
+      border: 'rgba(6, 182, 212, 0.2)',
+      color: '#06B6D4'
+    };
+  }
+  if (cleanNama.includes('mie') || cleanNama.includes('instan')) {
+    return {
+      icon: Soup,
+      bg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(253, 224, 71, 0.05) 100%)',
+      border: 'rgba(234, 179, 8, 0.2)',
+      color: '#EAB308'
+    };
+  }
+  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh')) {
+    return {
+      icon: Coffee,
+      bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)',
+      border: 'rgba(59, 130, 246, 0.2)',
+      color: '#3B82F6'
+    };
+  }
+  if (cleanNama.includes('minyak') || cleanNama.includes('goreng')) {
+    return {
+      icon: Droplet,
+      bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.05) 100%)',
+      border: 'rgba(249, 115, 22, 0.2)',
+      color: '#F97316'
+    };
+  }
+  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci')) {
+    return {
+      icon: Sparkles,
+      bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(192, 132, 252, 0.05) 100%)',
+      border: 'rgba(168, 85, 247, 0.2)',
+      color: '#A855F7'
+    };
+  }
+  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju')) {
+    return {
+      icon: Milk,
+      bg: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(45, 212, 191, 0.05) 100%)',
+      border: 'rgba(20, 184, 166, 0.2)',
+      color: '#20B8A6'
+    };
+  }
+  
+  return {
+    icon: FolderOpen,
+    bg: 'linear-gradient(135deg, rgba(161, 161, 170, 0.15) 0%, rgba(212, 212, 216, 0.05) 100%)',
+    border: 'rgba(161, 161, 170, 0.2)',
+    color: '#A1A1AA'
+  };
+};
 
 export default function KategoriPage() {
   const [kategoriList, setKategoriList] = useState([]);
@@ -272,19 +351,41 @@ export default function KategoriPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedKategori.map((k) => (
-                  <tr key={k.id_kategori} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3 px-4 text-white font-medium">{k.nama_kategori}</td>
-                    <td className="py-3 px-4 text-zinc-400">{k.deskripsi || '-'}</td>
-                    <td className="py-3 px-4 text-right text-white">{k._count?.produk ?? k.produk?.length ?? 0}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => bukaFormEdit(k)} className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"><Pencil className="w-4 h-4" /></button>
-                        <button onClick={() => handleHapus(k.id_kategori)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {paginatedKategori.map((k) => {
+                  const details = getCategoryDetails(k.nama_kategori);
+                  const IconComp = details.icon;
+                  return (
+                    <tr key={k.id_kategori} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 px-4 text-white">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="flex items-center justify-center w-9 h-9 rounded-xl border shrink-0 transition-transform duration-300 hover:scale-105"
+                            style={{ 
+                              background: details.bg, 
+                              borderColor: details.border,
+                              boxShadow: `0 4px 12px ${details.border}`
+                            }}
+                          >
+                            <IconComp className="w-5 h-5" style={{ color: details.color }} />
+                          </div>
+                          <span className="font-semibold text-white tracking-tight">{k.nama_kategori}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-zinc-400 font-normal">{k.deskripsi || '-'}</td>
+                      <td className="py-4 px-4 text-right">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-zinc-800 text-white text-xs font-semibold border border-white/5">
+                          {k._count?.produk ?? k.produk?.length ?? 0}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => bukaFormEdit(k)} className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors" title="Ubah"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => handleHapus(k.id_kategori)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors" title="Hapus"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
