@@ -3,12 +3,91 @@ import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Package, Plus, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Package, Plus, Loader2, AlertTriangle, ChevronLeft, ChevronRight,
+  Wheat, ChefHat, Sparkles, Soup, Coffee, Droplet, Milk
+} from 'lucide-react';
 import produkService from '@/services/produk.service';
 import kategoriService from '@/services/kategori.service';
 import StatusBadge from '@/components/ui/StatusBadge';
 import CustomSelect from '@/components/ui/CustomSelect';
 import Link from 'next/link';
+
+const getCategoryDetails = (nama) => {
+  const cleanNama = (nama || '').toLowerCase();
+  
+  if (cleanNama.includes('beras') || cleanNama.includes('tepung')) {
+    return {
+      icon: Wheat,
+      bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%)',
+      border: 'rgba(245, 158, 11, 0.2)',
+      color: '#F59E0B'
+    };
+  }
+  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur')) {
+    return {
+      icon: ChefHat,
+      bg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%)',
+      border: 'rgba(239, 68, 68, 0.2)',
+      color: '#EF4444'
+    };
+  }
+  if (cleanNama.includes('gula') || cleanNama.includes('garam')) {
+    return {
+      icon: Sparkles,
+      bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%)',
+      border: 'rgba(6, 182, 212, 0.2)',
+      color: '#06B6D4'
+    };
+  }
+  if (cleanNama.includes('mie') || cleanNama.includes('instan')) {
+    return {
+      icon: Soup,
+      bg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(253, 224, 71, 0.05) 100%)',
+      border: 'rgba(234, 179, 8, 0.2)',
+      color: '#EAB308'
+    };
+  }
+  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh')) {
+    return {
+      icon: Coffee,
+      bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)',
+      border: 'rgba(59, 130, 246, 0.2)',
+      color: '#3B82F6'
+    };
+  }
+  if (cleanNama.includes('minyak') || cleanNama.includes('goreng')) {
+    return {
+      icon: Droplet,
+      bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.05) 100%)',
+      border: 'rgba(249, 115, 22, 0.2)',
+      color: '#F97316'
+    };
+  }
+  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci')) {
+    return {
+      icon: Sparkles,
+      bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(192, 132, 252, 0.05) 100%)',
+      border: 'rgba(168, 85, 247, 0.2)',
+      color: '#A855F7'
+    };
+  }
+  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju')) {
+    return {
+      icon: Milk,
+      bg: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(45, 212, 191, 0.05) 100%)',
+      border: 'rgba(20, 184, 166, 0.2)',
+      color: '#20B8A6'
+    };
+  }
+  
+  return {
+    icon: Package,
+    bg: 'linear-gradient(135deg, rgba(161, 161, 170, 0.15) 0%, rgba(212, 212, 216, 0.05) 100%)',
+    border: 'rgba(161, 161, 170, 0.2)',
+    color: '#A1A1AA'
+  };
+};
 
 export default function ProdukPage() {
   const [produkList, setProdukList] = useState([]);
@@ -295,26 +374,51 @@ export default function ProdukPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedProduk.map((p) => (
-                  <tr key={p.id_produk} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3 px-4 text-white font-medium">{p.nama_produk}</td>
-                    <td className="py-3 px-4 text-zinc-400">{p.kategori?.nama_kategori || '-'}</td>
-                    <td className="py-3 px-4 text-zinc-400">{p.satuan}</td>
-                    <td className="py-3 px-4 text-right text-white">{p.stok_tersedia}</td>
-                    <td className="py-3 px-4 text-right text-zinc-400">{p.stok_minimum}</td>
-                    <td className="py-3 px-4 text-center"><StatusBadge status={p.status_aktif} type="active" /></td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => toggleStatus(p)}
-                        className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
-                          p.status_aktif ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                        }`}
-                      >
-                        {p.status_aktif ? 'Nonaktifkan' : 'Aktifkan'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {paginatedProduk.map((p) => {
+                  const catName = p.kategori?.nama_kategori || '';
+                  const details = getCategoryDetails(catName);
+                  const IconComp = details.icon;
+                  return (
+                    <tr key={p.id_produk} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 px-4 text-white font-semibold tracking-tight">{p.nama_produk}</td>
+                      <td className="py-4 px-4">
+                        {catName ? (
+                          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-900/50 border border-white/5 shadow-sm">
+                            <div 
+                              className="flex items-center justify-center w-6 h-6 rounded-lg border shrink-0"
+                              style={{ 
+                                background: details.bg, 
+                                borderColor: details.border,
+                                boxShadow: `0 2px 6px ${details.border}`
+                              }}
+                            >
+                              <IconComp className="w-3.5 h-3.5" style={{ color: details.color }} />
+                            </div>
+                            <span className="text-xs font-medium text-zinc-300">{catName}</span>
+                          </div>
+                        ) : (
+                          <span className="text-zinc-500">-</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4 text-zinc-400 font-normal">{p.satuan}</td>
+                      <td className="py-4 px-4 text-right font-bold text-white">{p.stok_tersedia}</td>
+                      <td className="py-4 px-4 text-right text-zinc-400 font-medium">{p.stok_minimum}</td>
+                      <td className="py-4 px-4 text-center"><StatusBadge status={p.status_aktif} type="active" /></td>
+                      <td className="py-4 px-4 text-center">
+                        <button
+                          onClick={() => toggleStatus(p)}
+                          className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold transition-all ${
+                            p.status_aktif 
+                              ? 'bg-red-500/10 text-red-400 border border-red-500/10 hover:bg-red-500/20' 
+                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          {p.status_aktif ? 'Nonaktifkan' : 'Aktifkan'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
