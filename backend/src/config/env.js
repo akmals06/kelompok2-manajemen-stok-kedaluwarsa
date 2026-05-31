@@ -15,6 +15,27 @@ if (missingEnvs.length > 0) {
   throw new Error(`[CONFIG ERROR] Missing required environment variables: ${missingEnvs.join(', ')}`);
 }
 
+const cloudinaryUrl = process.env.CLOUDINARY_URL;
+let cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+let apiKey = process.env.CLOUDINARY_API_KEY;
+let apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (cloudinaryUrl && (!cloudName || !apiKey || !apiSecret)) {
+  try {
+    const cleanUrl = cloudinaryUrl.replace('cloudinary://', '');
+    const [credentials, hostAndParams] = cleanUrl.split('@');
+    if (credentials && hostAndParams) {
+      const [key, secret] = credentials.split(':');
+      const [host] = hostAndParams.split('?');
+      if (!apiKey) apiKey = key;
+      if (!apiSecret) apiSecret = secret;
+      if (!cloudName) cloudName = host;
+    }
+  } catch (e) {
+    // Silent fallback
+  }
+}
+
 module.exports = {
   port: Number(process.env.PORT) || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -29,9 +50,9 @@ module.exports = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES || '7d',
   },
   cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-    apiSecret: process.env.CLOUDINARY_API_SECRET,
+    cloudName,
+    apiKey,
+    apiSecret,
   },
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 };
