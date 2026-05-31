@@ -20,20 +20,24 @@ let apiKey = process.env.CLOUDINARY_API_KEY;
 let apiSecret = process.env.CLOUDINARY_API_SECRET;
 const cloudinaryUrl = process.env.CLOUDINARY_URL;
 
-if (cloudName && apiKey && apiSecret) {
-  // Jika variabel individual lengkap dan benar, paksa CLOUDINARY_URL agar sinkron dengan yang benar
+// Heuristik defensif: API Key Cloudinary yang valid harus berupa angka saja (numeric)
+const isApiKeyValid = apiKey && !isNaN(Number(apiKey));
+
+if (cloudName && apiKey && apiSecret && isApiKeyValid) {
+  // Jika variabel individual lengkap dan API Key valid (angka), paksa CLOUDINARY_URL agar sinkron dengan yang benar
   process.env.CLOUDINARY_URL = `cloudinary://${apiKey}:${apiSecret}@${cloudName}`;
 } else if (cloudinaryUrl) {
-  // Jika hanya CLOUDINARY_URL yang tersedia, parse untuk mengisi variabel individual
+  // Jika hanya CLOUDINARY_URL yang tersedia (atau jika variabel individual tidak valid/salah input), 
+  // bersihkan dan parse CLOUDINARY_URL untuk mendapatkan nilai individual yang benar
   try {
     const cleanUrl = cloudinaryUrl.replace('cloudinary://', '');
     const [credentials, hostAndParams] = cleanUrl.split('@');
     if (credentials && hostAndParams) {
       const [key, secret] = credentials.split(':');
       const [host] = hostAndParams.split('?');
-      if (!apiKey) apiKey = key;
-      if (!apiSecret) apiSecret = secret;
-      if (!cloudName) cloudName = host;
+      apiKey = key;
+      apiSecret = secret;
+      cloudName = host;
     }
   } catch (e) {
     // Silent fallback
