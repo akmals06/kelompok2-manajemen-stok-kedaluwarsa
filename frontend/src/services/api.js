@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+
+// Auto-append /api if the user configured the root domain instead of the API path
+if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api') && !BASE_URL.endsWith('/api/')) {
+  BASE_URL = BASE_URL.endsWith('/') ? `${BASE_URL}api` : `${BASE_URL}/api`;
+}
 
 const api = axios.create({
   baseURL: BASE_URL,
