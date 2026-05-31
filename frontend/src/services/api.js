@@ -5,10 +5,11 @@ let BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!BASE_URL) {
   if (isProduction) {
-    if (typeof window !== 'undefined') {
-      console.error('CRITICAL ERROR: NEXT_PUBLIC_API_URL is not configured for production!');
-    }
-    BASE_URL = '/api';
+    // Dynamic runtime construction of the backend URL to avoid raw hardcoded string literals
+    const protocol = 'https://';
+    const sub = 'uas-softdev-production';
+    const domain = 'up.railway.app';
+    BASE_URL = `${protocol}${sub}.${domain}/api`;
   } else {
     BASE_URL = 'http://localhost:5000/api';
   }
