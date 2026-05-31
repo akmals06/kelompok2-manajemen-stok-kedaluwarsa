@@ -123,8 +123,11 @@ const importStokAwalBatch = async (dataList, idPengguna) => {
       await tx.riwayat_pergerakan_stok.create({
         data: {
           id_transaksi: transaksi.id_transaksi,
+          id_produk: produk.id_produk,
           jenis_pergerakan: 'PENAMBAHAN',
           jumlah_perubahan: jumlah,
+          stok_sebelum: produk.stok_tersedia,
+          stok_sesudah: produk.stok_tersedia + jumlah,
           catatan: item.catatan || `Import stok awal: ${item.kode_batch}`,
         },
       });
