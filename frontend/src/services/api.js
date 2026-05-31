@@ -1,15 +1,16 @@
 import axios from 'axios';
 
+const isProduction = process.env.NODE_ENV === 'production';
 let BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Bulletproof fallback: if running on production (Vercel) and env variable is missing,
-// automatically point directly to the live Railway backend domain!
 if (!BASE_URL) {
-  const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
   if (isProduction) {
-    BASE_URL = 'https://uas-softdev-production.up.railway.app/api';
-  } else {
+    if (typeof window !== 'undefined') {
+      console.error('CRITICAL ERROR: NEXT_PUBLIC_API_URL is not configured for production!');
+    }
     BASE_URL = '/api';
+  } else {
+    BASE_URL = 'http://localhost:5000/api';
   }
 }
 
@@ -17,8 +18,6 @@ if (!BASE_URL) {
 if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api') && !BASE_URL.endsWith('/api/')) {
   BASE_URL = BASE_URL.endsWith('/') ? `${BASE_URL}api` : `${BASE_URL}/api`;
 }
-
-console.log("Stok Kedaluwarsa API Base URL:", BASE_URL);
 
 const api = axios.create({
   baseURL: BASE_URL,

@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import authService from '@/services/auth.service';
-import { setAccessToken } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
 import './login.css';
 
 const Alert = ({ alert }) => {
@@ -17,6 +16,7 @@ const Alert = ({ alert }) => {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, user, loading: authLoading } = useAuth();
 
   const [activeView, setActiveView] = useState('login');
 
@@ -38,6 +38,12 @@ export default function LoginPage() {
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [showNewPass, setShowNewPass] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (alertLogin.msg) {
@@ -75,27 +81,14 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const res = await authService.login(email, password);
-      if (res.success && res.data?.accessToken) {
-        setAccessToken(res.data.accessToken);
-        router.push('/dashboard');
-      } else {
-        setAlertLogin({ type: 'danger', msg: res.message || 'Login gagal' });
-        setIsError(true);
-        setIsErrorShake(true);
-        setTimeout(() => setIsErrorShake(false), 500);
-      }
+      await login(email, password);
+      // login method from useAuth already handles redirecting to /dashboard
     } catch (err) {
       let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
       
-      // Proactive diagnostics for Vercel/production deployment without NEXT_PUBLIC_API_URL set
       const isTimeout = err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network error');
-      const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
-      
-      if (isTimeout && isProduction) {
-        msg = 'Koneksi ke API Server gagal (Timeout). Pastikan Anda sudah menambahkan environment variable NEXT_PUBLIC_API_URL di Vercel dengan URL backend Railway Anda yang aktif.';
-      } else if (isTimeout) {
-        msg = 'Gagal terhubung ke API server lokal. Pastikan backend Express Anda sudah dijalankan dengan npm run dev.';
+      if (isTimeout) {
+        msg = 'Koneksi ke server gagal atau waktu tunggu habis. Silakan periksa jaringan Anda dan coba lagi.';
       }
       
       setAlertLogin({ type: 'danger', msg });

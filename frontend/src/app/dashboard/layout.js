@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import Sidebar from '@/layout/Sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
@@ -89,9 +89,5 @@ function DashboardShell({ children }) {
 }
 
 export default function DashboardLayout({ children }) {
-  return (
-    <AuthProvider>
-      <DashboardShell>{children}</DashboardShell>
-    </AuthProvider>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

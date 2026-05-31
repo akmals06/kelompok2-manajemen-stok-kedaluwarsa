@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/hooks/useAuth';
 import "./globals.css";
 
 export const metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="antialiased font-body" suppressHydrationWarning>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
