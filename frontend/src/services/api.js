@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-let BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Bulletproof fallback: if running on production (Vercel) and env variable is missing,
+// automatically point directly to the live Railway backend domain!
+if (!BASE_URL) {
+  const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+  if (isProduction) {
+    BASE_URL = 'https://uas-softdev-production.up.railway.app/api';
+  } else {
+    BASE_URL = '/api';
+  }
+}
 
 // Auto-append /api if the user configured the root domain instead of the API path
 if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api') && !BASE_URL.endsWith('/api/')) {
