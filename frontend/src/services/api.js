@@ -5,6 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
+  timeout: 10000, // 10 seconds timeout to prevent hanging forever
 });
 
 let accessToken = null;

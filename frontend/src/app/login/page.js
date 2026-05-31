@@ -86,7 +86,18 @@ export default function LoginPage() {
         setTimeout(() => setIsErrorShake(false), 500);
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
+      let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
+      
+      // Proactive diagnostics for Vercel/production deployment without NEXT_PUBLIC_API_URL set
+      const isTimeout = err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network error');
+      const isProduction = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+      
+      if (isTimeout && isProduction) {
+        msg = 'Koneksi ke API Server gagal (Timeout). Pastikan Anda sudah menambahkan environment variable NEXT_PUBLIC_API_URL di Vercel dengan URL backend Railway Anda yang aktif.';
+      } else if (isTimeout) {
+        msg = 'Gagal terhubung ke API server lokal. Pastikan backend Express Anda sudah dijalankan dengan npm run dev.';
+      }
+      
       setAlertLogin({ type: 'danger', msg });
       setIsError(true);
       setIsErrorShake(true);
