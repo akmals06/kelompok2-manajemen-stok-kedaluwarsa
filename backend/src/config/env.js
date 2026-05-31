@@ -15,12 +15,16 @@ if (missingEnvs.length > 0) {
   throw new Error(`[CONFIG ERROR] Missing required environment variables: ${missingEnvs.join(', ')}`);
 }
 
-const cloudinaryUrl = process.env.CLOUDINARY_URL;
 let cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 let apiKey = process.env.CLOUDINARY_API_KEY;
 let apiSecret = process.env.CLOUDINARY_API_SECRET;
+const cloudinaryUrl = process.env.CLOUDINARY_URL;
 
-if (cloudinaryUrl && (!cloudName || !apiKey || !apiSecret)) {
+if (cloudName && apiKey && apiSecret) {
+  // Jika variabel individual lengkap dan benar, paksa CLOUDINARY_URL agar sinkron dengan yang benar
+  process.env.CLOUDINARY_URL = `cloudinary://${apiKey}:${apiSecret}@${cloudName}`;
+} else if (cloudinaryUrl) {
+  // Jika hanya CLOUDINARY_URL yang tersedia, parse untuk mengisi variabel individual
   try {
     const cleanUrl = cloudinaryUrl.replace('cloudinary://', '');
     const [credentials, hostAndParams] = cleanUrl.split('@');
