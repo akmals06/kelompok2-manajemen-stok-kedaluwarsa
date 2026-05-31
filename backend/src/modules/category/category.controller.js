@@ -2,7 +2,8 @@ const kategoriService = require('./category.service');
 
 const buatKategori = async (req, res, next) => {
   try {
-    const hasil = await kategoriService.buatKategori(req.body);
+    const fileBuffer = req.file ? req.file.buffer : null;
+    const hasil = await kategoriService.buatKategori(req.body, fileBuffer);
     res.status(201).json({
       success: true,
       message: 'Kategori berhasil dibuat',
@@ -41,7 +42,8 @@ const ambilKategoriById = async (req, res, next) => {
 
 const updateKategori = async (req, res, next) => {
   try {
-    const hasil = await kategoriService.updateKategori(req.params.id, req.body);
+    const fileBuffer = req.file ? req.file.buffer : null;
+    const hasil = await kategoriService.updateKategori(req.params.id, req.body, fileBuffer);
     res.status(200).json({
       success: true,
       message: 'Kategori berhasil diperbarui',

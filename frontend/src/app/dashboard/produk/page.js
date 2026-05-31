@@ -1,141 +1,63 @@
 'use client';
 import Loader from '@/components/ui/Loader';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useSearchParams } from 'next/navigation';
 import { 
   Package, Plus, Loader2, AlertTriangle, ChevronLeft, ChevronRight,
-  Wheat, ChefHat, Sparkles, Soup, Coffee, Droplet, Milk
+  Wheat, ChefHat, Sparkles, Soup, Coffee, Droplet, Milk, ImagePlus, X,
+  Search, Filter, Edit2, BarChart3, Clock, ImageOff
 } from 'lucide-react';
 import produkService from '@/services/produk.service';
 import kategoriService from '@/services/kategori.service';
 import StatusBadge from '@/components/ui/StatusBadge';
 import CustomSelect from '@/components/ui/CustomSelect';
+import { getThumbnailUrl, getCardImageUrl } from '@/utils/image';
 import Link from 'next/link';
 
 const getCategoryDetails = (nama) => {
   const cleanNama = (nama || '').toLowerCase();
-  
-  if (cleanNama.includes('beras') || cleanNama.includes('tepung')) {
-    return {
-      icon: Wheat,
-      bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%)',
-      border: 'rgba(245, 158, 11, 0.2)',
-      color: '#F59E0B',
-      image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur') || cleanNama.includes('rempah') || cleanNama.includes('kecap') || cleanNama.includes('saus')) {
-    return {
-      icon: ChefHat,
-      bg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%)',
-      border: 'rgba(239, 68, 68, 0.2)',
-      color: '#EF4444',
-      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('gula') || cleanNama.includes('garam')) {
-    return {
-      icon: Sparkles,
-      bg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%)',
-      border: 'rgba(6, 182, 212, 0.2)',
-      color: '#06B6D4',
-      image: 'https://images.unsplash.com/photo-1622484211148-716598e04042?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('mie') || cleanNama.includes('instan') || cleanNama.includes('ramen')) {
-    return {
-      icon: Soup,
-      bg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(253, 224, 71, 0.05) 100%)',
-      border: 'rgba(234, 179, 8, 0.2)',
-      color: '#EAB308',
-      image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh') || cleanNama.includes('sirup')) {
-    return {
-      icon: Coffee,
-      bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)',
-      border: 'rgba(59, 130, 246, 0.2)',
-      color: '#3B82F6',
-      image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('minyak') || cleanNama.includes('goreng')) {
-    return {
-      icon: Droplet,
-      bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.05) 100%)',
-      border: 'rgba(249, 115, 22, 0.2)',
-      color: '#F97316',
-      image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci') || cleanNama.includes('sampo') || cleanNama.includes('pembersih')) {
-    return {
-      icon: Sparkles,
-      bg: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(192, 132, 252, 0.05) 100%)',
-      border: 'rgba(168, 85, 247, 0.2)',
-      color: '#A855F7',
-      image: 'https://images.unsplash.com/photo-1585060544812-6b45742d762f?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju') || cleanNama.includes('mentega')) {
-    return {
-      icon: Milk,
-      bg: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(45, 212, 191, 0.05) 100%)',
-      border: 'rgba(20, 184, 166, 0.2)',
-      color: '#20B8A6',
-      image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  
-  return {
-    icon: Package,
-    bg: 'linear-gradient(135deg, rgba(161, 161, 170, 0.15) 0%, rgba(212, 212, 216, 0.05) 100%)',
-    border: 'rgba(161, 161, 170, 0.2)',
-    color: '#A1A1AA',
-    image: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=120&auto=format&fit=crop'
-  };
+  if (cleanNama.includes('beras') || cleanNama.includes('tepung')) return { icon: Wheat, bg: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,191,36,0.05) 100%)', border: 'rgba(245,158,11,0.2)', color: '#F59E0B' };
+  if (cleanNama.includes('bumbu') || cleanNama.includes('dapur') || cleanNama.includes('rempah') || cleanNama.includes('kecap') || cleanNama.includes('saus')) return { icon: ChefHat, bg: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(248,113,113,0.05) 100%)', border: 'rgba(239,68,68,0.2)', color: '#EF4444' };
+  if (cleanNama.includes('gula') || cleanNama.includes('garam')) return { icon: Sparkles, bg: 'linear-gradient(135deg, rgba(6,182,212,0.15) 0%, rgba(34,211,238,0.05) 100%)', border: 'rgba(6,182,212,0.2)', color: '#06B6D4' };
+  if (cleanNama.includes('mie') || cleanNama.includes('instan') || cleanNama.includes('ramen')) return { icon: Soup, bg: 'linear-gradient(135deg, rgba(234,179,8,0.15) 0%, rgba(253,224,71,0.05) 100%)', border: 'rgba(234,179,8,0.2)', color: '#EAB308' };
+  if (cleanNama.includes('minuman') || cleanNama.includes('sachet') || cleanNama.includes('botol') || cleanNama.includes('kopi') || cleanNama.includes('teh') || cleanNama.includes('sirup')) return { icon: Coffee, bg: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(96,165,250,0.05) 100%)', border: 'rgba(59,130,246,0.2)', color: '#3B82F6' };
+  if (cleanNama.includes('minyak') || cleanNama.includes('goreng')) return { icon: Droplet, bg: 'linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(251,146,60,0.05) 100%)', border: 'rgba(249,115,22,0.2)', color: '#F97316' };
+  if (cleanNama.includes('sabun') || cleanNama.includes('deterjen') || cleanNama.includes('cuci') || cleanNama.includes('sampo') || cleanNama.includes('pembersih')) return { icon: Sparkles, bg: 'linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(192,132,252,0.05) 100%)', border: 'rgba(168,85,247,0.2)', color: '#A855F7' };
+  if (cleanNama.includes('susu') || cleanNama.includes('olahan') || cleanNama.includes('keju') || cleanNama.includes('mentega')) return { icon: Milk, bg: 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(45,212,191,0.05) 100%)', border: 'rgba(20,184,166,0.2)', color: '#20B8A6' };
+  return { icon: Package, bg: 'linear-gradient(135deg, rgba(161,161,170,0.15) 0%, rgba(212,212,216,0.05) 100%)', border: 'rgba(161,161,170,0.2)', color: '#A1A1AA' };
 };
 
-const getProductDetails = (productName, categoryName) => {
-  const pName = (productName || '').toLowerCase();
-  const catDetails = getCategoryDetails(categoryName);
-  
-  if (pName.includes('so klin') || pName.includes('soklin') || pName.includes('liquid')) {
-    return {
-      image: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?q=80&w=120&auto=format&fit=crop'
-    };
+const getStokStatus = (tersedia, minimum) => {
+  if (tersedia <= 0) return { label: 'Habis', key: 'HABIS' };
+  if (tersedia <= minimum) return { label: 'Menipis', key: 'MENIPIS' };
+  return { label: 'Aman', key: 'AMAN' };
+};
+
+const getInitials = (name) => {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+};
+
+const ProductImage = ({ src, name, catColor, size = 'md' }) => {
+  const sizes = { sm: 'w-11 h-11', md: 'w-44 h-44', lg: 'w-52 h-52' };
+  const textSizes = { sm: 'text-sm', md: 'text-3xl', lg: 'text-4xl' };
+  const [imgError, setImgError] = useState(false);
+  useEffect(() => { setImgError(false); }, [src]);
+  if (src && !imgError) {
+    return (
+      <div className={`relative ${sizes[size]} rounded-2xl border border-white/10 overflow-hidden bg-zinc-900 shrink-0 shadow-lg group`}>
+        <img src={size === 'sm' ? getThumbnailUrl(src) : getCardImageUrl(src)} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={() => setImgError(true)} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+      </div>
+    );
   }
-  if (pName.includes('sunlight') || pName.includes('cuci piring')) {
-    return {
-      image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (pName.includes('lux') || pName.includes('sabun cair') || pName.includes('dettol') || pName.includes('mandi')) {
-    return {
-      image: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (pName.includes('rejoice') || pName.includes('sampo') || pName.includes('shampoo')) {
-    return {
-      image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (pName.includes('downy') || pName.includes('pelembut') || pName.includes('pewangi')) {
-    return {
-      image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  if (pName.includes('wipol') || pName.includes('super pell') || pName.includes('karbol') || pName.includes('lantai') || pName.includes('cling') || pName.includes('pelembut') || pName.includes('pewangi') || pName.includes('molto')) {
-    return {
-      image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?q=80&w=120&auto=format&fit=crop'
-    };
-  }
-  
-  return {
-    image: catDetails.image
-  };
+  return (
+    <div className={`relative ${sizes[size]} rounded-2xl border border-white/10 overflow-hidden shrink-0 shadow-lg flex items-center justify-center`} style={{ background: `linear-gradient(135deg, ${catColor || '#3F3F46'}22, ${catColor || '#3F3F46'}44)` }}>
+      <span className={`${textSizes[size]} font-bold`} style={{ color: catColor || '#A1A1AA' }}>{getInitials(name)}</span>
+    </div>
+  );
 };
 
 export default function ProdukPage() {
@@ -150,15 +72,69 @@ export default function ProdukPage() {
   const [form, setForm] = useState({
     nama_produk: '', id_kategori: '', satuan: 'pcs', stok_minimum: 10,
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const handleFileChange = (file) => {
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setFormError('Format gambar harus JPG, PNG, atau WebP.');
+      return;
+    }
+    if (file.size > 35 * 1024 * 1024) {
+      setFormError('Ukuran gambar maksimal 35 MB.');
+      return;
+    }
+    setFormError('');
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const clearImageSelection = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const closeForm = () => {
+    if (!submitting) {
+      setShowForm(false);
+      setForm({ nama_produk: '', id_kategori: '', satuan: 'pcs', stok_minimum: 10 });
+      setFormError('');
+      clearImageSelection();
+    }
+  };
   const [mounted, setMounted] = useState(false);
   const [selectedProduk, setSelectedProduk] = useState(null);
-  
-  // Pagination State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterKategori, setFilterKategori] = useState('');
+  const [filterStok, setFilterStok] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const overviewRef = useRef(null);
+  const userClickedRef = useRef(false);
+  const searchParams = useSearchParams();
+
+  const selectProduk = useCallback((p) => {
+    userClickedRef.current = true;
+    setSelectedProduk(p);
+  }, []);
+
+  useEffect(() => {
+    if (userClickedRef.current && overviewRef.current) {
+      userClickedRef.current = false;
+      const el = overviewRef.current;
+      const y = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, [selectedProduk]);
 
   useEffect(() => {
     setMounted(true);
+    const kategoriParam = searchParams.get('kategori');
+    if (kategoriParam) setFilterKategori(kategoriParam);
     const muatData = async () => {
       try {
         const [resProduk, resKategori] = await Promise.all([
@@ -168,9 +144,7 @@ export default function ProdukPage() {
         if (resProduk.success) {
           const list = resProduk.data || [];
           setProdukList(list);
-          if (list.length > 0) {
-            setSelectedProduk(list[0]);
-          }
+          if (list.length > 0) setSelectedProduk(list[0]);
         }
         if (resKategori.success) setKategoriList(resKategori.data || []);
       } catch (err) {
@@ -180,7 +154,7 @@ export default function ProdukPage() {
       }
     };
     muatData();
-  }, []);
+  }, [searchParams]);
 
   const toggleStatus = async (produk) => {
     try {
@@ -192,6 +166,7 @@ export default function ProdukPage() {
       setTimeout(() => setSukses(''), 3000);
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mengubah status');
+      setTimeout(() => setError(''), 5000);
     }
   };
 
@@ -203,14 +178,18 @@ export default function ProdukPage() {
 
     setSubmitting(true);
     try {
-      await produkService.tambah({
-        ...form,
-        id_kategori: parseInt(form.id_kategori),
-        stok_minimum: parseInt(form.stok_minimum),
-      });
+      const fd = new FormData();
+      fd.append('nama_produk', form.nama_produk);
+      fd.append('id_kategori', parseInt(form.id_kategori));
+      fd.append('satuan', form.satuan);
+      fd.append('stok_minimum', parseInt(form.stok_minimum));
+      if (imageFile) {
+        fd.append('gambar_produk', imageFile);
+      }
+
+      await produkService.tambah(fd);
       setSukses('Produk berhasil ditambahkan');
-      setShowForm(false);
-      setForm({ nama_produk: '', id_kategori: '', satuan: 'pcs', stok_minimum: 10 });
+      closeForm();
       const res = await produkService.ambilSemua();
       if (res.success) setProdukList(res.data || []);
       setTimeout(() => setSukses(''), 3000);
@@ -221,25 +200,53 @@ export default function ProdukPage() {
     }
   };
 
+  const filteredProduk = useMemo(() => produkList.filter(p => {
+    const q = searchQuery.toLowerCase();
+    const matchSearch = !q || p.nama_produk.toLowerCase().includes(q) || (p.kategori?.nama_kategori || '').toLowerCase().includes(q);
+    const matchKategori = !filterKategori || String(p.id_kategori) === String(filterKategori);
+    let matchStok = true;
+    if (filterStok) {
+      const s = getStokStatus(p.stok_tersedia, p.stok_minimum);
+      matchStok = s.key === filterStok;
+    }
+    return matchSearch && matchKategori && matchStok;
+  }), [produkList, searchQuery, filterKategori, filterStok]);
+  const totalItems = filteredProduk.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const paginatedProduk = useMemo(() => filteredProduk.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredProduk, currentPage]);
+
   if (loading) {
     return <Loader />;
   }
-
-  // Paginated Data Calculation
-  const totalItems = produkList.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-  const paginatedProduk = produkList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-white">Produk</h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1">Daftar produk sembako</p>
+          <p className="text-xs sm:text-sm text-zinc-500 mt-1">Kelola inventaris produk sembako</p>
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary self-start">
           <Plus className="w-4 h-4" /> Tambah Produk
         </button>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="glass-card p-3 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <input value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="input-dark pl-9 !py-2" placeholder="Cari produk..." />
+        </div>
+        <select value={filterKategori} onChange={e => { setFilterKategori(e.target.value); setCurrentPage(1); }} className="input-dark !w-auto min-w-[140px] !py-2">
+          <option value="">Semua Kategori</option>
+          {kategoriList.map(k => <option key={k.id_kategori} value={k.id_kategori}>{k.nama_kategori}</option>)}
+        </select>
+        <select value={filterStok} onChange={e => { setFilterStok(e.target.value); setCurrentPage(1); }} className="input-dark !w-auto min-w-[140px] !py-2">
+          <option value="">Semua Status</option>
+          <option value="AMAN">Aman</option>
+          <option value="MENIPIS">Menipis</option>
+          <option value="HABIS">Habis</option>
+        </select>
       </div>
 
       {sukses && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">{sukses}</div>}
@@ -250,7 +257,7 @@ export default function ProdukPage() {
         <div
           className="absolute inset-0 flex items-center justify-center p-4 pointer-events-auto"
           style={{ zIndex: 100 }}
-          onClick={() => !submitting && setShowForm(false)}
+          onClick={closeForm}
         >
           {/* Backdrop */}
           <div
@@ -326,6 +333,38 @@ export default function ProdukPage() {
                 </div>
               </div>
 
+              {/* ─── Image Upload ─── */}
+              <div className="mb-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Gambar Produk</p>
+                {imagePreview ? (
+                  <div className="relative w-full h-36 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 group">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={clearImageSelection}
+                      className="absolute top-2 right-2 p-1 rounded-lg bg-black/60 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/80 transition-all"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer"
+                  >
+                    <ImagePlus className="w-6 h-6 text-zinc-500 mb-1.5" />
+                    <span className="text-[11px] text-zinc-500">Klik untuk pilih gambar</span>
+                    <span className="text-[10px] text-zinc-600 mt-0.5">JPG, PNG, WebP — maks 35 MB</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e.target.files?.[0])}
+                      disabled={submitting}
+                    />
+                  </label>
+                )}
+              </div>
+
               {/* Divider */}
               <div className="border-t border-white/[0.06] my-3" />
 
@@ -380,7 +419,7 @@ export default function ProdukPage() {
 
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={closeForm}
                   disabled={submitting}
                   className="flex items-center justify-center"
                   style={{
@@ -408,83 +447,62 @@ export default function ProdukPage() {
         document.getElementById('right-column-portal')
       )}
 
-      {/* Dynamic Product Stock Overview Card (Equip / Tokopedia Style Mockup) */}
-      {selectedProduk && produkList.length > 0 && (
-        <div className="bg-gradient-to-r from-white/[0.04] to-transparent border border-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 transition-all duration-300">
-          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Product Stock Overview</h3>
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Image Container with White/Neutral Backdrop like the mockup! */}
-            <div className="relative w-44 h-44 rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shrink-0 shadow-lg group">
-              <img 
-                src={selectedProduk.gambar_produk || getProductDetails(selectedProduk.nama_produk, selectedProduk.kategori?.nama_kategori).image} 
-                alt={selectedProduk.nama_produk} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40" />
+      {/* Ringkasan Stok Produk */}
+      {selectedProduk && produkList.length > 0 && (() => {
+        const selCat = getCategoryDetails(selectedProduk.kategori?.nama_kategori);
+        const selStok = getStokStatus(selectedProduk.stok_tersedia, selectedProduk.stok_minimum);
+        return (
+          <div ref={overviewRef} className="glass-card p-6 transition-all duration-300 scroll-mt-20">
+            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Ringkasan Stok Produk</h3>
+            <div className="flex flex-col md:flex-row items-start gap-6">
+              <ProductImage src={selectedProduk.gambar_produk} name={selectedProduk.nama_produk} catColor={selCat.color} size="md" />
+              <div className="flex-1 w-full grid grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 text-sm">
+                <div className="flex flex-col gap-0.5"><span className="text-zinc-500 text-xs">Nama produk</span><span className="text-[15px] font-bold text-white tracking-tight">{selectedProduk.nama_produk}</span></div>
+                <div className="flex flex-col gap-0.5"><span className="text-zinc-500 text-xs">Kode tampilan</span><span className="text-[13px] font-semibold text-zinc-300 font-mono">PRD-{selectedProduk.id_produk.toString().padStart(3,'0')}</span></div>
+                <div className="flex flex-col gap-0.5"><span className="text-zinc-500 text-xs">Kategori</span><span className="text-[13px] font-semibold text-zinc-300">{selectedProduk.kategori?.nama_kategori || '-'}</span></div>
+                <div className="flex flex-col gap-0.5"><span className="text-zinc-500 text-xs">Satuan</span><span className="text-[13px] font-semibold text-zinc-300">{selectedProduk.satuan}</span></div>
+                <div className="flex flex-col gap-1 mt-1"><span className="text-zinc-500 text-xs">Stok minimum</span><span className="inline-flex items-center self-start px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-semibold border border-amber-500/20">{selectedProduk.stok_minimum} {selectedProduk.satuan}</span></div>
+                <div className="flex flex-col gap-1 mt-1"><span className="text-zinc-500 text-xs">Stok tersedia</span><span className="inline-flex items-center self-start px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">{selectedProduk.stok_tersedia} {selectedProduk.satuan}</span></div>
+                <div className="flex flex-col gap-1 mt-1"><span className="text-zinc-500 text-xs">Status stok</span><StatusBadge status={selStok.key} /></div>
+                <div className="flex flex-col gap-1 mt-1"><span className="text-zinc-500 text-xs">Status</span><StatusBadge status={selectedProduk.status_aktif} type="active" /></div>
+              </div>
             </div>
+          </div>
+        );
+      })()}
 
-            {/* Product Details Grid */}
-            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-6 text-sm">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 text-xs">Product Name</span>
-                <span className="text-[16px] font-bold text-white tracking-tight">{selectedProduk.nama_produk}</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 text-xs">No. SKU</span>
-                <span className="text-[14px] font-semibold text-zinc-300 tracking-mono">PRD-{selectedProduk.id_produk.toString().padStart(3, '0')}</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 text-xs">Category</span>
-                <span className="text-[14px] font-semibold text-zinc-300">{selectedProduk.kategori?.nama_kategori || '-'}</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 text-xs">Unit/Satuan</span>
-                <span className="text-[14px] font-semibold text-zinc-300">{selectedProduk.satuan}</span>
-              </div>
-              
-              <div className="flex flex-col gap-1 mt-2">
-                <span className="text-zinc-500 text-xs">Minimum Stock</span>
-                <div>
-                  <span className="inline-flex items-center px-3 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs font-semibold border border-red-500/20">
-                    {selectedProduk.stok_minimum} {selectedProduk.satuan}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 mt-2">
-                <span className="text-zinc-500 text-xs">Total Stock</span>
-                <div>
-                  <span className="inline-flex items-center px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
-                    {selectedProduk.stok_tersedia} {selectedProduk.satuan}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 mt-2">
-                <span className="text-zinc-500 text-xs">Status</span>
-                <div>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border ${
-                    selectedProduk.status_aktif 
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                      : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-                  }`}>
-                    {selectedProduk.status_aktif ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-              </div>
+      {/* Pergerakan Stok + Umur Persediaan */}
+      {selectedProduk && produkList.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="glass-card p-6">
+            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Pergerakan Stok</h3>
+            <div className="flex flex-col items-center justify-center h-40 text-center">
+              <BarChart3 className="w-10 h-10 text-zinc-700 mb-3" />
+              <p className="text-sm text-zinc-500">Data pergerakan stok belum tersedia</p>
+              <p className="text-xs text-zinc-600 mt-1">Riwayat transaksi masuk/keluar akan tampil di sini</p>
+            </div>
+          </div>
+          <div className="glass-card p-6">
+            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Umur Persediaan</h3>
+            <div className="flex flex-col items-center justify-center h-40 text-center">
+              <Clock className="w-10 h-10 text-zinc-700 mb-3" />
+              <p className="text-sm text-zinc-500">Data umur persediaan belum tersedia</p>
+              <p className="text-xs text-zinc-600 mt-1">Informasi batch dan kedaluwarsa akan tampil di sini</p>
             </div>
           </div>
         </div>
       )}
 
-      {produkList.length === 0 ? (
+      {filteredProduk.length === 0 ? (
         <div className="glass-card p-12 text-center">
           <Package className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-zinc-400">Belum ada produk</h3>
-          <p className="text-sm text-zinc-600 mt-1">Tambahkan produk pertama untuk memulai inventaris.</p>
+          <h3 className="text-lg font-semibold text-zinc-400">{produkList.length === 0 ? 'Belum ada produk' : 'Tidak ada produk yang cocok'}</h3>
+          <p className="text-sm text-zinc-600 mt-1">{produkList.length === 0 ? 'Tambahkan produk pertama untuk memulai inventaris.' : 'Coba ubah kata kunci atau filter.'}</p>
         </div>
       ) : (
         <div className="glass-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[640px]">
+            <table className="w-full text-sm min-w-[700px]">
               <thead>
                 <tr className="border-b border-white/10 text-zinc-400">
                   <th className="text-left py-3 px-4 font-medium">Produk</th>
@@ -492,7 +510,7 @@ export default function ProdukPage() {
                   <th className="text-left py-3 px-4 font-medium">Satuan</th>
                   <th className="text-right py-3 px-4 font-medium">Stok</th>
                   <th className="text-right py-3 px-4 font-medium">Minimum</th>
-                  <th className="text-center py-3 px-4 font-medium">Status</th>
+                  <th className="text-center py-3 px-4 font-medium">Status Stok</th>
                   <th className="text-center py-3 px-4 font-medium">Aksi</th>
                 </tr>
               </thead>
@@ -500,70 +518,33 @@ export default function ProdukPage() {
                 {paginatedProduk.map((p) => {
                   const catName = p.kategori?.nama_kategori || '';
                   const details = getCategoryDetails(catName);
-                  const prodDetails = getProductDetails(p.nama_produk, catName);
                   const IconComp = details.icon;
-                  const finalProductImage = p.gambar_produk || prodDetails.image;
-                  
+                  const stokStatus = getStokStatus(p.stok_tersedia, p.stok_minimum);
                   return (
-                    <tr 
-                      key={p.id_produk} 
-                      onClick={() => setSelectedProduk(p)}
-                      className={`border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors ${
-                        selectedProduk?.id_produk === p.id_produk ? 'bg-white/[0.03]' : ''
-                      }`}
-                    >
-                      {/* Premium E-Commerce Style Product Thumbnail + Name Column */}
-                      <td className="py-4 px-4 text-white">
-                        <div className="flex items-center gap-3.5">
-                          <div className="relative w-12 h-12 rounded-2xl border border-white/10 overflow-hidden shrink-0 bg-zinc-900 shadow-md group transition-transform duration-300 hover:scale-105">
-                            <img 
-                              src={finalProductImage} 
-                              alt={p.nama_produk} 
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                            />
-                            {/* Overlay glow */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-40" />
-                          </div>
-                          
-                          <span className="font-semibold text-white tracking-tight text-[14.5px] max-w-[260px] truncate" title={p.nama_produk}>
-                            {p.nama_produk}
-                          </span>
+                    <tr key={p.id_produk} onClick={() => selectProduk(p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectProduk(p); } }} tabIndex={0} role="button" aria-label={`Pilih ${p.nama_produk}`} className={`border-b border-white/5 hover:bg-white/[0.03] cursor-pointer transition-colors focus:outline-none focus:bg-white/[0.04] ${selectedProduk?.id_produk === p.id_produk ? 'bg-[#E1FF01]/[0.04] border-l-2 border-l-[#E1FF01]/40' : ''}`}>
+                      <td className="py-3.5 px-4 text-white">
+                        <div className="flex items-center gap-3">
+                          <ProductImage src={p.gambar_produk} name={p.nama_produk} catColor={details.color} size="sm" />
+                          <span className="font-semibold text-white tracking-tight text-[13.5px] max-w-[220px] truncate" title={p.nama_produk}>{p.nama_produk}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3.5 px-4">
                         {catName ? (
-                          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-900/50 border border-white/5 shadow-sm">
-                            <div 
-                              className="flex items-center justify-center w-6 h-6 rounded-lg border shrink-0"
-                              style={{ 
-                                background: details.bg, 
-                                borderColor: details.border,
-                                boxShadow: `0 2px 6px ${details.border}`
-                              }}
-                            >
-                              <IconComp className="w-3.5 h-3.5" style={{ color: details.color }} />
-                            </div>
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-zinc-900/50 border border-white/5">
+                            <IconComp className="w-3 h-3" style={{ color: details.color }} />
                             <span className="text-xs font-medium text-zinc-300">{catName}</span>
                           </div>
-                        ) : (
-                          <span className="text-zinc-500">-</span>
-                        )}
+                        ) : <span className="text-zinc-500">-</span>}
                       </td>
-                      <td className="py-4 px-4 text-zinc-400 font-normal">{p.satuan}</td>
-                      <td className="py-4 px-4 text-right font-bold text-white">{p.stok_tersedia}</td>
-                      <td className="py-4 px-4 text-right text-zinc-400 font-medium">{p.stok_minimum}</td>
-                      <td className="py-4 px-4 text-center"><StatusBadge status={p.status_aktif} type="active" /></td>
-                      <td className="py-4 px-4 text-center">
-                        <button
-                          onClick={() => toggleStatus(p)}
-                          className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold transition-all ${
-                            p.status_aktif 
-                              ? 'bg-red-500/10 text-red-400 border border-red-500/10 hover:bg-red-500/20' 
-                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/20'
-                          }`}
-                        >
-                          {p.status_aktif ? 'Nonaktifkan' : 'Aktifkan'}
-                        </button>
+                      <td className="py-3.5 px-4 text-zinc-400">{p.satuan}</td>
+                      <td className="py-3.5 px-4 text-right font-bold text-white">{p.stok_tersedia}</td>
+                      <td className="py-3.5 px-4 text-right text-zinc-400 font-medium">{p.stok_minimum}</td>
+                      <td className="py-3.5 px-4 text-center"><StatusBadge status={stokStatus.key} /></td>
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link href={`/dashboard/produk/edit/${p.id_produk}`} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all" title="Edit" onClick={e => e.stopPropagation()}><Edit2 className="w-3.5 h-3.5" /></Link>
+                          <button onClick={(e) => { e.stopPropagation(); toggleStatus(p); }} className={`text-xs px-3 py-1 rounded-lg font-semibold transition-all ${p.status_aktif ? 'bg-red-500/10 text-red-400 border border-red-500/10 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10 hover:bg-emerald-500/20'}`}>{p.status_aktif ? 'Nonaktifkan' : 'Aktifkan'}</button>
+                        </div>
                       </td>
                     </tr>
                   );

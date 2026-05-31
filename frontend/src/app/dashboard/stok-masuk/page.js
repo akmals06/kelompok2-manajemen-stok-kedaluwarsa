@@ -1,7 +1,7 @@
 'use client';
 import Loader from '@/components/ui/Loader';
 
-import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { ArrowDownToLine, Loader2, Plus, Package, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -29,10 +29,10 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
     );
   });
 
-  const setOpenAndNotify = (val) => {
+  const setOpenAndNotify = useCallback((val) => {
     setOpen(val);
     onOpenChange?.(val);
-  };
+  }, [onOpenChange]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -40,7 +40,7 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [setOpenAndNotify]);
 
   useEffect(() => {
     if (open && searchRef.current) searchRef.current.focus();

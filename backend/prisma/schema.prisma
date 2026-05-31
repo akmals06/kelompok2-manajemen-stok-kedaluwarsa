@@ -78,12 +78,14 @@ model pengguna {
 }
 
 model kategori_produk {
-  id_kategori   Int      @id @default(autoincrement())
-  nama_kategori String   @unique
-  deskripsi     String?
-  status_aktif  Boolean  @default(true)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id_kategori          Int      @id @default(autoincrement())
+  nama_kategori        String   @unique
+  deskripsi            String?
+  gambar_kategori      String?
+  cloudinary_public_id String?
+  status_aktif         Boolean  @default(true)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
   produk produk[]
 

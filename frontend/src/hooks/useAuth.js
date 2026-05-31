@@ -14,11 +14,38 @@ export function AuthProvider({ children }) {
   const router = useRouter();
 
   const muatSesiAwal = useCallback(async () => {
-  try {
-    const res = await authService.refresh();
+    try {
+      const res = await authService.refresh();
+      if (res.success && res.data?.accessToken) {
+        setAccessToken(res.data.accessToken);
+        // Fetch profil lengkap termasuk foto_profil dan no_telepon
+        try {
+          const resProfil = await penggunaService.ambilProfil();
+          if (resProfil.success) {
+            setUser({ ...res.data.pengguna, ...resProfil.data });
+          } else {
+            setUser(res.data.pengguna);
+          }
+        } catch {
+          setUser(res.data.pengguna);
+        }
+      }
+    } catch {
+      clearAccessToken();
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    muatSesiAwal();
+  }, [muatSesiAwal]);
+
+  const login = async (email, password) => {
+    const res = await authService.login(email, password);
     if (res.success && res.data?.accessToken) {
       setAccessToken(res.data.accessToken);
-      // Fetch profil lengkap termasuk foto_profil dan no_telepon
       try {
         const resProfil = await penggunaService.ambilProfil();
         if (resProfil.success) {
@@ -29,41 +56,14 @@ export function AuthProvider({ children }) {
       } catch {
         setUser(res.data.pengguna);
       }
+      router.push('/dashboard');
+      return res;
     }
-  } catch {
-    clearAccessToken();
-    setUser(null);
-  } finally {
-    setLoading(false);
-  }
-}, []);
-
-  useEffect(() => {
-    muatSesiAwal();
-  }, [muatSesiAwal]);
-
-  const login = async (email, password) => {
-  const res = await authService.login(email, password);
-  if (res.success && res.data?.accessToken) {
-    setAccessToken(res.data.accessToken);
-    try {
-      const resProfil = await penggunaService.ambilProfil();
-      if (resProfil.success) {
-        setUser({ ...res.data.pengguna, ...resProfil.data });
-      } else {
-        setUser(res.data.pengguna);
-      }
-    } catch {
-      setUser(res.data.pengguna);
-    }
-    router.push('/dashboard');
-    return res;
-  }
-  throw new Error(res.message || 'Login gagal');
-};
+    throw new Error(res.message || 'Login gagal');
+  };
 
   const updateUser = (dataBaru) => {
-  setUser(prev => ({ ...prev, ...dataBaru }));
+    setUser((prev) => ({ ...prev, ...dataBaru }));
   };
 
   const logout = async () => {

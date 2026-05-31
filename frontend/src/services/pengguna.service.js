@@ -24,9 +24,7 @@ const penggunaService = {
   uploadFoto: async (file) => {
     const formData = new FormData();
     formData.append('foto', file);
-    const res = await api.post('/pengguna/upload-foto', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await api.post('/pengguna/upload-foto', formData);
     return res.data;
   },
 };

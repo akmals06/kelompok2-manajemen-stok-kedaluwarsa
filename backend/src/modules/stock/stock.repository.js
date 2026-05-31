@@ -72,6 +72,7 @@ const prosesStokMasuk = async (dataTransaksi, dataBatch) => {
     const riwayat = await tx.riwayat_pergerakan_stok.create({
       data: {
         id_transaksi: transaksi.id_transaksi,
+        id_produk: dataTransaksi.id_produk,
         jenis_pergerakan: 'PENAMBAHAN',
         jumlah_perubahan: dataTransaksi.jumlah,
         stok_sebelum: stokSebelum,
@@ -188,6 +189,7 @@ const prosesStokKeluar = async (dataTransaksi, idBatch) => {
     const riwayat = await tx.riwayat_pergerakan_stok.create({
       data: {
         id_transaksi: transaksi.id_transaksi,
+        id_produk: dataTransaksi.id_produk,
         jenis_pergerakan: 'PENGURANGAN',
         jumlah_perubahan: dataTransaksi.jumlah,
         stok_sebelum: stokSebelum,

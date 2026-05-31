@@ -3,58 +3,8 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
-const getProductSeedImage = (nama, kategori) => {
-  const pName = (nama || '').toLowerCase();
-  
-  if (pName.includes('so klin') || pName.includes('soklin') || pName.includes('liquid')) {
-    return 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?q=80&w=120&auto=format&fit=crop';
-  }
-  if (pName.includes('rinso') || pName.includes('daia')) {
-    return 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?q=80&w=120&auto=format&fit=crop';
-  }
-  if (pName.includes('sunlight') || pName.includes('cuci piring') || pName.includes('lemon')) {
-    return 'https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=120&auto=format&fit=crop';
-  }
-  if (pName.includes('lux') || pName.includes('dettol') || pName.includes('giv') || pName.includes('lifebuoy')) {
-    return 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=120&auto=format&fit=crop';
-  }
-  if (pName.includes('rejoice') || pName.includes('sampo') || pName.includes('shampoo') || pName.includes('sunsilk') || pName.includes('clear') || pName.includes('pantene')) {
-    return 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?q=80&w=120&auto=format&fit=crop';
-  }
-  if (pName.includes('downy') || pName.includes('pelembut') || pName.includes('pewangi') || pName.includes('molto')) {
-    return 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=120&auto=format&fit=crop';
-  }
-  if (pName.includes('wipol') || pName.includes('super pell') || pName.includes('karbol') || pName.includes('lantai') || pName.includes('cling')) {
-    return 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?q=80&w=120&auto=format&fit=crop';
-  }
-  
-  const cat = (kategori || '').toLowerCase();
-  if (cat.includes('beras') || cat.includes('tepung')) {
-    return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('bumbu') || cat.includes('dapur')) {
-    return 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('gula') || cat.includes('garam')) {
-    return 'https://images.unsplash.com/photo-1622484211148-716598e04042?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('mie') || cat.includes('instan')) {
-    return 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('minuman') || cat.includes('sachet') || cat.includes('botol')) {
-    return 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('minyak') || cat.includes('goreng')) {
-    return 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('sabun') || cat.includes('deterjen')) {
-    return 'https://images.unsplash.com/photo-1585060544812-6b45742d762f?q=80&w=120&auto=format&fit=crop';
-  }
-  if (cat.includes('susu') || cat.includes('olahan')) {
-    return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=120&auto=format&fit=crop';
-  }
-  
-  return 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=120&auto=format&fit=crop';
+const getProductSeedImage = () => {
+  return null;
 };
 
 async function main() {
@@ -376,7 +326,7 @@ async function main() {
           satuan: item.satuan,
           stok_minimum: item.min,
           stok_tersedia: 0, // Inisialisasi stok tersedia default
-          gambar_produk: getProductSeedImage(item.nama, kat.nama_kategori),
+          gambar_produk: getProductSeedImage(),
         },
       });
       produkList.push(prod);
@@ -591,8 +541,6 @@ async function main() {
   for (const b of batchMendekati) {
     const isExpired = b.status_batch === 'KEDALUWARSA';
     const jenis = isExpired ? 'KEDALUWARSA' : 'MENDEKATI_KEDALUWARSA';
-
-
 
     await prisma.notifikasi_kedaluwarsa.create({
       data: {

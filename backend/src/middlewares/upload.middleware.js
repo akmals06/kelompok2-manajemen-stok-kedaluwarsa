@@ -1,16 +1,18 @@
 const multer = require('multer');
 
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 35 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    if (ALLOWED_MIMES.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Tipe file ditolak. Hanya file gambar yang diizinkan.'));
+      cb(new Error('Format gambar harus JPG, PNG, atau WebP.'));
     }
   },
 });

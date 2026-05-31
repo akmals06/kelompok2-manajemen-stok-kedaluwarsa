@@ -3,7 +3,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const path = require('path');
 
 const corsOptions = require('./config/cors');
 const errorMiddleware = require('./middlewares/error.middleware');
@@ -20,8 +19,6 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use('/public', express.static(path.join(__dirname, '../public')));
 
 app.use('/api', routes);
 

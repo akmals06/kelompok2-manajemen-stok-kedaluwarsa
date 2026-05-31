@@ -55,7 +55,8 @@ const buatProduk = async (dataProduk, fileBuffer) => {
   }
 
   const payload = {
-    ...dataProduk,
+    nama_produk: dataProduk.nama_produk,
+    satuan: dataProduk.satuan,
     id_kategori: parseInt(dataProduk.id_kategori, 10),
     stok_minimum: parseInt(dataProduk.stok_minimum, 10),
     gambar_produk,
@@ -97,7 +98,8 @@ const updateProduk = async (idProduk, dataProduk, fileBuffer) => {
   }
 
   const payload = {
-    ...dataProduk,
+    nama_produk: dataProduk.nama_produk !== undefined ? dataProduk.nama_produk : produkLama.nama_produk,
+    satuan: dataProduk.satuan !== undefined ? dataProduk.satuan : produkLama.satuan,
     id_kategori: dataProduk.id_kategori ? parseInt(dataProduk.id_kategori, 10) : produkLama.id_kategori,
     stok_minimum: dataProduk.stok_minimum ? parseInt(dataProduk.stok_minimum, 10) : produkLama.stok_minimum,
     gambar_produk,

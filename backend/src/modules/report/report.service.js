@@ -1,4 +1,6 @@
 const laporanRepo = require('./report.repository');
+const { isExpired, isNearExpiry } = require('../../utils/date');
+const { NEAR_EXPIRY_DAYS } = require('../../constants/batch.constant');
 
 const ambilRingkasanStok = async () => {
   const produkList = await laporanRepo.ambilRingkasanStok();
@@ -81,9 +83,6 @@ const ambilRingkasanDashboard = async () => {
 
   const totalProduk = ringkasanStok.length;
   const stokRendah = ringkasanStok.filter((p) => p.status_stok === 'STOK_RENDAH');
-
-  const { isExpired, isNearExpiry } = require('../../utils/date');
-  const { NEAR_EXPIRY_DAYS } = require('../../constants/batch.constant');
 
   const batchDenganStatus = batchAkanExpiry.map((b) => {
     let status = 'AKTIF';

@@ -36,18 +36,41 @@ function getGreeting() {
   return "Selamat Malam";
 }
 
+function LiveClock() {
+  const [waktu, setWaktu] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setWaktu(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const formatJam = waktu
+    .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    .replace(/:/g, ".");
+  const formatHariTanggal = waktu
+    .toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+    .toUpperCase();
+  return (
+    <div className="text-right">
+      <p className="text-xl sm:text-2xl font-bold text-white tabular-nums tracking-tight font-mono leading-none mb-1" suppressHydrationWarning>
+        {formatJam}
+      </p>
+      <p className="text-[10px] text-zinc-500 uppercase tracking-widest" suppressHydrationWarning>
+        {formatHariTanggal}
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [waktuSekarang, setWaktuSekarang] = useState(new Date());
-  const [filterType, setFilterType] = useState("ALL"); // ALL, MASUK, KELUAR
+  const [filterType, setFilterType] = useState("ALL");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
   const [filterAdmin, setFilterAdmin] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [expiryTab, setExpiryTab] = useState("ALL"); // ALL, EXPIRED, HAMPIR
+  const [expiryTab, setExpiryTab] = useState("ALL");
   const [expiryPage, setExpiryPage] = useState(1);
 
   useEffect(() => {
@@ -66,13 +89,8 @@ export default function DashboardPage() {
     return () => clearInterval(intervalData);
   }, []);
 
-  useEffect(() => {
-    const timerJam = setInterval(() => setWaktuSekarang(new Date()), 1000);
-    return () => clearInterval(timerJam);
-  }, []);
-
-  // Safe fallback when data is loading
-  const transaksi_terakhir = data?.transaksi_terakhir || [];
+  // Memoize agar referensi stabil untuk useMemo dependency
+  const transaksi_terakhir = useMemo(() => data?.transaksi_terakhir || [], [data]);
 
   // Derive unique admin names for filter
   const uniqueAdmins = useMemo(() => {
@@ -170,23 +188,6 @@ export default function DashboardPage() {
   );
   const namaHari = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
-  // Custom formats to match the image: "13.08.35", "MINGGU, 24 MEI 2026"
-  const formatJam = waktuSekarang
-    .toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    })
-    .replace(/:/g, ".");
-  const formatHariTanggal = waktuSekarang
-    .toLocaleDateString("id-ID", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-    .toUpperCase();
-
   const totalBatchAktif =
     batch.total_batch || batch.hampir_kedaluwarsa + batch.kedaluwarsa;
 
@@ -211,20 +212,7 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-full bg-[#E1FF01]/10 flex items-center justify-center shrink-0">
                 <Clock className="w-5 h-5 text-[#E1FF01]" />
               </div>
-              <div className="text-right">
-                <p
-                  className="text-xl sm:text-2xl font-bold text-white tabular-nums tracking-tight font-mono leading-none mb-1"
-                  suppressHydrationWarning
-                >
-                  {formatJam}
-                </p>
-                <p
-                  className="text-[10px] text-zinc-500 uppercase tracking-widest"
-                  suppressHydrationWarning
-                >
-                  {formatHariTanggal}
-                </p>
-              </div>
+              <LiveClock />
             </div>
           </div>
 
