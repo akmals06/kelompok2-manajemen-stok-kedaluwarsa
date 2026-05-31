@@ -7,6 +7,8 @@ if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api') && !BASE_URL.endsWith('/ap
   BASE_URL = BASE_URL.endsWith('/') ? `${BASE_URL}api` : `${BASE_URL}/api`;
 }
 
+console.log("Stok Kedaluwarsa API Base URL:", BASE_URL);
+
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
