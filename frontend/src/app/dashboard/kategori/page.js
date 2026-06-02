@@ -43,7 +43,7 @@ const getInitials = (name) => {
 const MAX_SIZE = 35 * 1024 * 1024;
 const ALLOWED = ['image/jpeg','image/png','image/webp'];
 
-function CoverImage({ src, nama, id }) {
+function CoverImage({ src, nama, id, onImageClick }) {
   const [err, setErr] = useState(false);
   useEffect(() => { setErr(false); }, [src]);
   const visual = getVisual(nama, id);
@@ -51,9 +51,20 @@ function CoverImage({ src, nama, id }) {
   const initials = getInitials(nama);
   if (src && !err) {
     return (
-      <div className="relative h-36 overflow-hidden">
-        <img src={getCardImageUrl(src)} alt={nama} className="w-full h-full object-cover" onError={() => setErr(true)} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)' }} />
+      <div 
+        className="relative h-36 overflow-hidden bg-zinc-950 flex items-center justify-center cursor-zoom-in group"
+        onClick={(e) => {
+          if (onImageClick) {
+            e.stopPropagation();
+            onImageClick(src, nama);
+          }
+        }}
+      >
+        <img src={getCardImageUrl(src)} alt={nama} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" onError={() => setErr(true)} />
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+          <span className="text-[10px] uppercase font-bold tracking-widest text-white bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-sm">Lihat Penuh</span>
+        </div>
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 60%)' }} />
       </div>
     );
   }
@@ -89,6 +100,7 @@ export default function KategoriPage() {
   const [preview, setPreview] = useState(null);
   const [existingImg, setExistingImg] = useState(null);
   const fileRef = useRef(null);
+  const [lightboxImg, setLightboxImg] = useState(null);
 
   const muatData = async () => {
     try {
@@ -292,7 +304,7 @@ export default function KategoriPage() {
             const handleKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToProduk(); } };
             return (
               <div key={k.id_kategori} onClick={goToProduk} onKeyDown={handleKey} tabIndex={0} role="button" aria-label={`Lihat produk ${k.nama_kategori}`} className="glass-card overflow-hidden group cursor-pointer transition-all duration-300 hover:border-[#E1FF01]/20 hover:shadow-lg hover:shadow-[#E1FF01]/5 focus:outline-none focus:ring-2 focus:ring-[#E1FF01]/40 focus:ring-offset-2 focus:ring-offset-zinc-900 hover:-translate-y-0.5">
-                <CoverImage src={k.gambar_kategori} nama={k.nama_kategori} id={k.id_kategori} />
+                <CoverImage src={k.gambar_kategori} nama={k.nama_kategori} id={k.id_kategori} onImageClick={(src, nama) => setLightboxImg({ src, nama })} />
                 {k.status_aktif === false && <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/30 backdrop-blur-sm">Nonaktif</div>}
                 <div className="p-4">
                   <h3 className="text-[15px] font-bold text-white tracking-tight mb-0.5 group-hover:text-[#E1FF01] transition-colors duration-200">{k.nama_kategori}</h3>
@@ -319,7 +331,16 @@ export default function KategoriPage() {
             return (
               <tr key={k.id_kategori} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                 <td className="py-3.5 px-4"><div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 flex items-center justify-center" style={{ background: k.gambar_kategori ? undefined : v.gradient }}>
+                  <div 
+                    onClick={(e) => {
+                      if (k.gambar_kategori) {
+                        e.stopPropagation();
+                        setLightboxImg({ src: k.gambar_kategori, nama: k.nama_kategori });
+                      }
+                    }}
+                    className={`relative w-10 h-10 rounded-xl overflow-hidden shrink-0 flex items-center justify-center ${k.gambar_kategori ? 'cursor-zoom-in hover:border-[#E1FF01]/30 border border-transparent transition-colors' : ''}`}
+                    style={{ background: k.gambar_kategori ? undefined : v.gradient }}
+                  >
                     {k.gambar_kategori ? <img src={getThumbnailUrl(k.gambar_kategori)} alt={k.nama_kategori} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-white/30 select-none">{ini}</span>}
                   </div>
                   <div><span className="font-semibold text-white tracking-tight text-[13.5px]">{k.nama_kategori}</span>
@@ -337,6 +358,18 @@ export default function KategoriPage() {
             );
           })}</tbody>
         </table></div></div>
+      )}
+
+      {lightboxImg && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md pointer-events-auto" onClick={() => setLightboxImg(null)}>
+          <button className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer">
+            <X className="w-6 h-6" />
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
+            <img src={lightboxImg.src} alt={lightboxImg.nama} className="max-w-full max-h-[80vh] rounded-2xl object-contain border border-white/10 shadow-2xl" />
+            <p className="text-center text-sm font-semibold text-white/90 mt-3">{lightboxImg.nama}</p>
+          </div>
+        </div>
       )}
     </div>
   );

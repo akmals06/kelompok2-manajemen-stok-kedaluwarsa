@@ -253,12 +253,16 @@ function ModalPengaturan({ tabAwal, user, onTutup, onUserUpdate, onLogout }) {
             <div className="space-y-4">
               {/* Upload foto */}
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <label className="w-16 h-16 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer group relative hover:border-[#E1FF01]/40 transition-colors">
                   {preview
-                    ? <img src={preview} alt="preview" className="w-full h-full object-cover" />
+                    ? <img src={preview} alt="preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     : <span className="text-lg font-bold text-zinc-300">{inisial}</span>
                   }
-                </div>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                    <Upload className="w-4 h-4 text-white" />
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                </label>
                 <div>
                   <label className="cursor-pointer inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 rounded-lg px-3 py-2 text-xs font-medium transition-all">
                     <Upload className="w-3.5 h-3.5" />
