@@ -11,7 +11,15 @@ const ambilSemuaRiwayat = async () => {
           tanggal_transaksi: true,
           sumber_masuk: true,
           tujuan_keluar: true,
-          produk: { select: { nama_produk: true, satuan: true } },
+          produk: { 
+            select: { 
+              id_produk: true,
+              nama_produk: true, 
+              satuan: true,
+              gambar_produk: true,
+              kategori: { select: { nama_kategori: true } }
+            } 
+          },
           pengguna: { select: { nama: true } },
         },
       },

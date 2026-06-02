@@ -9,6 +9,7 @@ import stokService from '@/services/stok.service';
 import produkService from '@/services/produk.service';
 import batchService from '@/services/batch.service';
 import { formatTanggal } from '@/utils/format';
+import { getThumbnailUrl } from '@/utils/image';
 
 /* ── Custom Dropdowns ─────────────────────────────── */
 function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange }) {
@@ -589,8 +590,24 @@ function StokKeluarContent() {
                       <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
                         {formatTanggal(t.tanggal_transaksi)}
                       </td>
-                      <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.72)', fontSize: '13px', fontWeight: 500 }}>
-                        {t.produk?.nama_produk}
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-zinc-800 border border-white/10 shrink-0 flex items-center justify-center">
+                            {t.produk?.gambar_produk ? (
+                              <img src={getThumbnailUrl(t.produk.gambar_produk)} alt={t.produk.nama_produk} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] font-bold text-zinc-500">
+                                {t.produk?.nama_produk?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-white tracking-tight text-[13px]">{t.produk?.nama_produk}</span>
+                            {t.batch?.kode_batch && (
+                              <span className="block text-[10px] text-zinc-500 font-mono mt-0.5">Batch: {t.batch.kode_batch}</span>
+                            )}
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3.5 px-5 text-right" style={{ fontSize: '13px' }}>
                         <span

@@ -206,7 +206,7 @@ const ambilTransaksiMasuk = async () => {
   return prisma.transaksi_stok.findMany({
     where: { jenis_transaksi: 'MASUK' },
     include: {
-      produk: { select: { nama_produk: true, satuan: true } },
+      produk: { select: { nama_produk: true, satuan: true, gambar_produk: true } },
       pengguna: { select: { nama: true } },
       batch: { select: { kode_batch: true } },
     },
@@ -218,7 +218,7 @@ const ambilTransaksiKeluar = async () => {
   return prisma.transaksi_stok.findMany({
     where: { jenis_transaksi: 'KELUAR' },
     include: {
-      produk: { select: { nama_produk: true, satuan: true } },
+      produk: { select: { nama_produk: true, satuan: true, gambar_produk: true } },
       pengguna: { select: { nama: true } },
       batch: { select: { kode_batch: true } },
     },

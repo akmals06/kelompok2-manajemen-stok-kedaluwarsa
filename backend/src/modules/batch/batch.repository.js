@@ -3,7 +3,7 @@ const prisma = require('../../config/prisma');
 const ambilSemuaBatch = async () => {
   return prisma.batch_produk.findMany({
     include: {
-      produk: { select: { nama_produk: true, satuan: true } },
+      produk: { select: { nama_produk: true, satuan: true, gambar_produk: true } },
     },
     orderBy: { tanggal_kedaluwarsa: 'asc' },
   });
@@ -13,7 +13,7 @@ const ambilBatchById = async (idBatch) => {
   return prisma.batch_produk.findUnique({
     where: { id_batch: parseInt(idBatch, 10) },
     include: {
-      produk: { select: { nama_produk: true, satuan: true } },
+      produk: { select: { nama_produk: true, satuan: true, gambar_produk: true } },
     },
   });
 };

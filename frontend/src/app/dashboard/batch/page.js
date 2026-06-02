@@ -6,6 +6,7 @@ import { CalendarClock, Loader2, Archive, ChevronLeft, ChevronRight } from 'luci
 import batchService from '@/services/batch.service';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { formatTanggal } from '@/utils/format';
+import { getThumbnailUrl } from '@/utils/image';
 
 export default function BatchPage() {
   const [batchList, setBatchList] = useState([]);
@@ -74,23 +75,37 @@ export default function BatchPage() {
                 <th className="text-center py-3 px-4 font-medium">Status</th>
                 <th className="text-center py-3 px-4 font-medium">Aksi</th>
               </tr></thead>
-              <tbody>{paginatedBatch.map((b) => (
-                <tr key={b.id_batch} className="border-b border-white/5 hover:bg-white/[0.02]">
-                  <td className="py-3 px-4 text-white font-medium">{b.produk?.nama_produk}</td>
-                  <td className="py-3 px-4 text-zinc-400">{b.kode_batch}</td>
-                  <td className="py-3 px-4 text-right text-white">{b.jumlah_sisa}</td>
-                  <td className="py-3 px-4 text-zinc-400">{formatTanggal(b.tanggal_masuk)}</td>
-                  <td className="py-3 px-4 text-zinc-400">{formatTanggal(b.tanggal_kedaluwarsa)}</td>
-                  <td className="py-3 px-4 text-center"><StatusBadge status={b.status_batch} /></td>
-                  <td className="py-3 px-4 text-center">
-                    {b.status_batch === 'KEDALUWARSA' && b.jumlah_sisa === 0 && (
-                      <button onClick={() => handleArsip(b.id_batch)} className="text-xs px-2 py-1 rounded-lg bg-zinc-500/10 text-zinc-400 hover:bg-zinc-500/20 transition-colors">
-                        <Archive className="w-3 h-3 inline mr-1" />Arsip
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}</tbody>
+              <tbody>{paginatedBatch.map((b) => {
+                const ini = b.produk?.nama_produk?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+                return (
+                  <tr key={b.id_batch} className="border-b border-white/5 hover:bg-white/[0.02]">
+                    <td className="py-3.5 px-4 text-white font-medium">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-zinc-800 border border-white/10 shrink-0 flex items-center justify-center">
+                          {b.produk?.gambar_produk ? (
+                            <img src={getThumbnailUrl(b.produk.gambar_produk)} alt={b.produk.nama_produk} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-zinc-500">{ini}</span>
+                          )}
+                        </div>
+                        <span className="text-[13px] tracking-tight">{b.produk?.nama_produk}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-zinc-400 font-mono text-[12px]">{b.kode_batch}</td>
+                    <td className="py-3 px-4 text-right font-bold text-white font-mono">{b.jumlah_sisa}</td>
+                    <td className="py-3 px-4 text-zinc-400 text-xs">{formatTanggal(b.tanggal_masuk)}</td>
+                    <td className="py-3 px-4 text-zinc-400 text-xs">{formatTanggal(b.tanggal_kedaluwarsa)}</td>
+                    <td className="py-3 px-4 text-center"><StatusBadge status={b.status_batch} /></td>
+                    <td className="py-3 px-4 text-center">
+                      {b.status_batch === 'KEDALUWARSA' && b.jumlah_sisa === 0 && (
+                        <button onClick={() => handleArsip(b.id_batch)} className="text-xs px-2 py-1 rounded-lg bg-zinc-500/10 text-zinc-400 hover:bg-zinc-500/20 transition-colors">
+                          <Archive className="w-3 h-3 inline mr-1" />Arsip
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}</tbody>
             </table>
           </div>
 

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { History, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import riwayatService from '@/services/riwayat.service';
 import { formatTanggal } from '@/utils/format';
+import { getThumbnailUrl } from '@/utils/image';
 
 export default function RiwayatPage() {
   const [riwayatList, setRiwayatList] = useState([]);
@@ -104,10 +105,11 @@ export default function RiwayatPage() {
       ) : (
         <div className="glass-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[480px]">
+            <table className="w-full text-sm min-w-[640px]">
               <thead><tr className="border-b border-white/10 text-zinc-400">
                 <th className="text-left py-3 px-4 font-medium">Waktu</th>
-                <th className="text-left py-3 px-4 font-medium">Jenis</th>
+                <th className="text-left py-3 px-4 font-medium">Produk</th>
+                <th className="text-center py-3 px-4 font-medium">Jenis</th>
                 <th className="text-right py-3 px-4 font-medium">Jumlah</th>
                 <th className="text-left py-3 px-4 font-medium">Catatan</th>
               </tr></thead>
@@ -125,18 +127,37 @@ export default function RiwayatPage() {
                   }
                 };
 
+                const ini = r.transaksi?.produk?.nama_produk?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+
                 return (
                   <tr key={r.id_riwayat} className="border-b border-white/5 hover:bg-white/[0.02]">
-                    <td className="py-3 px-4 text-zinc-400">{formatTanggal(r.waktu_catat)}</td>
+                    <td className="py-3 px-4 text-zinc-400 text-xs">{formatTanggal(r.waktu_catat)}</td>
                     <td className="py-3 px-4">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${isPos ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-zinc-800 border border-white/10 shrink-0 flex items-center justify-center">
+                          {r.transaksi?.produk?.gambar_produk ? (
+                            <img src={getThumbnailUrl(r.transaksi.produk.gambar_produk)} alt={r.transaksi.produk.nama_produk} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-zinc-500">{ini}</span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-white tracking-tight text-[13px]">{r.transaksi?.produk?.nama_produk || 'Produk dihapus'}</span>
+                          {r.transaksi?.pengguna?.nama && (
+                            <span className="block text-[10px] text-zinc-500 mt-0.5">Oleh: {r.transaksi.pengguna.nama}</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isPos ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                         {isPos ? 'Masuk' : 'Keluar'}
                       </span>
                     </td>
-                    <td className={`py-3 px-4 text-right font-medium ${isPos ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <td className={`py-3 px-4 text-right font-mono text-xs font-bold ${isPos ? 'text-emerald-400' : 'text-red-400'}`}>
                       {formatJumlah()}
                     </td>
-                    <td className="py-3 px-4 text-zinc-400">{r.catatan || '-'}</td>
+                    <td className="py-3 px-4 text-zinc-400 text-xs">{r.catatan || '-'}</td>
                   </tr>
                 );
               })}</tbody>
