@@ -124,7 +124,12 @@ export default function KategoriPage() {
     reader.onload = (ev) => setPreview(ev.target.result);
     reader.readAsDataURL(f);
   };
-  const clearFile = () => { setFile(null); setPreview(null); if (fileRef.current) fileRef.current.value = ''; };
+  const clearFile = () => {
+    setFile(null);
+    setPreview(null);
+    setExistingImg(null);
+    if (fileRef.current) fileRef.current.value = '';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setFormError('');
@@ -134,7 +139,11 @@ export default function KategoriPage() {
       const fd = new FormData();
       fd.append('nama_kategori', form.nama_kategori.trim());
       if (form.deskripsi.trim()) fd.append('deskripsi', form.deskripsi.trim());
-      if (file) fd.append('gambar_kategori', file);
+      if (file) {
+        fd.append('gambar_kategori', file);
+      } else if (editId && !existingImg) {
+        fd.append('hapus_gambar', 'true');
+      }
       if (editId) {
         await kategoriService.ubah(editId, fd);
         setSukses('Kategori berhasil diubah');

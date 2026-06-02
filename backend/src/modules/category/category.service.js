@@ -106,6 +106,10 @@ const updateKategori = async (idKategori, data, fileBuffer) => {
       throw error;
     }
     await hapusGambarCloudinary(publicIdLama);
+  } else if (data.hapus_gambar === 'true' || data.hapus_gambar === true) {
+    gambar_kategori = null;
+    cloudinary_public_id = null;
+    await hapusGambarCloudinary(publicIdLama);
   }
 
   const updateData = {
