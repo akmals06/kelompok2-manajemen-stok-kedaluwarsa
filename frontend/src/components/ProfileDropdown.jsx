@@ -9,6 +9,7 @@ import penggunaService from '@/services/pengguna.service';
 export default function ProfileDropdown({ user, onLogout, onUserUpdate }) {
   const [terbuka, setTerbuka] = useState(false);
   const [modal, setModal] = useState(null); // 'profil' | 'password' | 'email'
+  const [zoomImg, setZoomImg] = useState(null);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -28,7 +29,15 @@ export default function ProfileDropdown({ user, onLogout, onUserUpdate }) {
           onClick={() => setTerbuka(!terbuka)}
           className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-white/5 transition-all"
         >
-          <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden">
+          <div 
+            onClick={(e) => {
+              if (user?.foto_profil) {
+                e.stopPropagation();
+                setZoomImg(user.foto_profil);
+              }
+            }}
+            className={`w-8 h-8 rounded-lg bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 ${user?.foto_profil ? 'cursor-zoom-in hover:border-[#E1FF01]/30 transition-colors' : ''}`}
+          >
             {user?.foto_profil
               ? <img src={user.foto_profil} alt="foto" className="w-full h-full object-cover" />
               : <span className="text-xs font-bold text-zinc-300">{inisial}</span>
@@ -48,7 +57,15 @@ export default function ProfileDropdown({ user, onLogout, onUserUpdate }) {
             {/* Header info user */}
             <div className="px-4 py-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div 
+                  onClick={() => {
+                    if (user?.foto_profil) {
+                      setZoomImg(user.foto_profil);
+                      setTerbuka(false);
+                    }
+                  }}
+                  className={`w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0 ${user?.foto_profil ? 'cursor-zoom-in hover:ring-1 hover:ring-[#E1FF01]/40 transition-all' : ''}`}
+                >
                   {user?.foto_profil
                     ? <img src={user.foto_profil} alt="foto" className="w-full h-full object-cover" />
                     : <span className="text-xs font-bold text-zinc-300">{inisial}</span>
@@ -97,6 +114,19 @@ export default function ProfileDropdown({ user, onLogout, onUserUpdate }) {
           onUserUpdate={onUserUpdate}
           onLogout={onLogout}
         />
+      )}
+
+      {zoomImg && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/90 backdrop-blur-md pointer-events-auto" onClick={() => setZoomImg(null)}>
+          <button className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer">
+            <X className="w-6 h-6" />
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
+            <img src={zoomImg} alt="Foto Profil" className="max-w-full max-h-[80vh] rounded-2xl object-contain border border-white/10 shadow-2xl animate-scale-in" />
+            <p className="text-center text-sm font-semibold text-white/90 mt-3">{user?.nama || 'Foto Profil'}</p>
+          </div>
+        </div>
+        , document.body
       )}
     </>
   );
