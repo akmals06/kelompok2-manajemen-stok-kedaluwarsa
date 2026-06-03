@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
@@ -119,7 +120,7 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
   );
 }
 
-function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
+function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, hasSelectedProduct }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -168,7 +169,9 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
         >
           <div className="max-h-[200px] overflow-y-auto py-1">
             {batchList.length === 0 ? (
-              <div className="px-4 py-4 text-center text-sm text-zinc-500">Pilih produk dulu</div>
+              <div className="px-4 py-4 text-center text-sm text-zinc-500">
+                {hasSelectedProduct ? 'Tidak ada batch aktif / stok habis' : 'Pilih produk dulu'}
+              </div>
             ) : (
               batchList.map((b) => (
                 <button
@@ -281,6 +284,7 @@ function StokKeluarContent() {
     if (!form.id_produk) return setFormError('Pilih produk');
     if (!form.id_batch) return setFormError('Pilih batch');
     if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah harus > 0');
+    if (!form.tujuan_keluar || form.tujuan_keluar.trim() === '') return setFormError('Tujuan keluar wajib diisi');
 
     setSubmitting(true);
     try {
@@ -400,6 +404,7 @@ function StokKeluarContent() {
                         onChange={(val) => setForm({ ...form, id_batch: val })}
                         disabled={submitting || !form.id_produk}
                         onOpenChange={setBatchDropdownOpen}
+                        hasSelectedProduct={!!form.id_produk}
                       />
                     </div>
                     <div>
@@ -420,7 +425,7 @@ function StokKeluarContent() {
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Info Pelacakan</p>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                    Tujuan Keluar
+                    Tujuan Keluar <span className="text-red-400">*</span>
                   </label>
                   <input value={form.tujuan_keluar} onChange={(e) => setForm({ ...form, tujuan_keluar: e.target.value })} className="input-dark" placeholder="Contoh: Penjualan" disabled={submitting} />
                 </div>
@@ -594,7 +599,7 @@ function StokKeluarContent() {
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg overflow-hidden bg-zinc-800 border border-white/10 shrink-0 flex items-center justify-center">
                             {t.produk?.gambar_produk ? (
-                              <img src={getThumbnailUrl(t.produk.gambar_produk)} alt={t.produk.nama_produk} className="w-full h-full object-cover" />
+                              <Image src={getThumbnailUrl(t.produk.gambar_produk)} alt={t.produk.nama_produk} width={32} height={32} className="w-full h-full object-cover" unoptimized />
                             ) : (
                               <span className="text-[10px] font-bold text-zinc-500">
                                 {t.produk?.nama_produk?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'}

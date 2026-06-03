@@ -29,13 +29,14 @@ yarn-error.log*
 # Debug
 .vercel
 .turbo
+scratch_*.js
+**/scratch_*.js
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
 
 # OS
 .DS_Store

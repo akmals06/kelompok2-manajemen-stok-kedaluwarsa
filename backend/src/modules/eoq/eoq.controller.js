@@ -2,7 +2,7 @@ const eoqService = require('./eoq.service');
 
 const hitungEoq = async (req, res, next) => {
   try {
-    const idPengguna = req.pengguna ? req.pengguna.id_pengguna : null;
+    const idPengguna = req.user ? req.user.id_pengguna : null;
     const hasil = await eoqService.hitungEoq(req.body, idPengguna);
 
     res.status(201).json({
