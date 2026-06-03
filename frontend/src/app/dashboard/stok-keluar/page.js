@@ -119,7 +119,7 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
   );
 }
 
-function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
+function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, hasSelectedProduct }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -168,7 +168,9 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
         >
           <div className="max-h-[200px] overflow-y-auto py-1">
             {batchList.length === 0 ? (
-              <div className="px-4 py-4 text-center text-sm text-zinc-500">Pilih produk dulu</div>
+              <div className="px-4 py-4 text-center text-sm text-zinc-500">
+                {hasSelectedProduct ? 'Tidak ada batch aktif / stok habis' : 'Pilih produk dulu'}
+              </div>
             ) : (
               batchList.map((b) => (
                 <button
@@ -400,6 +402,7 @@ function StokKeluarContent() {
                         onChange={(val) => setForm({ ...form, id_batch: val })}
                         disabled={submitting || !form.id_produk}
                         onOpenChange={setBatchDropdownOpen}
+                        hasSelectedProduct={!!form.id_produk}
                       />
                     </div>
                     <div>
