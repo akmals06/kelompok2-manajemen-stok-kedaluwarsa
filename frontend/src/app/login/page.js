@@ -86,18 +86,18 @@ export default function LoginPage() {
       await login(email, password);
       // login berhasil — useAuth handle redirect
     } catch (err) {
-      console.error('[LOGIN ERROR] raw:', err);
-      console.error('[LOGIN ERROR] type:', typeof err, '| constructor:', err?.constructor?.name);
-      console.error('[LOGIN ERROR] message:', err?.message);
-      console.error('[LOGIN ERROR] stringified:', JSON.stringify(err, Object.getOwnPropertyNames(err || {})));
-      
       let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
-      
-      const isTimeout = err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network error');
-      if (isTimeout) {
-        msg = `Koneksi ke server gagal (${err.code || err.message}). Pastikan backend berjalan di port 5000.`;
+
+      const isKoneksiGagal =
+        err.code === 'ECONNABORTED' ||
+        err.code === 'ERR_NETWORK' ||
+        err.message?.toLowerCase().includes('timeout') ||
+        err.message?.toLowerCase().includes('network error');
+
+      if (isKoneksiGagal) {
+        msg = 'Koneksi ke server gagal atau waktu tunggu habis. Silakan periksa jaringan Anda dan coba lagi.';
       }
-      
+
       setAlertLogin({ type: 'danger', msg });
       setIsError(true);
       setIsErrorShake(true);
