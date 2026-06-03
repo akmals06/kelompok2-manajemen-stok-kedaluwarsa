@@ -86,7 +86,10 @@ export default function LoginPage() {
       await login(email, password);
       // login berhasil — useAuth handle redirect
     } catch (err) {
-      console.error('[LOGIN ERROR]', { code: err.code, message: err.message, response: err.response?.data, status: err.response?.status });
+      console.error('[LOGIN ERROR] raw:', err);
+      console.error('[LOGIN ERROR] type:', typeof err, '| constructor:', err?.constructor?.name);
+      console.error('[LOGIN ERROR] message:', err?.message);
+      console.error('[LOGIN ERROR] stringified:', JSON.stringify(err, Object.getOwnPropertyNames(err || {})));
       
       let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
       
