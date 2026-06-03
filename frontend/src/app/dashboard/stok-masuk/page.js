@@ -209,6 +209,13 @@ function StokMasukContent() {
     muatData();
   }, []);
 
+  const generateKodeBatch = (namaProduk) => {
+    const prefix = namaProduk ? namaProduk.substring(0, 3).toUpperCase() : 'NEW';
+    const ts = Date.now() % 100000;
+    const idx = Math.floor(Math.random() * 10);
+    return `BATCH-${prefix}-${ts}-${idx}`;
+  };
+
   const openModal = () => {
     setFormError('');
     setForm({ id_produk: '', jumlah: '', kode_batch: '', tanggal_kedaluwarsa: '', sumber_masuk: '', keterangan: '' });
@@ -230,9 +237,15 @@ function StokMasukContent() {
     setSubmitting(true);
     try {
       await stokService.masuk({
-        ...form,
         id_produk: parseInt(form.id_produk),
         jumlah: parseInt(form.jumlah),
+        sumber_masuk: form.sumber_masuk,
+        keterangan: form.keterangan,
+        batch: {
+          kode_batch: form.kode_batch,
+          tanggal_masuk: new Date().toISOString(),
+          tanggal_kedaluwarsa: form.tanggal_kedaluwarsa,
+        },
       });
       setSukses('Stok masuk berhasil dicatat');
       setShowForm(false);
@@ -326,7 +339,10 @@ function StokMasukContent() {
                     <ProdukDropdown
                       produkList={produkList}
                       value={form.id_produk}
-                      onChange={(val) => setForm({ ...form, id_produk: val })}
+                      onChange={(val) => {
+                      const produk = produkList.find((p) => String(p.id_produk) === String(val));
+                      setForm({ ...form, id_produk: val, kode_batch: generateKodeBatch(produk?.nama_produk) });
+                    }}
                       disabled={submitting}
                       onOpenChange={setDropdownOpen}
                     />

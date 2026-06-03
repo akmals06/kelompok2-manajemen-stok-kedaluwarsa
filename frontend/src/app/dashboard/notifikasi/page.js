@@ -2,7 +2,7 @@
 import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Bell, Check, CheckCheck, Loader2, AlertTriangle, CalendarClock, Trash2, ClipboardList, X } from 'lucide-react';
+import { Bell, Check, CheckCheck, Loader2, AlertTriangle, CalendarClock, Trash2, ClipboardList, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
 import AnimatedTrashButton from '@/components/ui/AnimatedTrashButton';
 
@@ -29,6 +29,8 @@ export default function NotifikasiPage() {
   const [error, setError] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const muatData = async () => {
     try {
@@ -93,6 +95,27 @@ export default function NotifikasiPage() {
     } catch { /* abaikan */ }
   };
 
+  const [filter, setFilter] = useState('SEMUA');
+
+  const tipeList = [
+    { key: 'SEMUA', label: 'Semua' },
+    { key: 'KEDALUWARSA', label: 'Kedaluwarsa' },
+    { key: 'MENDEKATI_KEDALUWARSA', label: 'Mendekati Kedaluwarsa' },
+    { key: 'STOK_MENIPIS', label: 'Stok Menipis' },
+    { key: 'LAPORAN', label: 'Laporan' },
+  ];
+
+  const filteredNotifikasi = useMemo(() => {
+    if (filter === 'SEMUA') return notifikasi;
+    return notifikasi.filter((n) => n.tipe === filter);
+  }, [notifikasi, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredNotifikasi.length / ITEMS_PER_PAGE));
+  const paginatedNotifikasi = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredNotifikasi.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredNotifikasi, currentPage]);
+
   const belumDibaca = notifikasi.filter((n) => !n.dibaca).length;
 
   if (loading) return <Loader />;
@@ -101,6 +124,13 @@ export default function NotifikasiPage() {
     if (tipe === 'KEDALUWARSA') {
       return (
         <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center text-red-400 shrink-0">
+          <CalendarClock className="w-5 h-5" />
+        </div>
+      );
+    }
+    if (tipe === 'MENDEKATI_KEDALUWARSA') {
+      return (
+        <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center text-orange-400 shrink-0">
           <CalendarClock className="w-5 h-5" />
         </div>
       );
@@ -124,6 +154,13 @@ export default function NotifikasiPage() {
       return (
         <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest">
           {tipe}
+        </span>
+      );
+    }
+    if (tipe === 'MENDEKATI_KEDALUWARSA') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest">
+          MENDEKATI
         </span>
       );
     }
@@ -164,20 +201,48 @@ export default function NotifikasiPage() {
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {tipeList.map((t) => {
+          const count = t.key === 'SEMUA'
+            ? notifikasi.length
+            : notifikasi.filter((n) => n.tipe === t.key).length;
+          const isActive = filter === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => { setFilter(t.key); setSelectedIds([]); setCurrentPage(1); }}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+                isActive
+                  ? 'bg-[#E1FF01]/10 border-[#E1FF01]/30 text-[#E1FF01]'
+                  : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-200'
+              }`}
+            >
+              {t.label}
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                isActive ? 'bg-[#E1FF01]/20 text-[#E1FF01]' : 'bg-white/[0.06] text-zinc-500'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">{error}</div>
       )}
 
       {/* Notification Table Layout */}
       <div className="glass-card overflow-hidden">
-        {notifikasi.length === 0 ? (
+        {filteredNotifikasi.length === 0 ? (
           <div className="p-16 text-center">
             <Bell className="w-16 h-16 text-zinc-700 mx-auto mb-6" />
-            <h3 className="text-xl font-bold text-zinc-300">Belum ada notifikasi</h3>
+            <h3 className="text-xl font-bold text-zinc-300">{filter === 'SEMUA' ? 'Belum ada notifikasi' : `Tidak ada notifikasi ${filter.toLowerCase().replace('_', ' ')}`}</h3>
             <p className="text-sm text-zinc-500 mt-2">Notifikasi sistem dan pengingat akan muncul di sini.</p>
           </div>
         ) : (
-          <div className="w-full overflow-x-auto custom-scrollbar">
+          <>
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.02]">
@@ -185,8 +250,14 @@ export default function NotifikasiPage() {
                     <div className="flex items-center justify-center gap-2">
                       <input
                         type="checkbox"
-                        checked={notifikasi.length > 0 && selectedIds.length === notifikasi.length}
-                        onChange={handleSelectAll}
+                        checked={filteredNotifikasi.length > 0 && selectedIds.length === filteredNotifikasi.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds(filteredNotifikasi.map(n => n.id_notifikasi));
+                          } else {
+                            setSelectedIds([]);
+                          }
+                        }}
                         className="w-4 h-4 rounded border-white/10 bg-black/20 text-[#E1FF01] focus:ring-[#E1FF01] focus:ring-offset-zinc-900 cursor-pointer accent-[#E1FF01] shrink-0 z-10"
                       />
                       <div 
@@ -206,7 +277,7 @@ export default function NotifikasiPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {notifikasi.map((n) => (
+                {paginatedNotifikasi.map((n) => (
                   <tr
                     key={n.id_notifikasi}
                     className={`group transition-colors hover:bg-white/[0.02] ${selectedIds.includes(n.id_notifikasi) ? 'bg-white/[0.04]' : ''} ${!n.dibaca ? 'bg-white/[0.01]' : ''}`}
@@ -278,7 +349,51 @@ export default function NotifikasiPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div
+              className="flex items-center justify-between gap-4 flex-wrap"
+              style={{
+                padding: '14px 20px',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
+                Menampilkan {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredNotifikasi.length)} dari {filteredNotifikasi.length} notifikasi
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                      currentPage === page
+                        ? 'bg-[#E1FF01] text-zinc-950 font-bold shadow-md shadow-[#E1FF01]/10'
+                        : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
 
