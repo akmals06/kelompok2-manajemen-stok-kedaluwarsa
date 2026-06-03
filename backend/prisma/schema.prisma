@@ -23,11 +23,39 @@ enum StatusBatch {
   MENDEKATI_KEDALUWARSA
   KEDALUWARSA
   DIARSIPKAN
+  DITOLAK
+}
+
+enum StatusValidasiTransaksi {
+  BELUM_DIVALIDASI
+  VALID
+  TIDAK_VALID
+}
+
+enum StatusTransaksi {
+  DRAFT
+  MENUNGGU_VALIDASI
+  SIAP_DIPROSES
+  BERHASIL
+  GAGAL_DIPROSES
+  DITOLAK
 }
 
 enum JenisPergerakan {
+  MASUK
+  KELUAR
   PENAMBAHAN
   PENGURANGAN
+}
+
+enum JenisNotifikasi {
+  MENDEKATI_KEDALUWARSA
+  KEDALUWARSA
+}
+
+enum ModeInputEoq {
+  MANUAL
+  PREDIKSI
 }
 
 model pengguna {
@@ -37,23 +65,27 @@ model pengguna {
   password_hash String
   peran         Role
   status_aktif  Boolean  @default(true)
+  foto_profil   String?
+  no_telepon    String?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  transaksi  transaksi_stok[]
-  notifikasi notifikasi[]
-  penjualan  penjualan[]
-  pembelian  pembelian[]
+  transaksi          transaksi_stok[]
+  laporan_inventaris laporan_inventaris[]
+  analisis_eoq       analisis_eoq[]
 
   @@index([email])
 }
 
 model kategori_produk {
-  id_kategori   Int      @id @default(autoincrement())
-  nama_kategori String   @unique
-  deskripsi     String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id_kategori          Int      @id @default(autoincrement())
+  nama_kategori        String   @unique
+  deskripsi            String?
+  gambar_kategori      String?
+  cloudinary_public_id String?
+  status_aktif         Boolean  @default(true)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
   produk produk[]
 
@@ -72,12 +104,13 @@ model produk {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  kategori         kategori_produk    @relation(fields: [id_kategori], references: [id_kategori])
-  batch            batch_produk[]
-  transaksi        transaksi_stok[]
-  analisis         analisis_eoq[]
-  detail_penjualan detail_penjualan[]
-  detail_pembelian detail_pembelian[]
+  kategori                  kategori_produk             @relation(fields: [id_kategori], references: [id_kategori])
+  batch                     batch_produk[]
+  transaksi                 transaksi_stok[]
+  riwayat_pergerakan        riwayat_pergerakan_stok[]
+  laporan_inventaris_detail laporan_inventaris_detail[]
+  prediksi_permintaan       prediksi_permintaan[]
+  analisis_eoq              analisis_eoq[]
 
   @@index([id_kategori])
   @@index([nama_produk])
@@ -90,12 +123,17 @@ model batch_produk {
   kode_batch          String
   tanggal_masuk       DateTime
   tanggal_kedaluwarsa DateTime
-  jumlah_batch        Int         @default(0)
+  jumlah_awal         Int         @default(0)
+  jumlah_sisa         Int         @default(0)
   status_batch        StatusBatch @default(AKTIF)
   created_at          DateTime    @default(now())
   updated_at          DateTime    @updatedAt
 
-  produk    produk           @relation(fields: [id_produk], references: [id_produk])
+  produk                 produk                   @relation(fields: [id_produk], references: [id_produk])
+  detail_transaksi       detail_transaksi_stok[]
+  notifikasi_kedaluwarsa notifikasi_kedaluwarsa[]
+
+  // Keep compatibility for direct relation to old transaction table
   transaksi transaksi_stok[]
 
   @@index([id_produk])
@@ -104,160 +142,144 @@ model batch_produk {
 }
 
 model transaksi_stok {
-  id_transaksi      Int            @id @default(autoincrement())
+  id_transaksi      Int                     @id @default(autoincrement())
   id_pengguna       Int
   id_produk         Int
-  id_batch          Int?
+  id_batch          Int? // Keep for compatibility with old code
   jenis_transaksi   JenisTransaksi
-  tanggal_transaksi DateTime       @default(now())
   jumlah            Int
-  status_validasi   Boolean        @default(true)
   sumber_masuk      String?
   tujuan_keluar     String?
+  status_validasi   StatusValidasiTransaksi @default(BELUM_DIVALIDASI)
+  status_transaksi  StatusTransaksi         @default(DRAFT)
+  tanggal_transaksi DateTime                @default(now())
   keterangan        String?
-  created_at        DateTime       @default(now())
-  updated_at        DateTime       @updatedAt
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
 
-  pengguna pengguna                 @relation(fields: [id_pengguna], references: [id_pengguna])
-  produk   produk                   @relation(fields: [id_produk], references: [id_produk])
-  batch    batch_produk?            @relation(fields: [id_batch], references: [id_batch])
-  riwayat  riwayat_pergerakan_stok?
+  pengguna pengguna                  @relation(fields: [id_pengguna], references: [id_pengguna])
+  produk   produk                    @relation(fields: [id_produk], references: [id_produk])
+  batch    batch_produk?             @relation(fields: [id_batch], references: [id_batch])
+  detail   detail_transaksi_stok[]
+  riwayat  riwayat_pergerakan_stok[]
 
   @@index([id_produk])
   @@index([id_pengguna])
   @@index([jenis_transaksi])
   @@index([tanggal_transaksi])
+}
+
+model detail_transaksi_stok {
+  id_detail    Int      @id @default(autoincrement())
+  id_transaksi Int
+  id_batch     Int
+  jumlah_batch Int
+  created_at   DateTime @default(now())
+
+  transaksi transaksi_stok @relation(fields: [id_transaksi], references: [id_transaksi])
+  batch     batch_produk   @relation(fields: [id_batch], references: [id_batch])
+
+  @@index([id_transaksi])
+  @@index([id_batch])
 }
 
 model riwayat_pergerakan_stok {
   id_riwayat       Int             @id @default(autoincrement())
-  id_transaksi     Int             @unique
+  id_transaksi     Int
+  id_produk        Int?
   jenis_pergerakan JenisPergerakan
   jumlah_perubahan Int
+  stok_sebelum     Int             @default(0)
+  stok_sesudah     Int             @default(0)
   waktu_catat      DateTime        @default(now())
   catatan          String?
 
   transaksi transaksi_stok @relation(fields: [id_transaksi], references: [id_transaksi])
+  produk    produk?        @relation(fields: [id_produk], references: [id_produk])
 
   @@index([id_transaksi])
+  @@index([id_produk])
+}
+
+model notifikasi_kedaluwarsa {
+  id_notifikasi      Int             @id @default(autoincrement())
+  id_batch           Int
+  jenis_notifikasi   JenisNotifikasi
+  pesan              String
+  status_baca        Boolean         @default(false)
+  tanggal_notifikasi DateTime        @default(now())
+
+  batch batch_produk @relation(fields: [id_batch], references: [id_batch])
+
+  @@index([id_batch])
+  @@index([status_baca])
 }
 
 model laporan_inventaris {
-  id_laporan       Int      @id @default(autoincrement())
-  periode_awal     DateTime
-  periode_akhir    DateTime
-  tanggal_generate DateTime @default(now())
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id_laporan     Int      @id @default(autoincrement())
+  id_pengguna    Int?
+  periode_awal   DateTime
+  periode_akhir  DateTime
+  tanggal_dibuat DateTime @default(now())
+
+  pengguna       pengguna?                   @relation(fields: [id_pengguna], references: [id_pengguna])
+  laporan_detail laporan_inventaris_detail[]
+
+  @@index([id_pengguna])
+}
+
+model laporan_inventaris_detail {
+  id_laporan_detail      Int     @id @default(autoincrement())
+  id_laporan             Int
+  id_produk              Int
+  nama_produk_snapshot   String
+  stok_tersedia_snapshot Int
+  status_batch_snapshot  String?
+  jumlah_masuk           Int     @default(0)
+  jumlah_keluar          Int     @default(0)
+
+  laporan laporan_inventaris @relation(fields: [id_laporan], references: [id_laporan])
+  produk  produk             @relation(fields: [id_produk], references: [id_produk])
+
+  @@index([id_laporan])
+  @@index([id_produk])
+}
+
+model prediksi_permintaan {
+  id_prediksi             Int      @id @default(autoincrement())
+  id_produk               Int
+  periode_awal            DateTime
+  periode_akhir           DateTime
+  data_histori_permintaan String
+  hasil_prediksi          Decimal  @db.Decimal(10, 2)
+  metode                  String
+  created_at              DateTime @default(now())
+
+  produk       produk         @relation(fields: [id_produk], references: [id_produk])
+  analisis_eoq analisis_eoq[]
+
+  @@index([id_produk])
 }
 
 model analisis_eoq {
-  id_analisis         Int      @id @default(autoincrement())
+  id_analisis         Int          @id @default(autoincrement())
   id_produk           Int
-  kebutuhan_tahunan   Float
-  biaya_pesan         Float
-  biaya_simpan        Float
-  nilai_eoq           Float
-  frekuensi_pemesanan Float
-  biaya_pesan_tahunan Float
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
+  id_pengguna         Int?
+  id_prediksi         Int?
+  mode_input          ModeInputEoq @default(MANUAL)
+  kebutuhan_tahunan   Decimal      @db.Decimal(10, 2)
+  biaya_pesan         Decimal      @db.Decimal(10, 2)
+  biaya_simpan        Decimal      @db.Decimal(10, 2)
+  nilai_eoq           Decimal      @db.Decimal(10, 2)
+  frekuensi_pemesanan Decimal      @db.Decimal(10, 2)
+  biaya_pesan_tahunan Decimal      @db.Decimal(10, 2)
+  created_at          DateTime     @default(now())
 
-  produk produk @relation(fields: [id_produk], references: [id_produk])
+  produk   produk               @relation(fields: [id_produk], references: [id_produk])
+  pengguna pengguna?            @relation(fields: [id_pengguna], references: [id_pengguna])
+  prediksi prediksi_permintaan? @relation(fields: [id_prediksi], references: [id_prediksi])
 
   @@index([id_produk])
-}
-
-model notifikasi {
-  id_notifikasi Int      @id @default(autoincrement())
-  id_pengguna   Int?
-  judul         String
-  pesan         String
-  tipe          String   @default("SISTEM")
-  dibaca        Boolean  @default(false)
-  created_at    DateTime @default(now())
-
-  pengguna pengguna? @relation(fields: [id_pengguna], references: [id_pengguna])
-
   @@index([id_pengguna])
-  @@index([dibaca])
-}
-
-model keuangan {
-  id_keuangan       Int      @id @default(autoincrement())
-  jenis_transaksi   String // PEMASUKAN atau PENGELUARAN
-  kategori_keuangan String
-  nominal           Int
-  keterangan        String?
-  tanggal_transaksi DateTime @default(now())
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-
-  @@index([jenis_transaksi])
-  @@index([tanggal_transaksi])
-}
-
-model penjualan {
-  id_penjualan      Int      @id @default(autoincrement())
-  id_pengguna       Int
-  total_harga       Int
-  jumlah_bayar      Int
-  kembalian         Int
-  metode_pembayaran String   @default("CASH")
-  tanggal_penjualan DateTime @default(now())
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-
-  pengguna         pengguna           @relation(fields: [id_pengguna], references: [id_pengguna])
-  detail_penjualan detail_penjualan[]
-
-  @@index([id_pengguna])
-  @@index([tanggal_penjualan])
-}
-
-model detail_penjualan {
-  id_detail    Int @id @default(autoincrement())
-  id_penjualan Int
-  id_produk    Int
-  jumlah       Int
-  harga_satuan Int
-  subtotal     Int
-
-  penjualan penjualan @relation(fields: [id_penjualan], references: [id_penjualan])
-  produk    produk    @relation(fields: [id_produk], references: [id_produk])
-
-  @@index([id_penjualan])
-  @@index([id_produk])
-}
-
-model pembelian {
-  id_pembelian      Int      @id @default(autoincrement())
-  id_pengguna       Int
-  supplier          String?
-  total_biaya       Int
-  status_pembayaran String   @default("LUNAS") // LUNAS atau HUTANG
-  tanggal_pembelian DateTime @default(now())
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-
-  pengguna         pengguna           @relation(fields: [id_pengguna], references: [id_pengguna])
-  detail_pembelian detail_pembelian[]
-
-  @@index([id_pengguna])
-  @@index([tanggal_pembelian])
-}
-
-model detail_pembelian {
-  id_detail    Int @id @default(autoincrement())
-  id_pembelian Int
-  id_produk    Int
-  jumlah       Int
-  harga_satuan Int
-  subtotal     Int
-
-  pembelian pembelian @relation(fields: [id_pembelian], references: [id_pembelian])
-  produk    produk    @relation(fields: [id_produk], references: [id_produk])
-
-  @@index([id_pembelian])
-  @@index([id_produk])
+  @@index([id_prediksi])
 }

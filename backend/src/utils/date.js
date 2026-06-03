@@ -14,7 +14,7 @@ const diffInDays = (dateA, dateB) => {
 const isExpired = (tanggalKedaluwarsa) => {
   const targetDate = new Date(tanggalKedaluwarsa);
   targetDate.setHours(0, 0, 0, 0);
-  return targetDate.getTime() < getToday().getTime();
+  return targetDate.getTime() <= getToday().getTime();
 };
 
 const isNearExpiry = (tanggalKedaluwarsa, thresholdDays = NEAR_EXPIRY_DAYS) => {

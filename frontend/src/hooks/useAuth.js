@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { useRouter } from 'next/navigation';
 import authService from '@/services/auth.service';
 import { setAccessToken, clearAccessToken } from '@/services/api';
+import penggunaService from '@/services/pengguna.service';
 
 const AuthContext = createContext(null);
 
@@ -17,7 +18,17 @@ export function AuthProvider({ children }) {
       const res = await authService.refresh();
       if (res.success && res.data?.accessToken) {
         setAccessToken(res.data.accessToken);
-        setUser(res.data.pengguna);
+        // Fetch profil lengkap termasuk foto_profil dan no_telepon
+        try {
+          const resProfil = await penggunaService.ambilProfil();
+          if (resProfil.success) {
+            setUser({ ...res.data.pengguna, ...resProfil.data });
+          } else {
+            setUser(res.data.pengguna);
+          }
+        } catch {
+          setUser(res.data.pengguna);
+        }
       }
     } catch {
       clearAccessToken();
@@ -35,11 +46,24 @@ export function AuthProvider({ children }) {
     const res = await authService.login(email, password);
     if (res.success && res.data?.accessToken) {
       setAccessToken(res.data.accessToken);
-      setUser(res.data.pengguna);
+      try {
+        const resProfil = await penggunaService.ambilProfil();
+        if (resProfil.success) {
+          setUser({ ...res.data.pengguna, ...resProfil.data });
+        } else {
+          setUser(res.data.pengguna);
+        }
+      } catch {
+        setUser(res.data.pengguna);
+      }
       router.push('/dashboard');
       return res;
     }
     throw new Error(res.message || 'Login gagal');
+  };
+
+  const updateUser = (dataBaru) => {
+    setUser((prev) => ({ ...prev, ...dataBaru }));
   };
 
   const logout = async () => {
@@ -54,7 +78,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
 'use client';
+import Loader from '@/components/ui/Loader';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { ArrowUpFromLine, Loader2, Plus, X, Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -8,6 +9,7 @@ import stokService from '@/services/stok.service';
 import produkService from '@/services/produk.service';
 import batchService from '@/services/batch.service';
 import { formatTanggal } from '@/utils/format';
+import { getThumbnailUrl } from '@/utils/image';
 
 /* ── Custom Dropdowns ─────────────────────────────── */
 function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange }) {
@@ -28,10 +30,10 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
     );
   });
 
-  const setOpenAndNotify = (val) => {
+  const setOpenAndNotify = useCallback((val) => {
     setOpen(val);
     onOpenChange?.(val);
-  };
+  }, [onOpenChange]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -39,7 +41,7 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [setOpenAndNotify]);
 
   useEffect(() => {
     if (open && searchRef.current) searchRef.current.focus();
@@ -123,10 +125,10 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
 
   const selected = batchList.find((b) => String(b.id_batch) === String(value));
 
-  const setOpenAndNotify = (val) => {
+  const setOpenAndNotify = useCallback((val) => {
     setOpen(val);
     onOpenChange?.(val);
-  };
+  }, [onOpenChange]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -134,7 +136,7 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [setOpenAndNotify]);
 
   return (
     <div ref={ref} className="relative">
@@ -181,7 +183,7 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
                   }`}
                 >
                   <div className="text-sm font-semibold text-white">{b.kode_batch}</div>
-                  <div className="text-xs text-zinc-500">Sisa: {b.jumlah_batch}</div>
+                  <div className="text-xs text-zinc-500">Sisa: {b.jumlah_sisa}</div>
                 </button>
               ))
             )}
@@ -194,7 +196,7 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange }) {
 
 const ROWS_PER_PAGE = 10;
 
-export default function StokKeluarPage() {
+function StokKeluarContent() {
   const [transaksiList, setTransaksiList] = useState([]);
   const [produkList, setProdukList] = useState([]);
   const [batchList, setBatchList] = useState([]);
@@ -207,7 +209,8 @@ export default function StokKeluarPage() {
   const [form, setForm] = useState({
     id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '',
   });
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [produkDropdownOpen, setProdukDropdownOpen] = useState(false);
+  const [batchDropdownOpen, setBatchDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -266,10 +269,10 @@ export default function StokKeluarPage() {
       }
     };
     muatData();
-  }, []);
+  }, [searchParams]);
 
   const batchFiltered = batchList.filter(
-    (b) => String(b.id_produk) === String(form.id_produk) && b.status_batch !== 'DIARSIPKAN' && b.jumlah_batch > 0
+    (b) => String(b.id_produk) === String(form.id_produk) && b.status_batch !== 'DIARSIPKAN' && b.jumlah_sisa > 0
   );
 
   const handleSubmit = async (e) => {
@@ -300,7 +303,7 @@ export default function StokKeluarPage() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 text-blue-400 animate-spin" /></div>;
+  if (loading) return <Loader />;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -352,7 +355,7 @@ export default function StokKeluarPage() {
             <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)', borderRadius: '50%' }} />
 
             {/* Minimal header */}
-            <div className={`flex items-center gap-2.5 mb-4 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`}>
+            <div className={`flex items-center gap-2.5 mb-4 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`}>
               <div
                 className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
                 style={{ background: 'linear-gradient(135deg, #E9FF3D, #C7E600)', boxShadow: '0 2px 8px rgba(225,255,1,0.15)' }}
@@ -370,10 +373,10 @@ export default function StokKeluarPage() {
             <form onSubmit={handleSubmit}>
               {/* ─── Section 1: Informasi Produk ─── */}
               <div className="mb-3">
-                <p className={`text-[10px] font-semibold uppercase tracking-widest mb-2.5 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(225,255,1,0.5)' }}>Informasi Produk</p>
+                <p className={`text-[10px] font-semibold uppercase tracking-widest mb-2.5 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(225,255,1,0.5)' }}>Informasi Produk</p>
                 <div className="space-y-2.5">
-                  <div className={`relative ${dropdownOpen ? 'z-50' : 'z-10'}`}>
-                    <label className={`block text-xs font-medium mb-1 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <div className={`relative ${produkDropdownOpen ? 'z-50' : 'z-10'}`}>
+                    <label className={`block text-xs font-medium mb-1 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} style={{ color: 'rgba(255,255,255,0.6)' }}>
                       Produk <span className="text-red-400">*</span>
                     </label>
                     <ProdukDropdown
@@ -381,12 +384,12 @@ export default function StokKeluarPage() {
                       value={form.id_produk}
                       onChange={(val) => setForm({ ...form, id_produk: val, id_batch: '' })}
                       disabled={submitting}
-                      onOpenChange={setDropdownOpen}
+                      onOpenChange={setProdukDropdownOpen}
                     />
                   </div>
                   
                   {/* Dimmer container for rest of the form */}
-                  <div className={`space-y-2.5 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+                  <div className={`space-y-2.5 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         Batch <span className="text-red-400">*</span>
@@ -396,7 +399,7 @@ export default function StokKeluarPage() {
                         value={form.id_batch}
                         onChange={(val) => setForm({ ...form, id_batch: val })}
                         disabled={submitting || !form.id_produk}
-                        onOpenChange={setDropdownOpen}
+                        onOpenChange={setBatchDropdownOpen}
                       />
                     </div>
                     <div>
@@ -410,10 +413,10 @@ export default function StokKeluarPage() {
               </div>
 
               {/* Divider */}
-              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
+              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
 
               {/* ─── Section 2: Info Pelacakan ─── */}
-              <div className={`mb-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+              <div className={`mb-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Info Pelacakan</p>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -424,10 +427,10 @@ export default function StokKeluarPage() {
               </div>
 
               {/* Divider */}
-              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
+              <div className={`border-t border-white/[0.06] my-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px]' : ''}`} />
 
               {/* ─── Section 3: Catatan Tambahan ─── */}
-              <div className={`mb-4 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+              <div className={`mb-4 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Catatan Tambahan</p>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -438,7 +441,7 @@ export default function StokKeluarPage() {
               </div>
 
               {/* Action buttons */}
-              <div className={`flex gap-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+              <div className={`flex gap-3 transition-all duration-300 ${produkDropdownOpen || batchDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                 <button
                   type="submit"
                   disabled={submitting}
@@ -587,8 +590,24 @@ export default function StokKeluarPage() {
                       <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
                         {formatTanggal(t.tanggal_transaksi)}
                       </td>
-                      <td className="py-3.5 px-5" style={{ color: 'rgba(255,255,255,0.72)', fontSize: '13px', fontWeight: 500 }}>
-                        {t.produk?.nama_produk}
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-zinc-800 border border-white/10 shrink-0 flex items-center justify-center">
+                            {t.produk?.gambar_produk ? (
+                              <img src={getThumbnailUrl(t.produk.gambar_produk)} alt={t.produk.nama_produk} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] font-bold text-zinc-500">
+                                {t.produk?.nama_produk?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-white tracking-tight text-[13px]">{t.produk?.nama_produk}</span>
+                            {t.batch?.kode_batch && (
+                              <span className="block text-[10px] text-zinc-500 font-mono mt-0.5">Batch: {t.batch.kode_batch}</span>
+                            )}
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3.5 px-5 text-right" style={{ fontSize: '13px' }}>
                         <span
@@ -722,5 +741,13 @@ export default function StokKeluarPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StokKeluarPage() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <StokKeluarContent />
+    </Suspense>
   );
 }

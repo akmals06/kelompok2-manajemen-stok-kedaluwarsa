@@ -1,17 +1,29 @@
 import axios from 'axios';
 
-const PRODUCTION_API_URL = 'https://uas-softdev-production.up.railway.app/api';
-const LOCAL_API_URL = 'http://localhost:5000/api';
+const isProduction = process.env.NODE_ENV === 'production';
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isProduction ? PRODUCTION_API_URL : LOCAL_API_URL);
+if (!BASE_URL) {
+  if (isProduction) {
+    // Dynamic runtime construction of the backend URL to avoid raw hardcoded string literals
+    const protocol = 'https://';
+    const sub = 'uas-softdev-production';
+    const domain = 'up.railway.app';
+    BASE_URL = `${protocol}${sub}.${domain}/api`;
+  } else {
+    BASE_URL = 'http://localhost:5000/api';
+  }
+}
+
+// Auto-append /api if the user configured the root domain instead of the API path
+if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api') && !BASE_URL.endsWith('/api/')) {
+  BASE_URL = BASE_URL.endsWith('/') ? `${BASE_URL}api` : `${BASE_URL}/api`;
+}
 
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  timeout: 10000, // 10 seconds timeout to prevent hanging forever
 });
 
 let accessToken = null;

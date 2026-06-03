@@ -4,14 +4,12 @@ const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = [
-      config.frontendUrl,
-      'http://localhost:3000',
-    ].filter(Boolean);
+    const allowedOrigins = [config.frontendUrl];
+    
+    // Izinkan semua sub-domain preview dan domain produksi Vercel untuk proyek ini secara dinamis (mendukung pemotongan nama domain oleh Vercel)
+    const isVercelOrigin = origin.includes('manajemen-stok-kedaluwa') && origin.endsWith('.vercel.app');
 
-    const isVercelDeploy = /^https:\/\/kelompok2-manajemen-stok-kedaluwarsa.*\.vercel\.app$/.test(origin);
-
-    if (allowedOrigins.includes(origin) || isVercelDeploy || config.nodeEnv === 'development') {
+    if (allowedOrigins.indexOf(origin) !== -1 || isVercelOrigin || config.nodeEnv === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

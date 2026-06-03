@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import Sidebar from '@/components/Sidebar';
+import { useAuth } from '@/hooks/useAuth';
+import Sidebar from '@/layout/Sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
+import ProfileDropdown from '@/components/ProfileDropdown';
 
 const BREADCRUMB_MAP = {
   '/dashboard': 'Dashboard',
@@ -22,7 +23,7 @@ const BREADCRUMB_MAP = {
 };
 
 function DashboardShell({ children }) {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, updateUser } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,13 +49,13 @@ function DashboardShell({ children }) {
 
   return (
     <div className="flex h-screen bg-[#0a0a0a] text-foreground overflow-hidden">
-      <Sidebar user={user} onLogout={logout} mobileOpen={mobileOpen} onToggleMobile={() => setMobileOpen(false)} />
+      <Sidebar user={user} onLogout={logout} onUserUpdate={updateUser} mobileOpen={mobileOpen} onToggleMobile={() => setMobileOpen(false)} />
 
-      <div className="flex-1 flex flex-col relative overflow-hidden min-w-0" style={{ transform: 'translateZ(0)' }}>
+      <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
         <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-[#E1FF01]/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-slate-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-        <header className="h-14 lg:h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-4 lg:px-8 z-10 shrink-0 gap-3">
+        <header className="h-14 lg:h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-4 lg:px-8 z-[150] shrink-0 gap-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}
@@ -71,15 +72,7 @@ function DashboardShell({ children }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-xs text-zinc-400">{user.nama}</p>
-              <p className="text-[10px] text-zinc-600 uppercase">{user.peran?.replace('_', ' ')}</p>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-400 uppercase">
-              {user.nama?.charAt(0)}
-            </div>
-          </div>
+          <ProfileDropdown user={user} onLogout={logout} onUserUpdate={updateUser} />
         </header>
 
         <main className="flex-1 overflow-y-auto relative z-10">
@@ -96,9 +89,5 @@ function DashboardShell({ children }) {
 }
 
 export default function DashboardLayout({ children }) {
-  return (
-    <AuthProvider>
-      <DashboardShell>{children}</DashboardShell>
-    </AuthProvider>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

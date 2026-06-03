@@ -12,14 +12,12 @@ const produkService = {
   },
 
   tambah: async (formData) => {
-    const res = await api.post('/produk', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await api.post('/produk', formData);
     return res.data;
   },
 
-  ubah: async (id, data) => {
-    const res = await api.put(`/produk/${id}`, data);
+  ubah: async (id, formData) => {
+    const res = await api.put(`/produk/${id}`, formData);
     return res.data;
   },
 

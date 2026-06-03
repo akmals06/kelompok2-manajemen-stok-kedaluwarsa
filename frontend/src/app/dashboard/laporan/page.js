@@ -1,5 +1,6 @@
 'use client';
 
+import Loader from '@/components/ui/Loader';
 import { useState, useEffect, useMemo } from 'react';
 import {
   FileBarChart2, Loader2, Plus, ArrowLeft, Download,
@@ -7,7 +8,7 @@ import {
 } from 'lucide-react';
 import laporanService from '@/services/laporan.service';
 import { formatTanggal, formatAngka } from '@/utils/format';
-import StatCard from '@/components/StatCard';
+import StatCard from '@/components/ui/StatCard';
 
 export default function LaporanPage() {
   const [laporanList, setLaporanList] = useState([]);
@@ -119,14 +120,7 @@ export default function LaporanPage() {
   const maxPergerakan = Math.max(...dataGrafik.flatMap(d => [d.masuk, d.keluar]), 1);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#E1FF01]/20 border-t-[#E1FF01] rounded-full animate-spin" />
-          <p className="text-zinc-500 text-sm font-medium animate-pulse">Memuat data laporan...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   // ================= VIEW: HASIL LAPORAN (Report Results) =================
