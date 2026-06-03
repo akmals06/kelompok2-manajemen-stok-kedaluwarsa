@@ -1,32 +1,54 @@
 import axios from 'axios';
 
-const isProduction = process.env.NODE_ENV === 'production';
-let BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ═══════════════════════════════════════════════
+// Base URL — otomatis deteksi lokal vs production
+// ═══════════════════════════════════════════════
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-if (!BASE_URL) {
-  if (isProduction) {
-    // Dynamic runtime construction of the backend URL to avoid raw hardcoded string literals
-    const protocol = 'https://';
-    const sub = 'uas-softdev-production';
-    const domain = 'up.railway.app';
-    BASE_URL = `${protocol}${sub}.${domain}/api`;
-  } else {
-    BASE_URL = 'http://localhost:5000/api';
+function resolveBaseUrl() {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // Jika di localhost, selalu gunakan proxy Next.js (next.config.mjs rewrites)
+  if (isLocalhost) return '/api';
+
+  // Jika env variable tersedia, gunakan itu
+  if (envUrl) {
+    let url = envUrl;
+    if (url !== '/api' && !url.endsWith('/api') && !url.endsWith('/api/')) {
+      url = url.endsWith('/') ? `${url}api` : `${url}/api`;
+    }
+    return url;
   }
+
+  // Fallback production
+  return 'https://uas-softdev-production.up.railway.app/api';
 }
 
-// Auto-append /api if the user configured the root domain instead of the API path
-if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api') && !BASE_URL.endsWith('/api/')) {
-  BASE_URL = BASE_URL.endsWith('/') ? `${BASE_URL}api` : `${BASE_URL}/api`;
-}
+const BASE_URL = resolveBaseUrl();
 
+// ═══════════════════════════════════════════════
+// Axios instance
+// ═══════════════════════════════════════════════
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-  timeout: 10000, // 10 seconds timeout to prevent hanging forever
+  timeout: 10000,
 });
 
+// ═══════════════════════════════════════════════
+// Access Token management
+// ═══════════════════════════════════════════════
 let accessToken = null;
+
+export const setAccessToken = (token) => { accessToken = token; };
+export const getAccessToken = () => accessToken;
+export const clearAccessToken = () => { accessToken = null; };
+
+// ═══════════════════════════════════════════════
+// Request queue untuk silent refresh
+// ═══════════════════════════════════════════════
 let isRefreshing = false;
 let antrianGagal = [];
 
@@ -40,16 +62,11 @@ const tolakAntrian = (error) => {
   antrianGagal = [];
 };
 
-export const setAccessToken = (token) => {
-  accessToken = token;
-};
+// ═══════════════════════════════════════════════
+// Interceptors
+// ═══════════════════════════════════════════════
 
-export const getAccessToken = () => accessToken;
-
-export const clearAccessToken = () => {
-  accessToken = null;
-};
-
+// Request: sisipkan Bearer token
 api.interceptors.request.use(
   (config) => {
     if (accessToken) {
@@ -57,20 +74,22 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
+// Response: auto-refresh token jika 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Refresh endpoint sendiri gagal → langsung reject, jangan infinite loop
+    // Refresh endpoint gagal → langsung reject, hindari infinite loop
     if (originalRequest.url?.includes('/auth/refresh')) {
       clearAccessToken();
       return Promise.reject(error);
     }
 
+    // Jika 401 dan belum retry, coba refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -86,11 +105,9 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.post(`${BASE_URL}/auth/refresh`, {}, {
-          withCredentials: true,
-        });
-
+        const res = await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
         const tokenBaru = res.data.data.accessToken;
+
         setAccessToken(tokenBaru);
         prosesAntrian(tokenBaru);
 
@@ -109,7 +126,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

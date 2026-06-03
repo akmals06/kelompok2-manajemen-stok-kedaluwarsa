@@ -15,13 +15,27 @@ const labelRoutes = require('../modules/label/label.routes');
 const notificationRoutes = require('../modules/notification/notification.routes');
 const userRoutes = require('../modules/user/user.routes');
 
-// Health check
-router.get('/health', (req, res) => {
-  res.status(200).json({
+// Health check — also tests database connectivity
+router.get('/health', async (req, res) => {
+  const status = {
     success: true,
     message: 'Backend API is healthy',
-    timestamp: new Date().toISOString()
-  });
+    timestamp: new Date().toISOString(),
+    database: 'unknown',
+  };
+
+  try {
+    const prisma = require('../config/prisma');
+    await prisma.$queryRaw`SELECT 1`;
+    status.database = 'connected';
+  } catch (err) {
+    status.database = 'disconnected';
+    status.dbError = err.message;
+    status.success = false;
+    status.message = 'Backend running but database unreachable';
+  }
+
+  res.status(status.success ? 200 : 503).json(status);
 });
 
 // Mount module routes

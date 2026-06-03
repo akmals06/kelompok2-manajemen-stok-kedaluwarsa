@@ -87,12 +87,17 @@ export default function LoginPage() {
       // login berhasil — useAuth handle redirect
     } catch (err) {
       let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
-      
-      const isTimeout = err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network error');
-      if (isTimeout) {
+
+      const isKoneksiGagal =
+        err.code === 'ECONNABORTED' ||
+        err.code === 'ERR_NETWORK' ||
+        err.message?.toLowerCase().includes('timeout') ||
+        err.message?.toLowerCase().includes('network error');
+
+      if (isKoneksiGagal) {
         msg = 'Koneksi ke server gagal atau waktu tunggu habis. Silakan periksa jaringan Anda dan coba lagi.';
       }
-      
+
       setAlertLogin({ type: 'danger', msg });
       setIsError(true);
       setIsErrorShake(true);
