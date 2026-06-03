@@ -1,20 +1,26 @@
 import axios from 'axios';
 
-const isProduction = process.env.NODE_ENV === 'production';
+// Determine API base URL with bulletproof localhost detection
+const isLocalhost = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
 let BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!BASE_URL) {
-  if (isProduction) {
-    // Dynamic runtime construction of the backend URL to avoid raw hardcoded string literals
+  if (isLocalhost) {
+    // Use Next.js rewrite proxy (same-origin) to avoid cross-origin/CORS/firewall issues
+    // The proxy is configured in next.config.mjs: /api/* → http://localhost:5000/api/*
+    BASE_URL = '/api';
+  } else {
+    // Production: Railway backend
     const protocol = 'https://';
     const sub = 'uas-softdev-production';
     const domain = 'up.railway.app';
     BASE_URL = `${protocol}${sub}.${domain}/api`;
-  } else {
-    // Use Next.js rewrite proxy (same-origin) to avoid cross-origin/CORS/firewall issues
-    // The proxy is configured in next.config.mjs: /api/* → http://localhost:5000/api/*
-    BASE_URL = '/api';
   }
+} else if (isLocalhost && BASE_URL.includes('railway.app')) {
+  // Safety net: even if NEXT_PUBLIC_API_URL points to production, override on localhost
+  BASE_URL = '/api';
 }
 
 // Auto-append /api if the user configured the root domain instead of the API path
