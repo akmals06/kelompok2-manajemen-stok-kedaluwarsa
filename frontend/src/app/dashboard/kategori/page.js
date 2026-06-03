@@ -114,13 +114,13 @@ export default function KategoriPage() {
   const resetForm = () => {
     if (submitting) return;
     setShowForm(false); setEditId(null);
-    setForm({ nama_kategori: '', deskripsi: '' });
+    setForm({ nama_kategori: '', deskripsi: '', status_aktif: true });
     setFormError(''); setFile(null); setPreview(null); setExistingImg(null);
     if (fileRef.current) fileRef.current.value = '';
   };
   const bukaEdit = (k) => {
     setEditId(k.id_kategori);
-    setForm({ nama_kategori: k.nama_kategori, deskripsi: k.deskripsi || '' });
+    setForm({ nama_kategori: k.nama_kategori, deskripsi: k.deskripsi || '', status_aktif: k.status_aktif !== false });
     setExistingImg(k.gambar_kategori || null);
     setFile(null); setPreview(null);
     if (fileRef.current) fileRef.current.value = '';
@@ -157,6 +157,7 @@ export default function KategoriPage() {
         fd.append('hapus_gambar', 'true');
       }
       if (editId) {
+        fd.append('status_aktif', form.status_aktif ? 'true' : 'false');
         await kategoriService.ubah(editId, fd);
         setSukses('Kategori berhasil diubah');
       } else {
@@ -257,6 +258,21 @@ export default function KategoriPage() {
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Deskripsi</label>
                   <input value={form.deskripsi} onChange={e => setForm({ ...form, deskripsi: e.target.value })} className="input-dark" placeholder="Opsional" disabled={submitting} />
                 </div>
+                {editId && (
+                  <div className="flex items-center gap-2.5 py-1">
+                    <input 
+                      type="checkbox" 
+                      id="status_aktif"
+                      checked={form.status_aktif} 
+                      onChange={e => setForm({ ...form, status_aktif: e.target.checked })} 
+                      className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-[#E1FF01] focus:ring-[#E1FF01]/40" 
+                      disabled={submitting}
+                    />
+                    <label htmlFor="status_aktif" className="text-xs font-medium cursor-pointer" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      Kategori Aktif
+                    </label>
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Gambar Kategori</label>
                   {previewSrc ? (

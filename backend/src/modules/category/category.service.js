@@ -119,6 +119,14 @@ const updateKategori = async (idKategori, data, fileBuffer) => {
     cloudinary_public_id,
   };
 
+  if (data.status_aktif !== undefined) {
+    if (typeof data.status_aktif === 'string') {
+      updateData.status_aktif = data.status_aktif === 'true';
+    } else {
+      updateData.status_aktif = Boolean(data.status_aktif);
+    }
+  }
+
   return kategoriRepo.updateKategori(idNum, updateData);
 };
 

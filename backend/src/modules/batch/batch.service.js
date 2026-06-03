@@ -12,7 +12,7 @@ const ambilSemuaBatch = async () => {
   const daftarBatch = await batchRepo.ambilSemuaBatch();
 
   return daftarBatch.map((batch) => {
-    if (batch.status_batch === BATCH_STATUS.DIARSIPKAN) return batch;
+    if ([BATCH_STATUS.DIARSIPKAN, BATCH_STATUS.DITOLAK].includes(batch.status_batch)) return batch;
 
     const statusTerhitung = hitungStatusBatch(batch.tanggal_kedaluwarsa);
     return { ...batch, status_batch: statusTerhitung };
@@ -26,7 +26,7 @@ const ambilBatchById = async (idBatch) => {
     throw Object.assign(new Error('Batch tidak ditemukan'), { statusCode: 404 });
   }
 
-  if (batch.status_batch !== BATCH_STATUS.DIARSIPKAN) {
+  if (![BATCH_STATUS.DIARSIPKAN, BATCH_STATUS.DITOLAK].includes(batch.status_batch)) {
     batch.status_batch = hitungStatusBatch(batch.tanggal_kedaluwarsa);
   }
 

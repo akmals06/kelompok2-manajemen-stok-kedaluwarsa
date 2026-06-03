@@ -34,7 +34,11 @@ const updateStatusBatch = async (idBatch, status) => {
 
 const ambilBatchUntukRefresh = async () => {
   return prisma.batch_produk.findMany({
-    where: { status_batch: { not: 'DIARSIPKAN' } },
+    where: {
+      status_batch: {
+        notIn: ['DIARSIPKAN', 'DITOLAK'],
+      },
+    },
     select: {
       id_batch: true,
       status_batch: true,

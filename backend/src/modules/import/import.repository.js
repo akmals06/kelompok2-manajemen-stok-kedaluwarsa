@@ -120,6 +120,14 @@ const importStokAwalBatch = async (dataList, idPengguna) => {
         data: { id_batch: batchBaru.id_batch },
       });
 
+      await tx.detail_transaksi_stok.create({
+        data: {
+          id_transaksi: transaksi.id_transaksi,
+          id_batch: batchBaru.id_batch,
+          jumlah_batch: jumlah,
+        },
+      });
+
       await tx.riwayat_pergerakan_stok.create({
         data: {
           id_transaksi: transaksi.id_transaksi,
