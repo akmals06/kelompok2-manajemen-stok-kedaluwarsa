@@ -11,7 +11,9 @@ if (!BASE_URL) {
     const domain = 'up.railway.app';
     BASE_URL = `${protocol}${sub}.${domain}/api`;
   } else {
-    BASE_URL = 'http://localhost:5000/api';
+    // Use Next.js rewrite proxy (same-origin) to avoid cross-origin/CORS/firewall issues
+    // The proxy is configured in next.config.mjs: /api/* → http://localhost:5000/api/*
+    BASE_URL = '/api';
   }
 }
 
