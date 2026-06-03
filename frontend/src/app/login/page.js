@@ -86,11 +86,13 @@ export default function LoginPage() {
       await login(email, password);
       // login berhasil — useAuth handle redirect
     } catch (err) {
+      console.error('[LOGIN ERROR]', { code: err.code, message: err.message, response: err.response?.data, status: err.response?.status });
+      
       let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
       
       const isTimeout = err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network error');
       if (isTimeout) {
-        msg = 'Koneksi ke server gagal atau waktu tunggu habis. Silakan periksa jaringan Anda dan coba lagi.';
+        msg = `Koneksi ke server gagal (${err.code || err.message}). Pastikan backend berjalan di port 5000.`;
       }
       
       setAlertLogin({ type: 'danger', msg });
