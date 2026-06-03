@@ -134,7 +134,6 @@ model batch_produk {
   detail_transaksi       detail_transaksi_stok[]
   notifikasi_kedaluwarsa notifikasi_kedaluwarsa[]
 
-  // Keep compatibility for direct relation to old transaction table
   transaksi transaksi_stok[]
 
   @@index([id_produk])

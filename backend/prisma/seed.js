@@ -450,6 +450,80 @@ async function main() {
 
   console.log('✓ Batch & Transaksi Masuk awal berhasil disemai.');
 
+  // 4b. Seed Batch & Transaksi Masuk default untuk produk lainnya agar konsisten
+  console.log('Menyemai data batch default untuk produk lainnya agar semuanya memiliki stok awal...');
+  let extraBatchCount = 0;
+  for (let idx = 0; idx < produkList.length; idx++) {
+    if (sampleIndices.includes(idx)) continue;
+
+    const produk = produkList[idx];
+    const kodeBatch = `BATCH-${produk.nama_produk.substring(0, 3).toUpperCase()}-${(Date.now() + idx) % 100000}-${idx}`;
+    const expHari = 180;
+    const jumlahAwal = 50;
+
+    // Buat Batch
+    const batch = await prisma.batch_produk.create({
+      data: {
+        id_produk: produk.id_produk,
+        kode_batch: kodeBatch,
+        tanggal_masuk: now,
+        tanggal_kedaluwarsa: hari(expHari),
+        jumlah_awal: jumlahAwal,
+        jumlah_sisa: jumlahAwal,
+        status_batch: 'AKTIF',
+      },
+    });
+
+    batchMap.set(produk.id_produk, batch);
+
+    // Buat Transaksi Stok (MASUK)
+    const transaksi = await prisma.transaksi_stok.create({
+      data: {
+        id_pengguna: pemilik.id_pengguna,
+        id_produk: produk.id_produk,
+        id_batch: batch.id_batch,
+        jenis_transaksi: 'MASUK',
+        jumlah: jumlahAwal,
+        sumber_masuk: 'Distributor Resmi',
+        status_validasi: 'VALID',
+        status_transaksi: 'BERHASIL',
+        keterangan: `Stok awal default ${produk.nama_produk}`,
+      },
+    });
+
+    // Buat Detail Transaksi Stok
+    await prisma.detail_transaksi_stok.create({
+      data: {
+        id_transaksi: transaksi.id_transaksi,
+        id_batch: batch.id_batch,
+        jumlah_batch: jumlahAwal,
+      },
+    });
+
+    // Buat Riwayat Pergerakan Stok
+    await prisma.riwayat_pergerakan_stok.create({
+      data: {
+        id_transaksi: transaksi.id_transaksi,
+        id_produk: produk.id_produk,
+        jenis_pergerakan: 'PENAMBAHAN',
+        jumlah_perubahan: jumlahAwal,
+        stok_sebelum: 0,
+        stok_sesudah: jumlahAwal,
+        catatan: `Stok awal ${produk.nama_produk} dimasukkan`,
+      },
+    });
+
+    // Update stok produk
+    await prisma.produk.update({
+      where: { id_produk: produk.id_produk },
+      data: { stok_tersedia: jumlahAwal },
+    });
+
+    extraBatchCount++;
+  }
+
+  console.log(`✓ Sukses menyemai ${extraBatchCount} batch default tambahan.`);
+
   // 5. Seed Stok Keluar (Simulasi Penjualan)
   console.log('Menyemai data transaksi keluar (penjualan)...');
   const keluarEntries = [

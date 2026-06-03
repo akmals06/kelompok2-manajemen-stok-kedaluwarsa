@@ -102,4 +102,43 @@ const ambilProfil = async (req, res, next) => {
   }
 };
 
-module.exports = { login, refresh, logout, ambilProfil };
+const forgotPassword = async (req, res, next) => {
+  try {
+    const hasil = await authService.requestResetPassword(req.body.email);
+
+    res.status(200).json({
+      success: true,
+      message: hasil.message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const verifyOtp = async (req, res, next) => {
+  try {
+    const hasil = await authService.verifyOtp(req.body.email, req.body.otp);
+
+    res.status(200).json({
+      success: true,
+      message: hasil.message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const hasil = await authService.resetPassword(req.body.email, req.body.otp, req.body.password_baru);
+
+    res.status(200).json({
+      success: true,
+      message: hasil.message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { login, refresh, logout, ambilProfil, forgotPassword, verifyOtp, resetPassword };

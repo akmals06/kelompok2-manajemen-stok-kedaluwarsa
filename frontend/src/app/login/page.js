@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import authService from '@/services/auth.service';
 import './login.css';
 
 const Alert = ({ alert }) => {
@@ -38,6 +39,7 @@ export default function LoginPage() {
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [showNewPass, setShowNewPass] = useState(false);
+  const [verifiedOtp, setVerifiedOtp] = useState('');
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -82,7 +84,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      // login method from useAuth already handles redirecting to /dashboard
+      // login berhasil — useAuth handle redirect
     } catch (err) {
       let msg = err.response?.data?.message || err.message || 'Terjadi kesalahan saat login';
       
@@ -100,18 +102,24 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotSend = () => {
+  const handleForgotSend = async () => {
     if (!forgotEmail.trim() || !forgotEmail.includes('@')) {
       setAlertForgot1({ type: 'danger', msg: 'Masukkan email yang valid.' });
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await authService.forgotPassword(forgotEmail.trim());
       setOtp(['', '', '', '', '', '']);
       setActiveView('forgot-2');
+      setAlertForgot1({ type: 'success', msg: 'Kode verifikasi telah dikirim.' });
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    }, 1600);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Gagal mengirim kode verifikasi.';
+      setAlertForgot1({ type: 'danger', msg });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOtpChange = (idx, value) => {
@@ -133,24 +141,26 @@ export default function LoginPage() {
     }
   };
 
-  const handleOTPVerify = () => {
+  const handleOTPVerify = async () => {
     const code = otp.join('');
     if (code.length < 6) {
       setAlertOtp({ type: 'danger', msg: 'Masukkan 6 digit kode OTP.' });
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await authService.verifyOtp(forgotEmail.trim(), code);
+      setVerifiedOtp(code);
+      setActiveView('forgot-3');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Kode OTP tidak valid atau sudah kedaluwarsa.';
+      setAlertOtp({ type: 'danger', msg });
+    } finally {
       setLoading(false);
-      if (code === '123456') {
-        setActiveView('forgot-3');
-      } else {
-        setAlertOtp({ type: 'danger', msg: 'Kode OTP tidak valid atau sudah kedaluwarsa.' });
-      }
-    }, 1400);
+    }
   };
 
-  const handleResetPass = () => {
+  const handleResetPass = async () => {
     if (newPass.length < 8) {
       setAlertReset({ type: 'danger', msg: 'Password minimal 8 karakter.' });
       return;
@@ -160,13 +170,23 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await authService.resetPassword(forgotEmail.trim(), verifiedOtp, newPass);
       setActiveView('login');
+      setForgotEmail('');
+      setOtp(['', '', '', '', '', '']);
+      setVerifiedOtp('');
+      setNewPass('');
+      setConfirmPass('');
       setTimeout(() => {
         setAlertLogin({ type: 'success', msg: 'Password berhasil diperbarui! Silakan masuk.' });
       }, 200);
-    }, 1600);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Gagal memperbarui password.';
+      setAlertReset({ type: 'danger', msg });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const PackageIcon = () => (
@@ -190,15 +210,6 @@ export default function LoginPage() {
       <line x1="1" y1="1" x2="23" y2="23" />
     </svg>
   );
-
-  const LogOutIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  );
-
 
 
   return (
@@ -459,7 +470,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="login-footer">© 2024 WARUNG SEMBAKO ABAH ANDI</div>
+        <div className="login-footer">© 2026 WARUNG SEMBAKO ABAH ANDI</div>
       </div>
     </div>
   );
