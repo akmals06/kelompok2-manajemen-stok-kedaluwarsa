@@ -52,7 +52,6 @@ const ProductImage = ({ src, name, catColor, size = 'md' }) => {
   if (src && !imgError) {
     return (
       <div className={`relative ${sizes[size]} mx-auto md:mx-0 rounded-2xl border border-white/10 overflow-hidden bg-zinc-900 shrink-0 shadow-lg group`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={size === 'sm' ? getThumbnailUrl(src) : getCardImageUrl(src)} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onError={() => setImgError(true)} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
       </div>
@@ -399,7 +398,6 @@ export default function ProdukPage() {
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Gambar Produk</p>
                 {imagePreview ? (
                   <div className="relative w-full h-36 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     <button
                       type="button"
