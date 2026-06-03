@@ -4,7 +4,10 @@ const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = [config.frontendUrl];
+    const allowedOrigins = [
+      config.frontendUrl, 
+      'http://localhost:3000'
+    ];
     
     // Izinkan semua sub-domain preview dan domain produksi Vercel untuk proyek ini secara dinamis (mendukung pemotongan nama domain oleh Vercel)
     const isVercelOrigin = origin.includes('manajemen-stok-kedaluwa') && origin.endsWith('.vercel.app');
