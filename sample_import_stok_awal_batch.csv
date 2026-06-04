@@ -1,0 +1,41 @@
+nama_produk,kode_batch,tanggal_masuk,tanggal_kedaluwarsa,jumlah,sumber_masuk
+Beras Premium Rojo Lele,BATCH-BRS-20260601-001,2026-06-01,2026-12-01,25,Supplier Padi Jaya
+Beras Pandan Wangi,BATCH-BPW-20260601-002,2026-06-01,2026-11-15,30,Distributor Beras Nusantara
+Tepung Terigu Segitiga Biru 1kg,BATCH-TSB-20260602-003,2026-06-02,2027-06-02,40,Agen Bogasari Pusat
+Tepung Terigu Cakra Kembar 1kg,BATCH-TCK-20260602-004,2026-06-02,2027-05-20,35,Agen Bogasari Pusat
+Tepung Beras Rose Brand 500g,BATCH-TBR-20260603-005,2026-06-03,2027-03-15,20,Distributor Rose Brand
+Minyak Goreng Bimoli 2L,BATCH-MGB-20260601-006,2026-06-01,2027-06-01,50,Distributor Bimoli Resmi
+Minyak Goreng Tropical 2L,BATCH-MGT-20260601-007,2026-06-01,2027-05-15,45,Agen Tropical
+Minyak Goreng Sania 2L,BATCH-MGS-20260602-008,2026-06-02,2027-04-30,30,Distributor Sania Utama
+Minyak Goreng Fortune 2L,BATCH-MGF-20260603-009,2026-06-03,2027-06-03,40,Supplier Fortune Pusat
+Margarin Blue Band Serbaguna 200g,BATCH-MBB-20260603-010,2026-06-03,2027-03-01,60,Distributor Unilever
+Gula Pasir Gulaku Premium 1kg,BATCH-GPG-20260601-011,2026-06-01,2027-12-01,80,Distributor Gulaku
+Gula Pasir Rose Brand 1kg,BATCH-GPR-20260601-012,2026-06-01,2027-11-30,70,Agen Rose Brand
+Gula Merah Aren Premium 500g,BATCH-GMA-20260602-013,2026-06-02,2026-12-15,25,Supplier Aren Organik
+Garam Dapur Refina Halus 500g,BATCH-GDR-20260603-014,2026-06-03,2028-06-03,50,Distributor Garam Refina
+Garam Dapur Cap Kapal 250g,BATCH-GDK-20260603-015,2026-06-03,2028-06-01,100,Agen Garam Kapal
+Susu Kental Manis Frisian Flag Emas,BATCH-SKF-20260601-016,2026-06-01,2027-06-01,60,Distributor Frisian Flag
+Susu UHT Ultra Milk Cokelat 1L,BATCH-SUM-20260601-017,2026-06-01,2026-12-01,48,Distributor Ultra Jaya
+Susu Steril Bear Brand 189ml,BATCH-SBB-20260602-018,2026-06-02,2027-06-02,72,Agen Nestle Indonesia
+Keju Kraft Cheddar 165g,BATCH-KKC-20260603-019,2026-06-03,2026-12-31,30,Distributor Kraft Heinz
+Susu Bubuk Dancow Fortigro 800g,BATCH-SBD-20260603-020,2026-06-03,2027-03-15,20,Agen Nestle Indonesia
+Kecap Manis Bango 520ml,BATCH-KMB-20260601-021,2026-06-01,2027-06-01,40,Distributor Unilever
+Saus Sambal ABC Asli 335ml,BATCH-SSA-20260601-022,2026-06-01,2027-05-01,35,Agen ABC Heinz
+Penyedap Rasa Royco Sapi 230g,BATCH-PRR-20260602-023,2026-06-02,2027-06-02,80,Distributor Unilever
+Bumbu Racik Nasi Goreng Indofood,BATCH-BRN-20260603-024,2026-06-03,2027-03-01,60,Agen Indofood CBP
+Saus Tiram Saori Saus Tiram 270ml,BATCH-STS-20260603-025,2026-06-03,2027-04-15,25,Distributor Ajinomoto
+Kopi Kapal Api Special Mix Renceng,BATCH-KKA-20260601-026,2026-06-01,2027-06-01,50,Distributor Kapal Api
+Teh Celup Sariwangi Isi 25,BATCH-TCS-20260601-027,2026-06-01,2027-12-01,40,Agen Unilever
+Sirup Marjan Boudoin Cocopandan,BATCH-SMC-20260602-028,2026-06-02,2027-06-02,30,Distributor Marjan Utama
+Air Mineral Aqua Botol 600ml,BATCH-AMA-20260603-029,2026-06-03,2028-06-03,100,Agen Danone Aqua
+Minuman Pocari Sweat Botol 500ml,BATCH-MPS-20260603-030,2026-06-03,2027-12-01,48,Distributor Otsuka
+Indomie Goreng Spesial,BATCH-IGS-20260601-031,2026-06-01,2027-02-01,200,Distributor Indomie Utama
+Indomie Kuah Rasa Ayam Bawang,BATCH-IKA-20260601-032,2026-06-01,2027-01-15,180,Distributor Indomie Utama
+Mie Sedaap Goreng,BATCH-MSG-20260602-033,2026-06-02,2027-02-15,150,Agen Wings Food
+Mie Sedaap Kuah Soto,BATCH-MSS-20260602-034,2026-06-02,2027-01-31,120,Agen Wings Food
+Pop Mie Rasa Ayam Bawang Cup,BATCH-PMA-20260603-035,2026-06-03,2027-03-01,24,Distributor Indofood CBP
+Deterjen Rinso Anti Noda 800g,BATCH-DRA-20260601-036,2026-06-01,2028-06-01,40,Distributor Unilever
+Sabun Mandi Lifebuoy Merah 100g,BATCH-SML-20260601-037,2026-06-01,2028-06-01,80,Agen Unilever
+Sabun Cuci Piring Sunlight Lime 755ml,BATCH-SCS-20260602-038,2026-06-02,2028-06-02,50,Distributor Unilever
+Sampo Sunsilk Black Shine 170ml,BATCH-SSB-20260603-039,2026-06-03,2028-03-01,30,Agen Unilever
+Pembersih Lantai Super Pell Apple 780ml,BATCH-PLS-20260603-040,2026-06-03,2028-03-01,35,Distributor Unilever

@@ -16,10 +16,10 @@ router.use(authMiddleware);
 router.get('/', izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'), kategoriController.ambilSemuaKategori);
 router.get('/:id', izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'), validasiIdParam, kategoriController.ambilKategoriById);
 
-// Create, Update, Delete categories (restricted to ADMIN_USAHA only)
+// Create, Update, Delete categories (both roles can manage)
 router.post(
   '/',
-  izinkanRole('ADMIN_USAHA'),
+  izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'),
   upload.single('gambar_kategori'),
   validasiBuatKategori,
   kategoriController.buatKategori
@@ -27,13 +27,13 @@ router.post(
 
 router.put(
   '/:id',
-  izinkanRole('ADMIN_USAHA'),
+  izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'),
   upload.single('gambar_kategori'),
   validasiIdParam,
   validasiUpdateKategori,
   kategoriController.updateKategori
 );
 
-router.delete('/:id', izinkanRole('ADMIN_USAHA'), validasiIdParam, kategoriController.hapusKategori);
+router.delete('/:id', izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'), validasiIdParam, kategoriController.hapusKategori);
 
 module.exports = router;
