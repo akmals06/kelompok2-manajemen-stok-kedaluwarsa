@@ -82,12 +82,31 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
     const ambilJumlah = async () => {
       try {
         const res = await notifikasiService.hitungBelumDibaca();
-        if (res.success) setBelumDibaca(res.data?.belum_dibaca || 0);
+        if (res.success) {
+          let count = res.data?.belum_dibaca || 0;
+          const deletedIds = JSON.parse(localStorage.getItem('dummy_deleted_notif') || '[]');
+          const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
+          
+          const dummyDeleted = deletedIds.includes(99999);
+          const dummyRead = readIds.includes(99999);
+          
+          if (!dummyDeleted && !dummyRead) {
+            count += 1;
+          }
+          setBelumDibaca(count);
+        }
       } catch { /* abaikan jika belum login */ }
     };
     ambilJumlah();
     const interval = setInterval(ambilJumlah, 30000);
-    return () => clearInterval(interval);
+    
+    // Listen to custom event to refresh count instantly
+    window.addEventListener('refresh-notification-count', ambilJumlah);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('refresh-notification-count', ambilJumlah);
+    };
   }, []);
 
   useEffect(() => {

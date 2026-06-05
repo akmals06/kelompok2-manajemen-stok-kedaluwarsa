@@ -36,16 +36,27 @@ export default function NotifikasiPage() {
     try {
       const res = await notifikasiService.ambilSemua();
       if (res.success) {
+        const deletedIds = JSON.parse(localStorage.getItem('dummy_deleted_notif') || '[]');
+        const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
+
         const dummyDailyReport = {
           id_notifikasi: 99999,
           judul: 'Pengingat Laporan Harian',
           pesan: 'Waktunya melakukan pengecekan stok harian. Silakan generate laporan hari ini sebelum jam 24:00.',
           tipe: 'LAPORAN',
-          dibaca: false,
+          dibaca: readIds.includes(99999),
           created_at: new Date().toISOString(),
         };
+
         const existingData = res.data || [];
-        setNotifikasi([dummyDailyReport, ...existingData]);
+        const combined = [];
+
+        if (!deletedIds.includes(99999)) {
+          combined.push(dummyDailyReport);
+        }
+
+        combined.push(...existingData);
+        setNotifikasi(combined);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal memuat notifikasi');
@@ -58,15 +69,26 @@ export default function NotifikasiPage() {
 
   const handleTandaiDibaca = async (id) => {
     try {
-      await notifikasiService.tandaiDibaca(id);
+      if (id === 99999) {
+        const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
+        localStorage.setItem('dummy_read_notif', JSON.stringify([...new Set([...readIds, id])]));
+      } else {
+        await notifikasiService.tandaiDibaca(id);
+      }
       setNotifikasi((prev) => prev.map((n) => n.id_notifikasi === id ? { ...n, dibaca: true } : n));
+      window.dispatchEvent(new Event('refresh-notification-count'));
     } catch { /* abaikan */ }
   };
 
   const handleTandaiSemuaDibaca = async () => {
     try {
       await notifikasiService.tandaiSemuaDibaca();
+
+      const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
+      localStorage.setItem('dummy_read_notif', JSON.stringify([...new Set([...readIds, 99999])]));
+
       setNotifikasi((prev) => prev.map((n) => ({ ...n, dibaca: true })));
+      window.dispatchEvent(new Event('refresh-notification-count'));
     } catch { /* abaikan */ }
   };
 
@@ -89,9 +111,19 @@ export default function NotifikasiPage() {
     if (selectedIds.length === 0) return;
     
     try {
-      await notifikasiService.hapusBanyak(selectedIds);
+      const realIds = selectedIds.filter(id => id !== 99999);
+      if (realIds.length > 0) {
+        await notifikasiService.hapusBanyak(realIds);
+      }
+
+      if (selectedIds.includes(99999)) {
+        const deletedIds = JSON.parse(localStorage.getItem('dummy_deleted_notif') || '[]');
+        localStorage.setItem('dummy_deleted_notif', JSON.stringify([...new Set([...deletedIds, 99999])]));
+      }
+
       setNotifikasi((prev) => prev.filter((n) => !selectedIds.includes(n.id_notifikasi)));
       setSelectedIds([]); // Clear selection after delete
+      window.dispatchEvent(new Event('refresh-notification-count'));
     } catch { /* abaikan */ }
   };
 
