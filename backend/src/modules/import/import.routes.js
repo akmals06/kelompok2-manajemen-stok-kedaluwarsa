@@ -27,7 +27,7 @@ const {
 } = require('./import.validation');
 
 router.use(authMiddleware);
-router.use(izinkanRole('ADMIN_USAHA'));
+router.use(izinkanRole('ADMIN_USAHA', 'PEMILIK_USAHA'));
 
 router.post(
   '/preview',

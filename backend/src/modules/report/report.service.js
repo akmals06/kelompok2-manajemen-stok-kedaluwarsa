@@ -7,7 +7,7 @@ const ambilRingkasanStok = async () => {
 
   return produkList.map((produk) => ({
     ...produk,
-    status_stok: produk.stok_tersedia <= produk.stok_minimum ? 'STOK_RENDAH' : 'NORMAL',
+    status_stok: produk.stok_tersedia < produk.stok_minimum ? 'STOK_RENDAH' : 'NORMAL',
   }));
 };
 

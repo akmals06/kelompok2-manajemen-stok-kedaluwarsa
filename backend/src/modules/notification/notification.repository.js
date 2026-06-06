@@ -1,6 +1,5 @@
 const prisma = require('../../config/prisma');
 
-// Mapping jenis_notifikasi → judul dan tipe untuk kompatibilitas frontend
 const JUDUL_MAP = {
   MENDEKATI_KEDALUWARSA: 'Peringatan Mendekati Kedaluwarsa',
   KEDALUWARSA: 'Batch Kedaluwarsa',
@@ -13,7 +12,6 @@ const TIPE_MAP = {
   STOK_MENIPIS: 'STOK_MENIPIS',
 };
 
-// Map row notifikasi_kedaluwarsa → format kompatibel frontend
 const mapToLegacyFormat = (row) => {
   let judul = JUDUL_MAP[row.jenis_notifikasi] || row.jenis_notifikasi;
   if (row.jenis_notifikasi === 'STOK_MENIPIS' && row.pesan.includes('HABIS')) {
@@ -26,21 +24,18 @@ const mapToLegacyFormat = (row) => {
     tipe: TIPE_MAP[row.jenis_notifikasi] || 'PERINGATAN',
     dibaca: row.status_baca,
     created_at: row.tanggal_notifikasi,
-    // Data tambahan untuk konteks
     batch: row.batch || null,
   };
 };
 
 let lastSyncTime = 0;
-const SYNC_COOLDOWN = 60 * 1000; // 1 minute
+const SYNC_COOLDOWN = 60 * 1000; // Cooldown sync 1 menit untuk performance
 
-// Live scan and insert expiration alerts into database
 const sinkronisasiNotifikasiKedaluwarsa = async () => {
   try {
     const now = new Date();
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    // Get active batches with sisa stock
     const activeBatches = await prisma.batch_produk.findMany({
       where: {
         status_batch: { not: 'DIARSIPKAN' },
@@ -78,7 +73,7 @@ const sinkronisasiNotifikasiKedaluwarsa = async () => {
     if (eligibleBatches.length === 0) return;
 
     const batchIds = eligibleBatches.map(b => b.id_batch);
-    // Find all existing notifications for these active batches in 1 query
+    // Ambil SEMUA notifikasi (termasuk yang sudah dihapus) agar tidak bikin duplikat
     const existingNotifications = await prisma.notifikasi_kedaluwarsa.findMany({
       where: {
         id_batch: { in: batchIds }
@@ -98,7 +93,6 @@ const sinkronisasiNotifikasiKedaluwarsa = async () => {
     );
 
     if (newNotifications.length > 0) {
-      // Bulk insert new notifications in 1 query
       await prisma.notifikasi_kedaluwarsa.createMany({
         data: newNotifications.map(n => ({
           id_batch: n.id_batch,
@@ -108,22 +102,31 @@ const sinkronisasiNotifikasiKedaluwarsa = async () => {
         }))
       });
     }
+
+    // Hapus notifikasi batch yang sudah diarsipkan/habis
+    const activeBatchIds = activeBatches.map(b => b.id_batch);
+    await prisma.notifikasi_kedaluwarsa.deleteMany({
+      where: {
+        jenis_notifikasi: { in: ['KEDALUWARSA', 'MENDEKATI_KEDALUWARSA'] },
+        id_batch: { notIn: activeBatchIds }
+      }
+    });
   } catch (err) {
     console.error('Error synchronizing expiration notifications:', err);
   }
 };
 
-// Live scan and insert low stock alerts into database
 const sinkronisasiNotifikasiStokMenipis = async () => {
   try {
     const allProducts = await prisma.produk.findMany({
       where: { status_aktif: true }
     });
 
-    const lowStockProducts = allProducts.filter(p => p.stok_tersedia <= p.stok_minimum);
-    const normalProductIds = allProducts.filter(p => p.stok_tersedia > p.stok_minimum).map(p => p.id_produk);
+    const lowStockProducts = allProducts.filter(p => p.stok_tersedia < p.stok_minimum);
+    const normalProductIds = allProducts.filter(p => p.stok_tersedia >= p.stok_minimum).map(p => p.id_produk);
 
-    // Fetch existing low-stock notifications from database (active and soft-deleted)
+    // Ambil SEMUA notifikasi stok menipis (termasuk yang sudah dihapus user)
+    // agar tidak membuat ulang notifikasi yang sengaja dihapus
     const existingNotifs = await prisma.notifikasi_kedaluwarsa.findMany({
       where: { jenis_notifikasi: 'STOK_MENIPIS' }
     });
@@ -157,7 +160,8 @@ const sinkronisasiNotifikasiStokMenipis = async () => {
       });
     }
 
-    // If stock has been refilled (normal stock), physically delete the STOK_MENIPIS warnings from DB
+    // Hapus permanen notifikasi stok menipis untuk produk yang stoknya sudah normal
+    // (hard delete agar bisa dibuat ulang nanti jika stok turun lagi)
     const toDeleteIds = existingNotifs
       .filter(n => normalProductIds.includes(n.id_produk))
       .map(n => n.id_notifikasi);
@@ -167,6 +171,15 @@ const sinkronisasiNotifikasiStokMenipis = async () => {
         where: { id_notifikasi: { in: toDeleteIds } }
       });
     }
+
+    // Hapus notifikasi stok menipis untuk produk nonaktif
+    const activeProductIds = allProducts.map(p => p.id_produk);
+    await prisma.notifikasi_kedaluwarsa.deleteMany({
+      where: {
+        jenis_notifikasi: 'STOK_MENIPIS',
+        id_produk: { notIn: activeProductIds }
+      }
+    });
   } catch (err) {
     console.error('Error synchronizing low stock notifications:', err);
   }
@@ -175,7 +188,7 @@ const sinkronisasiNotifikasiStokMenipis = async () => {
 const sinkronisasiSemuaNotifikasi = async () => {
   const nowTime = Date.now();
   if (nowTime - lastSyncTime < SYNC_COOLDOWN) {
-    return; // Skip sync if executed within the last minute
+    return;
   }
   lastSyncTime = nowTime;
 
@@ -184,14 +197,9 @@ const sinkronisasiSemuaNotifikasi = async () => {
 };
 
 const ambilSemuaNotifikasi = async () => {
-  // Sync live first
   await sinkronisasiSemuaNotifikasi();
 
-  // Fetch db-based notifications
   const dbRows = await prisma.notifikasi_kedaluwarsa.findMany({
-    where: {
-      status_hapus: false
-    },
     orderBy: { tanggal_notifikasi: 'desc' },
     take: 50,
     include: {
@@ -209,12 +217,10 @@ const ambilSemuaNotifikasi = async () => {
 };
 
 const hitungBelumDibaca = async () => {
-  // Sync live first
   await sinkronisasiSemuaNotifikasi();
 
-  // DB unread count
   const dbCount = await prisma.notifikasi_kedaluwarsa.count({
-    where: { status_baca: false, status_hapus: false },
+    where: { status_baca: false },
   });
 
   return dbCount;
@@ -230,16 +236,15 @@ const tandaiSudahDibaca = async (idNotifikasi) => {
 
 const tandaiSemuaDibaca = async () => {
   return prisma.notifikasi_kedaluwarsa.updateMany({
-    where: { status_baca: false, status_hapus: false },
+    where: { status_baca: false },
     data: { status_baca: true },
   });
 };
 
 const hapusNotifikasi = async (idNotifikasi) => {
   const idNum = parseInt(idNotifikasi, 10);
-  return prisma.notifikasi_kedaluwarsa.update({
-    where: { id_notifikasi: idNum },
-    data: { status_hapus: true }
+  return prisma.notifikasi_kedaluwarsa.delete({
+    where: { id_notifikasi: idNum }
   });
 };
 
@@ -247,9 +252,8 @@ const hapusBeberapaNotifikasi = async (ids) => {
   const realIds = ids.map(id => parseInt(id, 10));
   if (realIds.length === 0) return { count: 0 };
 
-  return prisma.notifikasi_kedaluwarsa.updateMany({
-    where: { id_notifikasi: { in: realIds } },
-    data: { status_hapus: true }
+  return prisma.notifikasi_kedaluwarsa.deleteMany({
+    where: { id_notifikasi: { in: realIds } }
   });
 };
 

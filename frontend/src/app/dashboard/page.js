@@ -404,7 +404,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-white font-heading">
-                  Status Expiry
+                  Status Kedaluwarsa
                 </h2>
                 <p className="text-[11px] text-zinc-500">
                   Peringatan kedaluwarsa
@@ -438,7 +438,7 @@ export default function DashboardPage() {
                 }`}
               >
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                  Expired
+                  Kedaluwarsa
                 </span>
                 <span className="text-lg font-bold text-red-400">
                   {batch.kedaluwarsa}
@@ -521,7 +521,7 @@ export default function DashboardPage() {
                               <p
                                 className={`text-xs font-bold ${isExpired ? "text-red-400" : "text-amber-400"}`}
                               >
-                                {isExpired ? "Expired!" : `${sisaHari} Hari`}
+                                {isExpired ? "Kedaluwarsa!" : `${sisaHari} Hari`}
                               </p>
                               <p className="text-[10px] text-zinc-500 mt-0.5">
                                 {new Date(b.tanggal_kedaluwarsa).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -609,7 +609,7 @@ export default function DashboardPage() {
                 color="amber"
               />
               <HealthBar
-                label="Batch Expired"
+                label="Batch Kedaluwarsa"
                 value={batch.kedaluwarsa}
                 total={totalBatchAktif}
                 color="red"
@@ -619,7 +619,7 @@ export default function DashboardPage() {
             <div className="mt-6 pt-5 border-t border-white/[0.05] space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-zinc-400 font-medium">
-                  Hampir Expired
+                  Hampir Kedaluwarsa
                 </span>
                 <span className="text-sm font-bold text-amber-400 font-mono">
                   {batch.hampir_kedaluwarsa}
@@ -627,7 +627,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-zinc-400 font-medium">
-                  Expired
+                  Kedaluwarsa
                 </span>
                 <span className="text-sm font-bold text-red-400 font-mono">
                   {batch.kedaluwarsa}
@@ -709,7 +709,7 @@ export default function DashboardPage() {
                     <Activity className="w-4 h-4 text-[#E1FF01]" />
                   </div>
                   <h2 className="text-base font-bold text-white font-heading">
-                    Recent Transactions
+                    Transaksi Terakhir
                   </h2>
                 </div>
                 <div className="flex items-center gap-1 bg-[#131315] p-1 rounded-xl border border-white/[0.05]">
@@ -728,7 +728,7 @@ export default function DashboardPage() {
                       }`}
                     >
                       {type === "ALL"
-                        ? "All"
+                        ? "Semua"
                         : type === "MASUK"
                           ? "Masuk"
                           : "Keluar"}
@@ -754,7 +754,7 @@ export default function DashboardPage() {
                     value={filterAdmin}
                     onChange={(val) => setFilterAdmin(val)}
                     options={uniqueAdmins.map(name => ({ label: name, value: name }))}
-                    placeholder="Add by"
+                    placeholder="Operator"
                   />
                 </div>
 
@@ -804,7 +804,7 @@ export default function DashboardPage() {
                       colSpan="5"
                       className="py-8 text-center text-xs text-zinc-500"
                     >
-                      No transactions found
+                      Tidak ada transaksi ditemukan
                     </td>
                   </tr>
                 ) : (

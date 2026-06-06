@@ -16,7 +16,7 @@ export default function EoqPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [hasil, setHasil] = useState(null);
-  const [form, setForm] = useState({ id_produk: '', kebutuhan_tahunan: '', biaya_pesan: '', biaya_simpan: '' });
+  const [form, setForm] = useState({ id_produk: '', kebutuhan_tahunan: '', biaya_pesan: '', biaya_simpan: '', mode_input: 'MANUAL' });
 
   useEffect(() => {
     const muatData = async () => {
@@ -34,13 +34,25 @@ export default function EoqPage() {
     e.preventDefault();
     setFormError('');
     if (!form.id_produk) return setFormError('Pilih produk');
-    if (!form.kebutuhan_tahunan || parseFloat(form.kebutuhan_tahunan) <= 0) return setFormError('Kebutuhan tahunan harus > 0');
+    if (form.mode_input === 'MANUAL') {
+      if (!form.kebutuhan_tahunan || parseFloat(form.kebutuhan_tahunan) <= 0) {
+        return setFormError('Kebutuhan tahunan harus > 0 untuk input manual');
+      }
+    }
     if (!form.biaya_pesan || parseFloat(form.biaya_pesan) <= 0) return setFormError('Biaya pesan harus > 0');
     if (!form.biaya_simpan || parseFloat(form.biaya_simpan) <= 0) return setFormError('Biaya simpan harus > 0');
 
     setSubmitting(true);
     try {
-      const res = await eoqService.hitung(form);
+      const payload = {
+        id_produk: parseInt(form.id_produk, 10),
+        mode_input: form.mode_input,
+        biaya_pesan: parseFloat(form.biaya_pesan),
+        biaya_simpan: parseFloat(form.biaya_simpan),
+        kebutuhan_tahunan: form.mode_input === 'PREDIKSI' ? undefined : parseFloat(form.kebutuhan_tahunan),
+      };
+
+      const res = await eoqService.hitung(payload);
       if (res.success) {
         setHasil(res.data);
         setSukses('EOQ berhasil dihitung');
@@ -71,12 +83,58 @@ export default function EoqPage() {
         </h2>
         {formError && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-5">{formError}</div>}
         <form onSubmit={handleHitung} className="relative grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-zinc-300 mb-2">Metode Penentuan Kebutuhan Tahunan</label>
+            <div className="flex gap-2 p-1 bg-white/5 border border-white/10 rounded-xl w-fit">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, mode_input: 'MANUAL' })}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  form.mode_input === 'MANUAL'
+                    ? 'bg-[#E1FF01] text-zinc-950 shadow-md shadow-[#E1FF01]/10 font-bold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Input Manual
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, mode_input: 'PREDIKSI' })}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  form.mode_input === 'PREDIKSI'
+                    ? 'bg-[#E1FF01] text-zinc-950 shadow-md shadow-[#E1FF01]/10 font-bold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Prediksi Otomatis (Regresi Linear)
+              </button>
+            </div>
+            {form.mode_input === 'PREDIKSI' && (
+              <p className="text-[11px] text-zinc-500 mt-1.5">
+                Sistem akan memproyeksikan kebutuhan tahunan berdasarkan histori mutasi stok keluar produk ini (min. 3 bulan data berbeda).
+              </p>
+            )}
+          </div>
+
           <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Produk</label>
             <select value={form.id_produk} onChange={(e) => setForm({ ...form, id_produk: e.target.value })} className="input-dark w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#E1FF01]/50 focus:border-[#E1FF01]/50 transition-all appearance-none" disabled={submitting}>
               <option value="" className="bg-zinc-900 text-white">Pilih produk</option>
               {produkList.map((p) => <option key={p.id_produk} value={p.id_produk} className="bg-zinc-900 text-white">{p.nama_produk}</option>)}
             </select></div>
-          <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Kebutuhan Tahunan</label><input type="number" step="any" value={form.kebutuhan_tahunan} onChange={(e) => setForm({ ...form, kebutuhan_tahunan: e.target.value })} className="input-dark w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#E1FF01]/50 focus:border-[#E1FF01]/50 transition-all" disabled={submitting} /></div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+              Kebutuhan Tahunan {form.mode_input === 'MANUAL' && <span className="text-red-400">*</span>}
+            </label>
+            <input
+              type="number"
+              step="any"
+              value={form.mode_input === 'PREDIKSI' ? '' : form.kebutuhan_tahunan}
+              placeholder={form.mode_input === 'PREDIKSI' ? 'Dihitung otomatis oleh sistem...' : 'Contoh: 1200'}
+              onChange={(e) => setForm({ ...form, kebutuhan_tahunan: e.target.value })}
+              className="input-dark w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#E1FF01]/50 focus:border-[#E1FF01]/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={submitting || form.mode_input === 'PREDIKSI'}
+            />
+          </div>
           <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Biaya Pesan (Rp)</label><input type="number" step="any" value={form.biaya_pesan} onChange={(e) => setForm({ ...form, biaya_pesan: e.target.value })} className="input-dark w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#E1FF01]/50 focus:border-[#E1FF01]/50 transition-all" disabled={submitting} /></div>
           <div><label className="block text-sm font-medium text-zinc-300 mb-1.5">Biaya Simpan (Rp)</label><input type="number" step="any" value={form.biaya_simpan} onChange={(e) => setForm({ ...form, biaya_simpan: e.target.value })} className="input-dark w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#E1FF01]/50 focus:border-[#E1FF01]/50 transition-all" disabled={submitting} /></div>
           <div className="md:col-span-2 pt-2 flex gap-3">
@@ -109,7 +167,7 @@ export default function EoqPage() {
             </button>
             <button
               type="button"
-              onClick={() => setForm({ id_produk: '', kebutuhan_tahunan: '', biaya_pesan: '', biaya_simpan: '' })}
+              onClick={() => setForm({ id_produk: '', kebutuhan_tahunan: '', biaya_pesan: '', biaya_simpan: '', mode_input: 'MANUAL' })}
               disabled={submitting}
               className="flex items-center justify-center"
               style={{

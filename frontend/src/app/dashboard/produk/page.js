@@ -35,7 +35,7 @@ const getCategoryDetails = (nama) => {
 
 const getStokStatus = (tersedia, minimum) => {
   if (tersedia <= 0) return { label: 'Habis', key: 'HABIS' };
-  if (tersedia <= minimum) return { label: 'Menipis', key: 'MENIPIS' };
+  if (tersedia < minimum) return { label: 'Menipis', key: 'MENIPIS' };
   return { label: 'Aman', key: 'AMAN' };
 };
 

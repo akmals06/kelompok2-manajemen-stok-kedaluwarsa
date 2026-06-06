@@ -23,6 +23,7 @@ const ambilLaporanById = async (id) => {
 
 const ambilRingkasanStok = async () => {
   return prisma.produk.findMany({
+    where: { status_aktif: true },
     select: {
       id_produk: true,
       nama_produk: true,

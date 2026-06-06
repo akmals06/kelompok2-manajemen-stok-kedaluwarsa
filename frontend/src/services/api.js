@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-// ═══════════════════════════════════════════════
-// Base URL — otomatis deteksi lokal vs production
-// ═══════════════════════════════════════════════
+// Base URL — deteksi lokal vs production
 const isLocalhost =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -28,27 +26,21 @@ function resolveBaseUrl() {
 
 const BASE_URL = resolveBaseUrl();
 
-// ═══════════════════════════════════════════════
-// Axios instance
-// ═══════════════════════════════════════════════
+
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
   timeout: 10000,
 });
 
-// ═══════════════════════════════════════════════
-// Access Token management
-// ═══════════════════════════════════════════════
+// Token state
 let accessToken = null;
 
 export const setAccessToken = (token) => { accessToken = token; };
 export const getAccessToken = () => accessToken;
 export const clearAccessToken = () => { accessToken = null; };
 
-// ═══════════════════════════════════════════════
-// Request queue untuk silent refresh
-// ═══════════════════════════════════════════════
+// Silent refresh queue
 let isRefreshing = false;
 let antrianGagal = [];
 
@@ -62,9 +54,7 @@ const tolakAntrian = (error) => {
   antrianGagal = [];
 };
 
-// ═══════════════════════════════════════════════
 // Interceptors
-// ═══════════════════════════════════════════════
 
 // Request: sisipkan Bearer token
 api.interceptors.request.use(

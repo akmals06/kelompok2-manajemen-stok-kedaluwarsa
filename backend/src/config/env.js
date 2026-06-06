@@ -20,15 +20,14 @@ let apiKey = process.env.CLOUDINARY_API_KEY;
 let apiSecret = process.env.CLOUDINARY_API_SECRET;
 const cloudinaryUrl = process.env.CLOUDINARY_URL;
 
-// Heuristik defensif: API Key Cloudinary yang valid harus berupa angka saja (numeric)
+// API Key Cloudinary valid = numeric only
 const isApiKeyValid = apiKey && !isNaN(Number(apiKey));
 
 if (cloudName && apiKey && apiSecret && isApiKeyValid) {
-  // Jika variabel individual lengkap dan API Key valid (angka), paksa CLOUDINARY_URL agar sinkron dengan yang benar
+  // Individual env valid → override CLOUDINARY_URL agar konsisten
   process.env.CLOUDINARY_URL = `cloudinary://${apiKey}:${apiSecret}@${cloudName}`;
 } else if (cloudinaryUrl) {
-  // Jika hanya CLOUDINARY_URL yang tersedia (atau jika variabel individual tidak valid/salah input), 
-  // bersihkan dan parse CLOUDINARY_URL untuk mendapatkan nilai individual yang benar
+  // Fallback: parse CLOUDINARY_URL → individual vars
   try {
     const cleanUrl = cloudinaryUrl.replace('cloudinary://', '');
     const [credentials, hostAndParams] = cleanUrl.split('@');

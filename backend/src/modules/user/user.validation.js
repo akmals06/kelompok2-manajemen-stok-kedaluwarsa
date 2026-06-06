@@ -61,7 +61,7 @@ const validasiGantiEmail = (req, res, next) => {
   if (!emailBaru || typeof emailBaru !== 'string' || emailBaru.trim() === '') {
     errors.push('Email baru wajib diisi');
   } else {
-    // Basic email format check
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailBaru.trim())) {
       errors.push('Format email tidak valid');

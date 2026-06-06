@@ -82,7 +82,7 @@ async function main() {
   console.log(`✓ ${kategoriList.length} Kategori produk berhasil disemai.`);
 
   // 3. Menghasilkan Tepat 200 Produk Secara Dinamis per Kategori (25 produk per kategori x 8 kategori)
-  const namaProdukTemplate = [
+  const daftarProdukPerKategori = [
     // Kategori 0: Beras & Tepung (25 Item)
     [
       { nama: 'Beras Premium Rojo Lele', satuan: 'karung', min: 10 },
@@ -314,7 +314,7 @@ async function main() {
 
   for (let i = 0; i < kategoriList.length; i++) {
     const kat = kategoriList[i];
-    const items = namaProdukTemplate[i];
+    const items = daftarProdukPerKategori[i];
 
     console.log(`Menyemai produk untuk kategori: "${kat.nama_kategori}"...`);
 

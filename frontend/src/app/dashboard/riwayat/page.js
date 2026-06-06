@@ -2,7 +2,7 @@
 import Loader from '@/components/ui/Loader';
 
 import { useState, useEffect } from 'react';
-import { History, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight } from 'lucide-react';
 import riwayatService from '@/services/riwayat.service';
 import { formatTanggal } from '@/utils/format';
 import { getThumbnailUrl } from '@/utils/image';
@@ -12,10 +12,10 @@ export default function RiwayatPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Filter State
+
   const [filter, setFilter] = useState('SEMUA'); // 'SEMUA', 'MASUK', 'KELUAR'
 
-  // Pagination State
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -35,10 +35,10 @@ export default function RiwayatPage() {
 
   if (loading) return <Loader />;
 
-  // Helper to determine if a movement is positive
+
   const apakahPositif = (jenis) => jenis === 'MASUK' || jenis === 'PENAMBAHAN';
 
-  // Filtered Riwayat Calculation
+
   const filteredRiwayat = riwayatList.filter((r) => {
     if (filter === 'SEMUA') return true;
     if (filter === 'MASUK') return apakahPositif(r.jenis_pergerakan);
@@ -46,7 +46,7 @@ export default function RiwayatPage() {
     return true;
   });
 
-  // Paginated Data Calculation
+
   const totalItems = filteredRiwayat.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const paginatedRiwayat = filteredRiwayat.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -59,7 +59,7 @@ export default function RiwayatPage() {
           <p className="text-xs sm:text-sm text-zinc-500 mt-1">Catatan seluruh pergerakan stok</p>
         </div>
 
-        {/* Filter Buttons */}
+
         <div className="flex gap-1.5 bg-white/5 p-1 rounded-xl border border-white/5 w-fit self-start sm:self-center">
           <button
             onClick={() => { setFilter('SEMUA'); setCurrentPage(1); }}
@@ -115,7 +115,7 @@ export default function RiwayatPage() {
               </tr></thead>
               <tbody>{paginatedRiwayat.map((r) => {
                 const isPos = apakahPositif(r.jenis_pergerakan);
-                // Remove extra negative signs if already formatted to avoid double minus
+
                 const formatJumlah = () => {
                   const valStr = String(r.jumlah_perubahan);
                   if (isPos) {
@@ -164,7 +164,7 @@ export default function RiwayatPage() {
             </table>
           </div>
 
-          {/* Pagination Controls */}
+
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-white/5 px-4 py-3 mt-2 sm:px-6">
               <div className="flex flex-1 justify-between sm:hidden">

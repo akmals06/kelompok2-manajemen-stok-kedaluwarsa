@@ -1,12 +1,12 @@
 'use client';
 import Loader from '@/components/ui/Loader';
-
-import { useState, useEffect, useMemo } from 'react';
-import { Bell, Check, CheckCheck, Loader2, AlertTriangle, CalendarClock, Trash2, ClipboardList, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Bell, Check, CheckCheck, AlertTriangle, CalendarClock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import notifikasiService from '@/services/notifikasi.service';
 import AnimatedTrashButton from '@/components/ui/AnimatedTrashButton';
 
-// ── Helper: relative time string ──
+
+
 function waktuRelatif(dateStr) {
   const now = new Date();
   const d = new Date(dateStr);
@@ -22,7 +22,7 @@ function waktuRelatif(dateStr) {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ── Main Page ──
+
 export default function NotifikasiPage() {
   const [notifikasi, setNotifikasi] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,49 +32,24 @@ export default function NotifikasiPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  const muatData = async () => {
+  const muatData = useCallback(async () => {
     try {
       const res = await notifikasiService.ambilSemua();
       if (res.success) {
-        const deletedIds = JSON.parse(localStorage.getItem('dummy_deleted_notif') || '[]');
-        const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
-
-        const dummyDailyReport = {
-          id_notifikasi: 99999,
-          judul: 'Pengingat Laporan Harian',
-          pesan: 'Waktunya melakukan pengecekan stok harian. Silakan generate laporan hari ini sebelum jam 24:00.',
-          tipe: 'LAPORAN',
-          dibaca: readIds.includes(99999),
-          created_at: new Date().toISOString(),
-        };
-
-        const existingData = res.data || [];
-        const combined = [];
-
-        if (!deletedIds.includes(99999)) {
-          combined.push(dummyDailyReport);
-        }
-
-        combined.push(...existingData);
-        setNotifikasi(combined);
+        setNotifikasi(res.data || []);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal memuat notifikasi');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { muatData(); }, []);
+  useEffect(() => { muatData(); }, [muatData]);
 
   const handleTandaiDibaca = async (id) => {
     try {
-      if (id === 99999) {
-        const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
-        localStorage.setItem('dummy_read_notif', JSON.stringify([...new Set([...readIds, id])]));
-      } else {
-        await notifikasiService.tandaiDibaca(id);
-      }
+      await notifikasiService.tandaiDibaca(id);
       setNotifikasi((prev) => prev.map((n) => n.id_notifikasi === id ? { ...n, dibaca: true } : n));
       window.dispatchEvent(new Event('refresh-notification-count'));
     } catch { /* abaikan */ }
@@ -83,10 +58,6 @@ export default function NotifikasiPage() {
   const handleTandaiSemuaDibaca = async () => {
     try {
       await notifikasiService.tandaiSemuaDibaca();
-
-      const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
-      localStorage.setItem('dummy_read_notif', JSON.stringify([...new Set([...readIds, 99999])]));
-
       setNotifikasi((prev) => prev.map((n) => ({ ...n, dibaca: true })));
       window.dispatchEvent(new Event('refresh-notification-count'));
     } catch { /* abaikan */ }
@@ -111,31 +82,26 @@ export default function NotifikasiPage() {
     if (selectedIds.length === 0) return;
     
     try {
-      const realIds = selectedIds.filter(id => id !== 99999);
-      if (realIds.length > 0) {
-        await notifikasiService.hapusBanyak(realIds);
-      }
-
-      if (selectedIds.includes(99999)) {
-        const deletedIds = JSON.parse(localStorage.getItem('dummy_deleted_notif') || '[]');
-        localStorage.setItem('dummy_deleted_notif', JSON.stringify([...new Set([...deletedIds, 99999])]));
+      if (selectedIds.length > 0) {
+        await notifikasiService.hapusBanyak(selectedIds);
       }
 
       setNotifikasi((prev) => prev.filter((n) => !selectedIds.includes(n.id_notifikasi)));
-      setSelectedIds([]); // Clear selection after delete
+      setSelectedIds([]);
       window.dispatchEvent(new Event('refresh-notification-count'));
     } catch { /* abaikan */ }
   };
 
   const [filter, setFilter] = useState('SEMUA');
 
-  const tipeList = [
-    { key: 'SEMUA', label: 'Semua' },
-    { key: 'KEDALUWARSA', label: 'Kedaluwarsa' },
-    { key: 'MENDEKATI_KEDALUWARSA', label: 'Mendekati Kedaluwarsa' },
-    { key: 'STOK_MENIPIS', label: 'Stok Menipis' },
-    { key: 'LAPORAN', label: 'Laporan' },
-  ];
+  const filteredTipeList = useMemo(() => {
+    return [
+      { key: 'SEMUA', label: 'Semua' },
+      { key: 'KEDALUWARSA', label: 'Kedaluwarsa' },
+      { key: 'MENDEKATI_KEDALUWARSA', label: 'Mendekati Kedaluwarsa' },
+      { key: 'STOK_MENIPIS', label: 'Stok Menipis' },
+    ];
+  }, []);
 
   const filteredNotifikasi = useMemo(() => {
     if (filter === 'SEMUA') return notifikasi;
@@ -167,13 +133,7 @@ export default function NotifikasiPage() {
         </div>
       );
     }
-    if (tipe === 'LAPORAN') {
-      return (
-        <div className="w-10 h-10 rounded-xl bg-[#E1FF01]/15 flex items-center justify-center text-[#E1FF01] shrink-0">
-          <ClipboardList className="w-5 h-5" />
-        </div>
-      );
-    }
+
     return (
       <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-400 shrink-0">
         <AlertTriangle className="w-5 h-5" />
@@ -196,13 +156,7 @@ export default function NotifikasiPage() {
         </span>
       );
     }
-    if (tipe === 'LAPORAN') {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#E1FF01]/10 border border-[#E1FF01]/20 text-[#E1FF01] text-[10px] font-bold uppercase tracking-widest">
-          {tipe}
-        </span>
-      );
-    }
+
     return (
       <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest">
         {tipe}
@@ -235,7 +189,7 @@ export default function NotifikasiPage() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 flex-wrap">
-        {tipeList.map((t) => {
+        {filteredTipeList.map((t) => {
           const count = t.key === 'SEMUA'
             ? notifikasi.length
             : notifikasi.filter((n) => n.tipe === t.key).length;

@@ -109,6 +109,7 @@ const forgotPassword = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: hasil.message,
+      data: { otp: hasil.otp || null },
     });
   } catch (err) {
     next(err);

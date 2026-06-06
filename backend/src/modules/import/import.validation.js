@@ -21,12 +21,12 @@ const validasiUploadImport = (req, res, next) => {
     });
   }
 
-  const maxSize = 5 * 1024 * 1024;
+  const maxSize = 10 * 1024 * 1024;
   if (req.file.size > maxSize) {
     return res.status(400).json({
       success: false,
       message: 'Validasi input gagal',
-      errors: ['Ukuran file maksimal 5MB'],
+      errors: ['Ukuran file maksimal 10MB'],
     });
   }
 

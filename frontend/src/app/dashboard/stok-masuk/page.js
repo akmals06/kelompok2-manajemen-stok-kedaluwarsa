@@ -250,8 +250,12 @@ function StokMasukContent() {
       setSukses('Stok masuk berhasil dicatat');
       setShowForm(false);
       setForm({ id_produk: '', jumlah: '', kode_batch: '', tanggal_kedaluwarsa: '', sumber_masuk: '', keterangan: '' });
-      const res = await stokService.ambilTransaksiMasuk();
-      if (res.success) setTransaksiList(res.data || []);
+      const [resTrx, resProduk] = await Promise.all([
+        stokService.ambilTransaksiMasuk(),
+        produkService.ambilSemua(),
+      ]);
+      if (resTrx.success) setTransaksiList(resTrx.data || []);
+      if (resProduk.success) setProdukList(resProduk.data?.filter((p) => p.status_aktif) || []);
       setTimeout(() => setSukses(''), 3000);
     } catch (err) {
       setFormError(err.response?.data?.message || 'Gagal mencatat stok masuk');
@@ -382,7 +386,7 @@ function StokMasukContent() {
                     <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       Sumber Masuk
                     </label>
-                    <input value={form.sumber_masuk} onChange={(e) => setForm({ ...form, sumber_masuk: e.target.value })} className="input-dark" placeholder="Supplier A" disabled={submitting} />
+                    <input value={form.sumber_masuk} onChange={(e) => setForm({ ...form, sumber_masuk: e.target.value })} className="input-dark" placeholder="Contoh: Distributor Bogasari" disabled={submitting} />
                   </div>
                 </div>
               </div>

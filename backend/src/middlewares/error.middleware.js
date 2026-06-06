@@ -1,7 +1,7 @@
 const errorMiddleware = (err, req, res, next) => {
   let { statusCode, message } = err;
 
-  // Tangani error dari Multer secara khusus (cth: limit ukuran file atau filter ekstensi)
+  // Multer/upload error → 400 bukan 500
   if (err.name === 'MulterError' || err.message === 'Format gambar harus JPG, PNG, atau WebP.') {
     statusCode = 400;
   }

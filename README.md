@@ -1,8 +1,30 @@
-# 📦 Manajemen Stok & Kedaluwarsa UMKM
+# 📦 Manajemen Stok & Kedaluwarsa — Warung Sembako Abah Andi
 
-> **Sistem Informasi Manajemen Stok dan Kedaluwarsa berbasis Web untuk UMKM (Warung Sembako Abah Andi).**
+> **Kelompok 2**
+>
+> Sistem Informasi Manajemen Stok dan Kedaluwarsa berbasis Web untuk UMKM
 
-Sistem ini dirancang khusus untuk membantu pemilik usaha ritel (UMKM) dalam mengelola siklus hidup produk, mengoptimalkan persediaan menggunakan metode **EOQ (Economic Order Quantity)**, serta mencegah kerugian akibat barang kedaluwarsa dengan aturan **FEFO (First Expired First Out)** yang ketat.
+---
+
+## 👥 Anggota Kelompok 2
+
+| No | Nama | NIM |
+| :---: | :--- | :--- |
+| 1 | Akmal Fadhlul Rohman | 535240205 |
+| 2 | Jerrico Natanael | 535240024 |
+| 3 | Vito Orlando | 535240154 |
+| 4 | Rafly Prayoga | 535240004 |
+
+---
+
+## 📋 Deskripsi
+
+Sistem ini dirancang untuk membantu pemilik usaha ritel (UMKM) dalam:
+
+- Mengelola siklus hidup produk dari stok masuk hingga stok keluar
+- Mengoptimalkan jumlah pemesanan menggunakan metode **EOQ (Economic Order Quantity)**
+- Mencegah kerugian akibat barang kedaluwarsa dengan aturan **FEFO (First Expired First Out)**
+- Memantau kondisi stok secara real-time melalui notifikasi otomatis
 
 ---
 
@@ -10,47 +32,93 @@ Sistem ini dirancang khusus untuk membantu pemilik usaha ritel (UMKM) dalam meng
 
 | Layer | Teknologi | Deskripsi |
 | :--- | :--- | :--- |
-| **Frontend** | ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js) | App Router, Modern UI, Dynamic Data Fetching |
-| **Backend** | ![Express.js](https://img.shields.io/badge/Express.js-4-blue?style=flat-square&logo=express) | RESTful API, Modular Architecture, Dual-JWT Security |
-| **Database** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?style=flat-square&logo=postgresql) | Prisma ORM 6, Relational Schema, Supabase Pooling |
-| **Styling** | ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?style=flat-square&logo=tailwind-css) | Premium Dark Mode, Responsive Design & Smooth Animations |
+| **Frontend** | Next.js 15 | App Router, Server & Client Components |
+| **Backend** | Express.js 4 | RESTful API, Modular Architecture, Dual-JWT Auth |
+| **Database** | PostgreSQL 16 | Prisma ORM 6, Supabase Connection Pooling |
+| **Styling** | Tailwind CSS 3 | Dark Mode, Responsive, Animasi Smooth |
 
 ---
 
 ## 📁 Struktur Folder
 
 ```text
-├── backend/          # Express API Server (Modular Architecture)
-└── frontend/         # Next.js Web Application (App Router)
+kelompok2-manajemen-stok-kedaluwarsa/
+├── backend/           # Express API Server
+│   ├── prisma/        # Schema, Migration, Seed
+│   └── src/
+│       ├── config/    # Database, Environment
+│       ├── middleware/ # Auth, Error Handler
+│       ├── modules/   # auth, product, stock, batch, dll
+│       └── utils/     # JWT, Helper
+└── frontend/          # Next.js Web Application
+    └── src/
+        ├── app/       # Pages (App Router)
+        ├── components/ # UI Components
+        ├── hooks/     # Custom Hooks (useAuth)
+        └── services/  # API Service Layer
 ```
 
 ---
 
-## ⚙️ Cara Menjalankan (Development)
+## ⚙️ Cara Menjalankan
 
-Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi di lingkungan pengembangan lokal:
+### Prasyarat
 
-### 1. Inisialisasi Database (Prisma)
-Pastikan Anda sudah mengonfigurasi berkas `.env` di dalam folder `backend/`, kemudian jalankan migrasi database:
+- Node.js 18+
+- PostgreSQL (atau akun Supabase)
+
+### 1. Clone & Setup Environment
+
+```bash
+git clone https://github.com/akmals06/kelompok2-manajemen-stok-kedaluwarsa.git
+cd kelompok2-manajemen-stok-kedaluwarsa
+```
+
+Buat file `backend/.env` berdasarkan `backend/.env.example` dan isi konfigurasi database.
+
+### 2. Inisialisasi Database
+
 ```bash
 cd backend
+npm install
 npx prisma migrate dev
+npx prisma db seed
 ```
 
-### 2. Jalankan Backend Server
-Buka terminal baru, kemudian pasang dependensi dan jalankan server Express:
-```bash
-cd backend
-npm install
-npm run dev
-```
-*Server akan berjalan di `http://localhost:5000`*
+### 3. Jalankan Aplikasi
 
-### 3. Jalankan Frontend Web
-Buka terminal baru, pasang dependensi dan jalankan aplikasi Next.js:
+Dari root folder, cukup jalankan satu perintah:
+
 ```bash
-cd frontend
-npm install
 npm run dev
 ```
-*Aplikasi web dapat diakses melalui `http://localhost:3000`*
+
+Perintah ini akan menjalankan backend dan frontend secara bersamaan:
+- **Backend** → `http://localhost:5000`
+- **Frontend** → `http://localhost:3000`
+
+---
+
+## 🔐 Akun Default (Seed)
+
+| Peran | Email | Password |
+| :--- | :--- | :--- |
+| Pemilik Usaha | `pemilik@abahandi.com` | `123456` |
+| Admin Usaha | `admin@abahandi.com` | `123456` |
+
+---
+
+## 📌 Fitur Utama
+
+| Modul | Deskripsi |
+| :--- | :--- |
+| **Dashboard** | Ringkasan stok, batch kedaluwarsa, grafik kesehatan inventaris |
+| **Produk** | CRUD produk, kategori, satuan, stok minimum |
+| **Stok Masuk/Keluar** | Pencatatan transaksi dengan validasi FEFO |
+| **Batch & Expiry** | Manajemen batch per produk, pelacakan tanggal kedaluwarsa |
+| **EOQ** | Analisis Economic Order Quantity (manual & prediksi otomatis) |
+| **Notifikasi** | Peringatan otomatis stok menipis & batch kedaluwarsa |
+| **Laporan** | Export laporan inventaris (PDF/Excel) |
+| **Import** | Import data produk via CSV |
+| **Label** | Cetak label produk untuk barcode/display |
+| **Riwayat** | Log aktivitas pergerakan stok |

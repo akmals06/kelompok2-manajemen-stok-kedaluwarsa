@@ -41,7 +41,7 @@ const MENU_GROUPS = [
     items: [
       { nama: 'Laporan', href: '/dashboard/laporan', icon: FileBarChart2, roles: ['PEMILIK_USAHA'] },
       { nama: 'Analisis EOQ', href: '/dashboard/eoq', icon: Calculator, roles: ['PEMILIK_USAHA'] },
-      { nama: 'Smart Import', href: '/dashboard/import', icon: FileSpreadsheet, roles: ['ADMIN_USAHA'] },
+      { nama: 'Smart Import', href: '/dashboard/import', icon: FileSpreadsheet, roles: ['ADMIN_USAHA', 'PEMILIK_USAHA'] },
     ]
   }
 ];
@@ -84,15 +84,6 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
         const res = await notifikasiService.hitungBelumDibaca();
         if (res.success) {
           let count = res.data?.belum_dibaca || 0;
-          const deletedIds = JSON.parse(localStorage.getItem('dummy_deleted_notif') || '[]');
-          const readIds = JSON.parse(localStorage.getItem('dummy_read_notif') || '[]');
-          
-          const dummyDeleted = deletedIds.includes(99999);
-          const dummyRead = readIds.includes(99999);
-          
-          if (!dummyDeleted && !dummyRead) {
-            count += 1;
-          }
           setBelumDibaca(count);
         }
       } catch { /* abaikan jika belum login */ }
@@ -107,7 +98,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
       clearInterval(interval);
       window.removeEventListener('refresh-notification-count', ambilJumlah);
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (mobileOpen) onToggleMobile?.();
@@ -124,14 +115,14 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
     <div className={`hidden lg:flex flex-col h-full z-50 shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[72px]' : 'w-[304px]'}`}>
       <aside className="w-full h-full bg-[#131315] border-r border-white/[0.08] flex flex-row relative">
 
-        {/* === LEFT PANE (ICONS) === */}
+
         <div className="w-[72px] shrink-0 h-full bg-[#0a0a0b] flex flex-col items-center py-4 border-r border-white/[0.05] relative z-10">
-          {/* Expand Toggle Logo */}
+
           <button onClick={() => setIsCollapsed(!isCollapsed)} className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E1FF01]/20 to-[#E1FF01]/5 flex items-center justify-center text-[#E1FF01] mb-6 hover:bg-[#E1FF01]/20 transition-all shadow-[0_0_15px_rgba(225,255,1,0.1)] group">
             <Menu className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </button>
 
-          {/* Module Links */}
+
           <div className="flex-1 w-full flex flex-col items-center gap-1.5">
             <ModuleIcon icon={LayoutDashboard} href="/dashboard" tooltip="Dashboard" isActive={pathname === '/dashboard'} />
             <ModuleIcon icon={Package} href="/dashboard/produk" tooltip="Inventaris" isActive={pathname.startsWith('/dashboard/produk') || pathname.startsWith('/dashboard/kategori') || pathname.startsWith('/dashboard/batch')} />
@@ -149,9 +140,9 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
             />
           </div>
 
-          {/* Bottom Area */}
+
           <div className="w-full flex flex-col items-center gap-2 mt-auto">
-            {/* Notification */}
+
             <div className="relative w-full flex justify-center cursor-pointer group mb-1">
               <Link href="/dashboard/notifikasi" className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${pathname === '/dashboard/notifikasi' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}>
                 <Bell className="w-5 h-5" />
@@ -166,17 +157,17 @@ export default function Sidebar({ user, onLogout, onUserUpdate, mobileOpen, onTo
               </div>
             </div>
 
-            {/* Logout */}
+
             <ModuleIcon icon={LogOut} isAction onClick={onLogout} tooltip="Keluar" />
 
 
           </div>
         </div>
 
-        {/* === RIGHT PANE (TEXT MENUS) === */}
+
         <div className={`flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out bg-[#131315] relative ${isCollapsed ? 'w-0 opacity-0' : 'w-[232px] opacity-100'}`}>
 
-          {/* Header */}
+
           <div className="h-[72px] flex items-center px-4 shrink-0 border-b border-white/[0.03]">
             <button onClick={() => setIsCollapsed(true)} className="p-1.5 -ml-1.5 mr-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-colors">
               <ChevronLeft className="w-5 h-5" />

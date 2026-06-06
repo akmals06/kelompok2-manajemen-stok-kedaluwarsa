@@ -52,10 +52,10 @@ function DashboardShell({ children }) {
       <Sidebar user={user} onLogout={logout} onUserUpdate={updateUser} mobileOpen={mobileOpen} onToggleMobile={() => setMobileOpen(false)} />
 
       <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
-        <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-[#E1FF01]/5 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-slate-500/5 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-[#E1FF01]/5 blur-[60px] sm:blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-slate-500/5 blur-[60px] sm:blur-[120px] rounded-full pointer-events-none" />
 
-        <header className="h-14 lg:h-16 border-b border-white/5 bg-black/20 backdrop-blur-xl flex items-center justify-between px-4 lg:px-8 z-[150] shrink-0 gap-3">
+        <header className="h-14 lg:h-16 border-b border-white/5 bg-black/40 sm:bg-black/20 sm:backdrop-blur-xl flex items-center justify-between px-4 lg:px-8 z-[150] shrink-0 gap-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}
@@ -64,7 +64,7 @@ function DashboardShell({ children }) {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-zinc-500 hidden sm:inline">Workspace</span>
+              <span className="text-zinc-500 hidden sm:inline">Menu</span>
               <svg className="w-4 h-4 text-zinc-700 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

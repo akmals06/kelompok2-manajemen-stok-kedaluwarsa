@@ -90,7 +90,7 @@ const ambilProfil = async (idPengguna) => {
   return pengguna;
 };
 
-// ═══ Forgot Password — In-Memory OTP Store ═══
+// Forgot Password — OTP via Console
 const crypto = require('crypto');
 const otpStore = new Map(); // key: email, value: { otp, expiresAt }
 const OTP_TTL_MS = 5 * 60 * 1000; // 5 menit
@@ -98,9 +98,16 @@ const OTP_TTL_MS = 5 * 60 * 1000; // 5 menit
 const requestResetPassword = async (email) => {
   const pengguna = await penggunaRepo.cariPenggunaByEmail(email);
 
-  // Jangan ungkap apakah email terdaftar atau tidak (anti-enumeration)
-  if (!pengguna || !pengguna.status_aktif) {
-    return { message: 'Jika email terdaftar, kode OTP akan dikirim.' };
+  if (!pengguna) {
+    const error = new Error('Email tidak ditemukan. Gunakan email yang sudah terdaftar di sistem.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!pengguna.status_aktif) {
+    const error = new Error('Akun tidak aktif. Hubungi pemilik usaha.');
+    error.statusCode = 403;
+    throw error;
   }
 
   const otp = String(crypto.randomInt(100000, 999999));
@@ -109,10 +116,7 @@ const requestResetPassword = async (email) => {
     expiresAt: Date.now() + OTP_TTL_MS,
   });
 
-  // Log OTP ke console untuk keperluan demo (pengganti email service)
-  console.log(`[RESET PASSWORD] OTP untuk ${email}: ${otp} (berlaku 5 menit)`);
-
-  return { message: 'Jika email terdaftar, kode OTP akan dikirim.' };
+  return { message: 'Kode OTP berhasil dibuat.', otp };
 };
 
 const verifyOtp = async (email, otp) => {
@@ -143,7 +147,7 @@ const verifyOtp = async (email, otp) => {
 };
 
 const resetPassword = async (email, otp, passwordBaru) => {
-  // Verifikasi ulang OTP untuk keamanan
+  // Validasi ulang OTP sebelum reset
   const emailLower = email.toLowerCase();
   const record = otpStore.get(emailLower);
 

@@ -124,7 +124,9 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, has
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  const selected = batchList.find((b) => String(b.id_batch) === String(value));
+  const selected = value === 'fefo' || value === '' 
+    ? { id_batch: 'fefo', kode_batch: 'Alokasi Otomatis (FEFO)', jumlah_sisa: '-' } 
+    : batchList.find((b) => String(b.id_batch) === String(value));
 
   const setOpenAndNotify = useCallback((val) => {
     setOpen(val);
@@ -168,27 +170,46 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, has
           }}
         >
           <div className="max-h-[200px] overflow-y-auto py-1">
-            {batchList.length === 0 ? (
-              <div className="px-4 py-4 text-center text-sm text-zinc-500">
-                {hasSelectedProduct ? 'Tidak ada batch aktif / stok habis' : 'Pilih produk dulu'}
-              </div>
+            {!hasSelectedProduct ? (
+              <div className="px-4 py-4 text-center text-sm text-zinc-500">Pilih produk dulu</div>
+            ) : batchList.length === 0 ? (
+              <div className="px-4 py-4 text-center text-sm text-zinc-500">Stok Kosong / Tidak ada batch aktif</div>
             ) : (
-              batchList.map((b) => (
+              <>
                 <button
-                  key={b.id_batch}
                   type="button"
                   onClick={() => {
-                    onChange(String(b.id_batch));
+                    onChange('fefo');
                     setOpenAndNotify(false);
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-white/[0.06] ${
-                    String(b.id_batch) === String(value) ? 'bg-[#E1FF01]/[0.06]' : ''
+                    value === 'fefo' || value === '' ? 'bg-[#E1FF01]/[0.06]' : ''
                   }`}
                 >
-                  <div className="text-sm font-semibold text-white">{b.kode_batch}</div>
-                  <div className="text-xs text-zinc-500">Sisa: {b.jumlah_sisa}</div>
+                  <div>
+                    <div className="text-sm font-semibold text-emerald-400">Alokasi Otomatis (FEFO)</div>
+                    <div className="text-[10px] text-zinc-500">Mengambil batch terdekat kedaluwarsa secara otomatis</div>
+                  </div>
+                  <div className="text-xs text-emerald-400 font-bold">Rekomendasi</div>
                 </button>
-              ))
+                
+                {batchList.map((b) => (
+                  <button
+                    key={b.id_batch}
+                    type="button"
+                    onClick={() => {
+                      onChange(String(b.id_batch));
+                      setOpenAndNotify(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-white/[0.06] ${
+                      String(b.id_batch) === String(value) ? 'bg-[#E1FF01]/[0.06]' : ''
+                    }`}
+                  >
+                    <div className="text-sm font-semibold text-white">{b.kode_batch}</div>
+                    <div className="text-xs text-zinc-500 font-mono">Sisa: {b.jumlah_sisa}</div>
+                  </button>
+                ))}
+              </>
             )}
           </div>
         </div>
@@ -282,7 +303,6 @@ function StokKeluarContent() {
     e.preventDefault();
     setFormError('');
     if (!form.id_produk) return setFormError('Pilih produk');
-    if (!form.id_batch) return setFormError('Pilih batch');
     if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah harus > 0');
     if (!form.tujuan_keluar || form.tujuan_keluar.trim() === '') return setFormError('Tujuan keluar wajib diisi');
 
@@ -291,14 +311,23 @@ function StokKeluarContent() {
       await stokService.keluar({
         ...form,
         id_produk: parseInt(form.id_produk),
-        id_batch: parseInt(form.id_batch),
+        id_batch: form.id_batch && form.id_batch !== 'fefo' ? parseInt(form.id_batch) : undefined,
         jumlah: parseInt(form.jumlah),
       });
       setSukses('Stok keluar berhasil dicatat');
       setShowForm(false);
       setForm({ id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '' });
-      const res = await stokService.ambilTransaksiKeluar();
-      if (res.success) setTransaksiList(res.data || []);
+      
+      // Refetch all data to update dropdowns and transaction history
+      const [resTrx, resProduk, resBatch] = await Promise.all([
+        stokService.ambilTransaksiKeluar(),
+        produkService.ambilSemua(),
+        batchService.ambilSemua(),
+      ]);
+      if (resTrx.success) setTransaksiList(resTrx.data || []);
+      if (resProduk.success) setProdukList(resProduk.data?.filter((p) => p.status_aktif) || []);
+      if (resBatch.success) setBatchList(resBatch.data || []);
+      
       setTimeout(() => setSukses(''), 3000);
     } catch (err) {
       setFormError(err.response?.data?.message || 'Gagal mencatat stok keluar');
@@ -396,7 +425,7 @@ function StokKeluarContent() {
                   <div className={`space-y-2.5 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                        Batch <span className="text-red-400">*</span>
+                        Batch <span className="text-zinc-500 text-[10px]">(Opsional - Alokasi Otomatis FEFO)</span>
                       </label>
                       <BatchDropdown
                         batchList={batchFiltered}

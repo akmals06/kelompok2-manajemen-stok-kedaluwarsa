@@ -1,5 +1,28 @@
+import { Sora, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from '@/hooks/useAuth';
 import "./globals.css";
+
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sora',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  style: ['normal', 'italic'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
 
 export const metadata = {
   title: "Stok Kedaluwarsa UMKM",
@@ -8,13 +31,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="id"
+      suppressHydrationWarning
+      className={`${sora.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="antialiased font-body" suppressHydrationWarning>
         <AuthProvider>
           {children}
@@ -23,3 +44,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+

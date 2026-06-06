@@ -75,8 +75,24 @@ const hitungEoq = async (data, idPengguna = null) => {
     kebutuhanTahunan = parseFloat(data.kebutuhan_tahunan);
   }
 
+  if (kebutuhanTahunan <= 0) {
+    throw Object.assign(
+      new Error('Kebutuhan tahunan harus lebih dari 0. Hasil prediksi tidak menghasilkan demand yang cukup untuk perhitungan EOQ.'),
+      { statusCode: 422 }
+    );
+  }
+
   // Rumus EOQ = sqrt((2 * D * S) / H)
   const nilaiEoq = Math.sqrt((2 * kebutuhanTahunan * biayaPesan) / biayaSimpan);
+
+  // Guard: pastikan hasil kalkulasi bukan NaN atau Infinity
+  if (!Number.isFinite(nilaiEoq) || nilaiEoq <= 0) {
+    throw Object.assign(
+      new Error('Hasil perhitungan EOQ tidak valid. Periksa kembali data biaya pesan dan biaya simpan.'),
+      { statusCode: 422 }
+    );
+  }
+
   const frekuensiPemesanan = kebutuhanTahunan / nilaiEoq;
   const biayaPesanTahunan = frekuensiPemesanan * biayaPesan;
 

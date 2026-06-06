@@ -6,7 +6,7 @@ const corsOptions = {
 
     const allowedOrigins = [config.frontendUrl];
     
-    // Izinkan semua sub-domain preview dan domain produksi Vercel untuk proyek ini secara dinamis (mendukung pemotongan nama domain oleh Vercel)
+    // Support dynamic Vercel preview and production subdomains
     const isVercelOrigin = origin.includes('manajemen-stok-kedaluwa') && origin.endsWith('.vercel.app');
 
     if (allowedOrigins.indexOf(origin) !== -1 || isVercelOrigin || config.nodeEnv === 'development') {

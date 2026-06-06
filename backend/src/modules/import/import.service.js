@@ -83,6 +83,9 @@ const previewImport = async (fileBuffer, mode) => {
   const dataDuplikat = [];
   const semuaError = [];
 
+  const seenProductNames = new Set();
+  const seenProductBatches = new Set();
+
   for (let i = 0; i < dataNormalisasi.length; i++) {
     const baris = dataNormalisasi[i];
     const errorBaris = validasiFn(baris, i);
@@ -94,11 +97,19 @@ const previewImport = async (fileBuffer, mode) => {
     }
 
     if (mode === 'MASTER_PRODUK') {
+      const normalizedName = String(baris.nama_produk).toLowerCase().trim();
       const produkAda = await importRepo.cariProdukByNama(baris.nama_produk);
-      if (produkAda) {
-        dataDuplikat.push({ baris: i + 2, data: baris, alasan: 'Produk sudah ada' });
+      const isDuplicateInFile = seenProductNames.has(normalizedName);
+
+      if (produkAda || isDuplicateInFile) {
+        dataDuplikat.push({
+          baris: i + 2,
+          data: baris,
+          alasan: produkAda ? 'Produk sudah ada di database' : 'Produk terduplikasi dalam file Excel',
+        });
         continue;
       }
+      seenProductNames.add(normalizedName);
     }
 
     if (mode === 'STOK_AWAL_BATCH') {
@@ -116,6 +127,22 @@ const previewImport = async (fileBuffer, mode) => {
         });
         continue;
       }
+
+      // Cek duplikasi kode batch (dalam file + database)
+      const normalizedBatch = String(baris.kode_batch).toLowerCase().trim();
+      const batchKey = `${produk.id_produk}-${normalizedBatch}`;
+      const batchAda = await importRepo.cariBatchByProdukDanKode(produk.id_produk, baris.kode_batch);
+      const isDuplicateInFile = seenProductBatches.has(batchKey);
+
+      if (batchAda || isDuplicateInFile) {
+        dataDuplikat.push({
+          baris: i + 2,
+          data: baris,
+          alasan: batchAda ? 'Kode batch sudah ada di database untuk produk ini' : 'Kode batch terduplikasi untuk produk yang sama dalam file Excel',
+        });
+        continue;
+      }
+      seenProductBatches.add(batchKey);
     }
 
     dataValid.push(baris);

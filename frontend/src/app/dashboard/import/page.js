@@ -179,6 +179,21 @@ export default function ImportPage() {
             </div>
           )}
 
+          {previewData.data_duplikat?.length > 0 && (
+            <div className="glass-card p-6">
+              <h3 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" /> Baris Duplikat (Akan Dilewati)
+              </h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {previewData.data_duplikat.map((item, i) => (
+                  <div key={i} className="text-xs bg-amber-500/5 border border-amber-500/10 rounded-lg p-2 text-amber-300">
+                    Baris {item.baris}: {item.alasan} ({item.data.nama_produk || item.data.kode_batch || 'Data tidak teridentifikasi'})
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               onClick={handleEksekusi}

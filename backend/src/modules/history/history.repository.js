@@ -2,6 +2,7 @@ const prisma = require('../../config/prisma');
 
 const ambilSemuaRiwayat = async () => {
   return prisma.riwayat_pergerakan_stok.findMany({
+    take: 100,
     include: {
       transaksi: {
         select: {

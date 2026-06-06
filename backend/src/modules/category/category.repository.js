@@ -42,6 +42,12 @@ const hapusKategori = async (idKategori) => {
   });
 };
 
+const hitungProdukByKategori = async (idKategori) => {
+  return prisma.produk.count({
+    where: { id_kategori: idKategori },
+  });
+};
+
 module.exports = {
   cariKategoriByNama,
   buatKategori,
@@ -49,4 +55,5 @@ module.exports = {
   ambilKategoriById,
   updateKategori,
   hapusKategori,
+  hitungProdukByKategori,
 };

@@ -140,6 +140,14 @@ const hapusKategori = async (idKategori) => {
     throw error;
   }
 
+  // Tidak bisa hapus kategori yang masih memiliki produk
+  const jumlahProduk = await kategoriRepo.hitungProdukByKategori(idNum);
+  if (jumlahProduk > 0) {
+    const error = new Error('Kategori tidak dapat dihapus karena sedang digunakan oleh produk');
+    error.statusCode = 409;
+    throw error;
+  }
+
   try {
     const hasil = await kategoriRepo.hapusKategori(idNum);
     await hapusGambarCloudinary(kategori.cloudinary_public_id);

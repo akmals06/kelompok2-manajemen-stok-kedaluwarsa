@@ -12,11 +12,11 @@ const upload = require('../../middlewares/upload.middleware');
 
 router.use(authMiddleware);
 
-// Get list and details of products (both roles)
+
 router.get('/', roleMiddleware.izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'), produkController.ambilSemuaProduk);
 router.get('/:id', roleMiddleware.izinkanRole('PEMILIK_USAHA', 'ADMIN_USAHA'), validasiIdParam, produkController.ambilProdukById);
 
-// Create, Update, Toggle Active products (restricted to ADMIN_USAHA only)
+
 router.post(
   '/',
   roleMiddleware.izinkanRole('ADMIN_USAHA'),

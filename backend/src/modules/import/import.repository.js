@@ -23,132 +23,157 @@ const cariProdukById = async (idProduk) => {
 };
 
 const importMasterProduk = async (dataList) => {
-  return prisma.$transaction(async (tx) => {
-    const hasil = [];
+  return prisma.$transaction(
+    async (tx) => {
+      const hasil = [];
 
-    for (const item of dataList) {
-      let kategori = await tx.kategori_produk.findUnique({
-        where: { nama_kategori: item.nama_kategori },
-      });
+      for (const item of dataList) {
+        let kategori = await tx.kategori_produk.findUnique({
+          where: { nama_kategori: item.nama_kategori },
+        });
 
-      if (!kategori) {
-        kategori = await tx.kategori_produk.create({
+        if (!kategori) {
+          kategori = await tx.kategori_produk.create({
+            data: {
+              nama_kategori: item.nama_kategori,
+              deskripsi: item.deskripsi_kategori || null,
+            },
+          });
+        }
+
+        const produkAda = await tx.produk.findFirst({
+          where: { nama_produk: { equals: item.nama_produk, mode: 'insensitive' } },
+        });
+
+        if (produkAda) {
+          hasil.push({ nama_produk: item.nama_produk, status: 'DILEWATI', alasan: 'Produk sudah ada' });
+          continue;
+        }
+
+        const produkBaru = await tx.produk.create({
           data: {
-            nama_kategori: item.nama_kategori,
-            deskripsi: item.deskripsi_kategori || null,
+            id_kategori: kategori.id_kategori,
+            nama_produk: item.nama_produk,
+            satuan: item.satuan,
+            stok_minimum: parseInt(item.stok_minimum, 10) || 0,
+            status_aktif: item.status_aktif !== undefined ? Boolean(item.status_aktif) : true,
           },
         });
+
+        hasil.push({ nama_produk: produkBaru.nama_produk, status: 'DIBUAT', id_produk: produkBaru.id_produk });
       }
 
-      const produkAda = await tx.produk.findFirst({
-        where: { nama_produk: { equals: item.nama_produk, mode: 'insensitive' } },
-      });
-
-      if (produkAda) {
-        hasil.push({ nama_produk: item.nama_produk, status: 'DILEWATI', alasan: 'Produk sudah ada' });
-        continue;
-      }
-
-      const produkBaru = await tx.produk.create({
-        data: {
-          id_kategori: kategori.id_kategori,
-          nama_produk: item.nama_produk,
-          satuan: item.satuan,
-          stok_minimum: parseInt(item.stok_minimum, 10) || 0,
-          status_aktif: item.status_aktif !== undefined ? Boolean(item.status_aktif) : true,
-        },
-      });
-
-      hasil.push({ nama_produk: produkBaru.nama_produk, status: 'DIBUAT', id_produk: produkBaru.id_produk });
+      return hasil;
+    },
+    {
+      maxWait: 15000,
+      timeout: 60000,
     }
-
-    return hasil;
-  });
+  );
 };
 
 const importStokAwalBatch = async (dataList, idPengguna) => {
-  return prisma.$transaction(async (tx) => {
-    const hasil = [];
+  return prisma.$transaction(
+    async (tx) => {
+      const hasil = [];
 
-    for (const item of dataList) {
-      let produk;
-      if (item.id_produk) {
-        produk = await tx.produk.findUnique({ where: { id_produk: parseInt(item.id_produk, 10) } });
-      } else {
-        produk = await tx.produk.findFirst({
-          where: { nama_produk: { equals: item.nama_produk, mode: 'insensitive' } },
+      for (const item of dataList) {
+        let produk;
+        if (item.id_produk) {
+          produk = await tx.produk.findUnique({ where: { id_produk: parseInt(item.id_produk, 10) } });
+        } else {
+          produk = await tx.produk.findFirst({
+            where: { nama_produk: { equals: item.nama_produk, mode: 'insensitive' } },
+          });
+        }
+
+        if (!produk) {
+          hasil.push({ nama_produk: item.nama_produk || item.id_produk, status: 'GAGAL', alasan: 'Produk tidak ditemukan' });
+          continue;
+        }
+
+        const jumlah = parseInt(item.jumlah, 10);
+
+        const transaksi = await tx.transaksi_stok.create({
+          data: {
+            id_pengguna: idPengguna,
+            id_produk: produk.id_produk,
+            jenis_transaksi: 'MASUK',
+            jumlah,
+            sumber_masuk: item.sumber_masuk || 'Import Stok Awal',
+            keterangan: item.catatan || 'Import stok awal batch',
+          },
+        });
+
+        const produkSebelumUpdate = await tx.produk.findUnique({ where: { id_produk: produk.id_produk } });
+        const stokSebelum = produkSebelumUpdate.stok_tersedia;
+
+        await tx.produk.update({
+          where: { id_produk: produk.id_produk },
+          data: { stok_tersedia: { increment: jumlah } },
+        });
+
+        const batchBaru = await tx.batch_produk.create({
+          data: {
+            id_produk: produk.id_produk,
+            kode_batch: item.kode_batch,
+            tanggal_masuk: new Date(item.tanggal_masuk),
+            tanggal_kedaluwarsa: new Date(item.tanggal_kedaluwarsa),
+            jumlah_awal: jumlah,
+            jumlah_sisa: jumlah,
+            status_batch: 'AKTIF',
+          },
+        });
+
+        await tx.transaksi_stok.update({
+          where: { id_transaksi: transaksi.id_transaksi },
+          data: { id_batch: batchBaru.id_batch },
+        });
+
+        await tx.detail_transaksi_stok.create({
+          data: {
+            id_transaksi: transaksi.id_transaksi,
+            id_batch: batchBaru.id_batch,
+            jumlah_batch: jumlah,
+          },
+        });
+
+        await tx.riwayat_pergerakan_stok.create({
+          data: {
+            id_transaksi: transaksi.id_transaksi,
+            id_produk: produk.id_produk,
+            jenis_pergerakan: 'PENAMBAHAN',
+            jumlah_perubahan: jumlah,
+            stok_sebelum: stokSebelum,
+            stok_sesudah: stokSebelum + jumlah,
+            catatan: item.catatan || `Import stok awal: ${item.kode_batch}`,
+          },
+        });
+
+        hasil.push({
+          nama_produk: produk.nama_produk,
+          kode_batch: item.kode_batch,
+          jumlah,
+          status: 'BERHASIL',
         });
       }
 
-      if (!produk) {
-        hasil.push({ nama_produk: item.nama_produk || item.id_produk, status: 'GAGAL', alasan: 'Produk tidak ditemukan' });
-        continue;
-      }
-
-      const jumlah = parseInt(item.jumlah, 10);
-
-      const transaksi = await tx.transaksi_stok.create({
-        data: {
-          id_pengguna: idPengguna,
-          id_produk: produk.id_produk,
-          jenis_transaksi: 'MASUK',
-          jumlah,
-          sumber_masuk: item.sumber_masuk || 'Import Stok Awal',
-          keterangan: item.catatan || 'Import stok awal batch',
-        },
-      });
-
-      await tx.produk.update({
-        where: { id_produk: produk.id_produk },
-        data: { stok_tersedia: { increment: jumlah } },
-      });
-
-      const batchBaru = await tx.batch_produk.create({
-        data: {
-          id_produk: produk.id_produk,
-          kode_batch: item.kode_batch,
-          tanggal_masuk: new Date(item.tanggal_masuk),
-          tanggal_kedaluwarsa: new Date(item.tanggal_kedaluwarsa),
-          jumlah_awal: jumlah,
-          jumlah_sisa: jumlah,
-          status_batch: 'AKTIF',
-        },
-      });
-
-      await tx.transaksi_stok.update({
-        where: { id_transaksi: transaksi.id_transaksi },
-        data: { id_batch: batchBaru.id_batch },
-      });
-
-      await tx.detail_transaksi_stok.create({
-        data: {
-          id_transaksi: transaksi.id_transaksi,
-          id_batch: batchBaru.id_batch,
-          jumlah_batch: jumlah,
-        },
-      });
-
-      await tx.riwayat_pergerakan_stok.create({
-        data: {
-          id_transaksi: transaksi.id_transaksi,
-          id_produk: produk.id_produk,
-          jenis_pergerakan: 'PENAMBAHAN',
-          jumlah_perubahan: jumlah,
-          stok_sebelum: produk.stok_tersedia,
-          stok_sesudah: produk.stok_tersedia + jumlah,
-          catatan: item.catatan || `Import stok awal: ${item.kode_batch}`,
-        },
-      });
-
-      hasil.push({
-        nama_produk: produk.nama_produk,
-        kode_batch: item.kode_batch,
-        jumlah,
-        status: 'BERHASIL',
-      });
+      return hasil;
+    },
+    {
+      maxWait: 15000,
+      timeout: 60000,
     }
+  );
+};
 
-    return hasil;
+const cariBatchByProdukDanKode = async (idProduk, kodeBatch) => {
+  return prisma.batch_produk.findFirst({
+    where: {
+      id_produk: parseInt(idProduk, 10),
+      kode_batch: { equals: kodeBatch, mode: 'insensitive' },
+      status_batch: { not: 'DIARSIPKAN' },
+    },
   });
 };
 
@@ -157,6 +182,7 @@ module.exports = {
   buatKategori,
   cariProdukByNama,
   cariProdukById,
+  cariBatchByProdukDanKode,
   importMasterProduk,
   importStokAwalBatch,
 };

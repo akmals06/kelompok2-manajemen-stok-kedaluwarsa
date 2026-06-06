@@ -95,7 +95,7 @@ const prosesStokKeluar = async (dataTransaksi, idBatch) => {
       throw Object.assign(new Error('Produk tidak ditemukan'), { statusCode: 404 });
     }
 
-    // Cek stok di dalam transaction untuk menghindari race condition
+    // Cek stok dalam transaction (race condition safety)
     if (produk.stok_tersedia < dataTransaksi.jumlah) {
       throw Object.assign(new Error('Stok produk tidak mencukupi'), { statusCode: 422 });
     }
@@ -205,6 +205,7 @@ const prosesStokKeluar = async (dataTransaksi, idBatch) => {
 const ambilTransaksiMasuk = async () => {
   return prisma.transaksi_stok.findMany({
     where: { jenis_transaksi: 'MASUK' },
+    take: 100,
     include: {
       produk: { select: { nama_produk: true, satuan: true, gambar_produk: true } },
       pengguna: { select: { nama: true } },
@@ -217,6 +218,7 @@ const ambilTransaksiMasuk = async () => {
 const ambilTransaksiKeluar = async () => {
   return prisma.transaksi_stok.findMany({
     where: { jenis_transaksi: 'KELUAR' },
+    take: 100,
     include: {
       produk: { select: { nama_produk: true, satuan: true, gambar_produk: true } },
       pengguna: { select: { nama: true } },
