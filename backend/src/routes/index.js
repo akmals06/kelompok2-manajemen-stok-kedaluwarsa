@@ -2,18 +2,18 @@ const express = require('express');
 const router = express.Router();
 
 // Module routes
-const authRoutes = require('../modules/auth/auth.routes');
-const categoryRoutes = require('../modules/category/category.routes');
-const productRoutes = require('../modules/product/product.routes');
-const stockRoutes = require('../modules/stock/stock.routes');
-const historyRoutes = require('../modules/history/history.routes');
-const batchRoutes = require('../modules/batch/batch.routes');
-const reportRoutes = require('../modules/report/report.routes');
-const eoqRoutes = require('../modules/eoq/eoq.routes');
-const importRoutes = require('../modules/import/import.routes');
-const labelRoutes = require('../modules/label/label.routes');
-const notificationRoutes = require('../modules/notification/notification.routes');
-const userRoutes = require('../modules/user/user.routes');
+const authRoutes = require('./auth.routes');
+const categoryRoutes = require('./category.routes');
+const productRoutes = require('./product.routes');
+const stockRoutes = require('./stock.routes');
+const historyRoutes = require('./history.routes');
+const batchRoutes = require('./batch.routes');
+const reportRoutes = require('./report.routes');
+const eoqRoutes = require('./eoq.routes');
+const importRoutes = require('./import.routes');
+const labelRoutes = require('./label.routes');
+const notificationRoutes = require('./notification.routes');
+const userRoutes = require('./user.routes');
 
 // Health check — also tests database connectivity
 router.get('/health', async (req, res) => {

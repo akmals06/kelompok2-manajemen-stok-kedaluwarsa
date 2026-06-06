@@ -46,16 +46,20 @@ kelompok2-manajemen-stok-kedaluwarsa/
 ├── backend/           # Express API Server
 │   ├── prisma/        # Schema, Migration, Seed
 │   └── src/
-│       ├── config/    # Database, Environment
-│       ├── middleware/ # Auth, Error Handler
-│       ├── modules/   # auth, product, stock, batch, dll
-│       └── utils/     # JWT, Helper
+│       ├── config/      # Database, Cloudinary, Environment
+│       ├── controllers/ # HTTP Request/Response Controllers
+│       ├── services/    # Core Business Logic (FEFO, EOQ)
+│       ├── repositories/ # Database CRUD Operations (Prisma)
+│       ├── validations/ # Joi/Validator Input Schemas
+│       ├── middlewares/ # Authentication JWT & Global Error Handler
+│       ├── routes/      # Express API Router Mapping
+│       └── utils/       # Helpers, JWT Generator, Excel Parser
 └── frontend/          # Next.js Web Application
     └── src/
-        ├── app/       # Pages (App Router)
-        ├── components/ # UI Components
-        ├── hooks/     # Custom Hooks (useAuth)
-        └── services/  # API Service Layer
+        ├── app/         # Page Views & Navigation Routes
+        ├── components/  # Reusable UI Elements (Buttons, Modals)
+        ├── hooks/       # Custom React Hooks (Authentication Session)
+        └── services/    # Client API Communication (Axios)
 ```
 
 ---
