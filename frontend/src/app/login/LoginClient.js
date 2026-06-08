@@ -73,21 +73,6 @@ export default function LoginClient() {
     }
   }, [authLoading, user, router]);
 
-  if (authLoading || user) {
-    return (
-      <div className="login-page">
-        <div className="bg-blob bg-blob-1" />
-        <div className="bg-blob bg-blob-2" />
-        <div className="bg-blob bg-blob-3" />
-        <div className="bg-grid" />
-        <div className="login-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '340px', gap: '1rem' }}>
-          <div className="w-12 h-12 border-4 border-[#E1FF01]/20 border-t-[#E1FF01] rounded-full animate-spin" />
-          <p className="text-zinc-400 font-medium text-sm animate-pulse">Memuat sistem...</p>
-        </div>
-      </div>
-    );
-  }
-
   const handleLogin = async () => {
     if (!email.trim() || !password) {
       setAlertLogin({ type: 'danger', msg: 'Email dan password wajib diisi.' });
@@ -272,7 +257,7 @@ export default function LoginClient() {
                 }}
                 placeholder="email@contoh.com"
                 autoComplete="email"
-                disabled={loading}
+                disabled={loading || authLoading}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               />
             </div>
@@ -290,7 +275,7 @@ export default function LoginClient() {
                   setIsError(false);
                 }}
                 placeholder="Masukkan password"
-                disabled={loading}
+                disabled={loading || authLoading}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               />
               <button
@@ -306,7 +291,7 @@ export default function LoginClient() {
           </div>
 
           <div className="link-row">
-            <button className="link-btn" onClick={() => setActiveView('forgot-1')}>
+            <button className="link-btn" onClick={() => setActiveView('forgot-1')} disabled={authLoading}>
               Lupa password?
             </button>
           </div>
@@ -314,12 +299,12 @@ export default function LoginClient() {
           <button
             className="btn-primary-login"
             onClick={handleLogin}
-            disabled={loading}
+            disabled={loading || authLoading}
           >
-            {loading ? (
+            {loading || authLoading ? (
               <>
                 <span className="login-spinner" />
-                Memproses...
+                {authLoading ? 'Memuat...' : 'Memproses...'}
               </>
             ) : (
               'Masuk'
