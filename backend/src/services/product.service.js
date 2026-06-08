@@ -59,6 +59,7 @@ const buatProduk = async (dataProduk, fileBuffer) => {
     satuan: dataProduk.satuan,
     id_kategori: parseInt(dataProduk.id_kategori, 10),
     stok_minimum: parseInt(dataProduk.stok_minimum, 10),
+    bisa_kedaluwarsa: dataProduk.bisa_kedaluwarsa === 'false' || dataProduk.bisa_kedaluwarsa === false ? false : true,
     gambar_produk,
   };
 
@@ -102,6 +103,7 @@ const updateProduk = async (idProduk, dataProduk, fileBuffer) => {
     satuan: dataProduk.satuan !== undefined ? dataProduk.satuan : produkLama.satuan,
     id_kategori: dataProduk.id_kategori ? parseInt(dataProduk.id_kategori, 10) : produkLama.id_kategori,
     stok_minimum: dataProduk.stok_minimum !== undefined && dataProduk.stok_minimum !== null ? parseInt(dataProduk.stok_minimum, 10) : produkLama.stok_minimum,
+    bisa_kedaluwarsa: dataProduk.bisa_kedaluwarsa !== undefined ? (dataProduk.bisa_kedaluwarsa === 'true' || dataProduk.bisa_kedaluwarsa === true || dataProduk.bisa_kedaluwarsa === '1' || dataProduk.bisa_kedaluwarsa === 1) : produkLama.bisa_kedaluwarsa,
     gambar_produk,
   };
 

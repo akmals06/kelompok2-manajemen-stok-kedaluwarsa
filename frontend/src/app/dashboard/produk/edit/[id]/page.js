@@ -7,6 +7,57 @@ import produkService from '@/services/produk.service';
 import kategoriService from '@/services/kategori.service';
 import Link from 'next/link';
 
+const tebakBisaKedaluwarsa = (namaProduk, namaKategori) => {
+  const namaProdukKecil = (namaProduk || '').toLowerCase();
+  const namaKategoriKecil = (namaKategori || '').toLowerCase();
+
+  const kataBukanKedaluwarsa = [
+    'sapu', 'kemoceng', 'pel', 'ember', 'gayung', 'sikat', 'bola', 'raket', 'net', 'tali',
+    'buku', 'pulpen', 'pensil', 'penghapus', 'penggaris', 'spidol', 'kertas', 'map', 'amplop',
+    'gunting', 'cutter', 'lem', 'stapler', 'staples', 'isolasi', 'lakban', 'double tape',
+    'sabun cuci piring', 'detergen', 'pewangi', 'pelicin', 'pembersih lantai', 'karbol',
+    'baju', 'kaos', 'celana', 'rok', 'jaket', 'topi', 'tas', 'dompet', 'sepatu', 'sandal', 'kaos kaki',
+    'piring', 'gelas', 'mangkok', 'sendok', 'garpu', 'pisau', 'wajan', 'panci', 'spatula',
+    'meja', 'kursi', 'lemari', 'rak', 'laci', 'cermin', 'lampu', 'kabel', 'colokan', 'baterai',
+    'obeng', 'tang', 'palu', 'paku', 'kunci inggris', 'gembok', 'engsel', 'cat', 'kuas', 'tiner',
+    'oli', 'minyak rem', 'cairan radiator', 'aki', 'ban', 'helm', 'kaca spion', 'lap kanebo',
+    'masker kain', 'sarung tangan', 'jas hujan', 'payung', 'gantungan kunci', 'rak sepatu'
+  ];
+
+  const kategoriBukanKedaluwarsa = [
+    'alat tulis', 'peralatan rumah tangga', 'kebersihan', 'elektronik', 'pakaian', 'aksesoris',
+    'olahraga', 'perkakas', 'otomotif', 'furniture', 'alat dapur', 'buku & stasioneri', 'haberdashery',
+    'mainan', 'alat kantor', 'dekorasi', 'souvenir'
+  ];
+
+  const kataBisaKedaluwarsa = [
+    'susu', 'roti', 'keju', 'mentega', 'cokelat', 'selai', 'kopi', 'teh', 'gula', 'garam',
+    'beras', 'terigu', 'minyak goreng', 'kecap', 'saus', 'sambal', 'bumbu', 'penyedap',
+    'mie instan', 'pasta', 'sereal', 'snack', 'camilan', 'biskuit', 'kue', 'permen',
+    'daging', 'ayam', 'ikan', 'udang', 'sayur', 'buah', 'telur', 'tahu', 'tempe',
+    'sirup', 'jus', 'teh kemasan', 'kopi kemasan', 'soda', 'minuman ringan', 'yoghurt',
+    'suplemen', 'vitamin', 'obat', 'herbal', 'madu', 'sirup obat', 'tetes mata', 'salep',
+    'skincare', 'serum', 'pelembab', 'masker wajah', 'toner', 'lipstik', 'bedak', 'sunscreen'
+  ];
+
+  const kategoriBisaKedaluwarsa = [
+    'makanan', 'minuman', 'obat', 'kesehatan', 'kecantikan', 'frozen food', 'snack & sereal',
+    'sembako', 'kebutuhan pokok', 'bumbu dapur', 'produk susu & telur', 'roti & kue', 'buah & sayur'
+  ];
+
+  if (namaKategoriKecil) {
+    if (kategoriBukanKedaluwarsa.some(kategori => namaKategoriKecil.includes(kategori))) return false;
+    if (kategoriBisaKedaluwarsa.some(kategori => namaKategoriKecil.includes(kategori))) return true;
+  }
+
+  if (namaProdukKecil) {
+    if (kataBukanKedaluwarsa.some(kata => namaProdukKecil.includes(kata))) return false;
+    if (kataBisaKedaluwarsa.some(kata => namaProdukKecil.includes(kata))) return true;
+  }
+
+  return true;
+};
+
 export default function EditProdukPage() {
   const router = useRouter();
   const params = useParams();
@@ -21,10 +72,20 @@ export default function EditProdukPage() {
     id_kategori: '',
     satuan: '',
     stok_minimum: '',
+    bisa_kedaluwarsa: true,
   });
   const [existingImage, setExistingImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [diubahManual, setDiubahManual] = useState(true);
+
+  useEffect(() => {
+    if (diubahManual) return;
+    const kategoriObj = kategoriList.find(k => String(k.id_kategori) === String(form.id_kategori));
+    const namaKategori = kategoriObj ? kategoriObj.nama_kategori : '';
+    const hasilTebak = tebakBisaKedaluwarsa(form.nama_produk, namaKategori);
+    setForm(prev => ({ ...prev, bisa_kedaluwarsa: hasilTebak }));
+  }, [form.nama_produk, form.id_kategori, kategoriList, diubahManual]);
 
   const muatData = useCallback(async () => {
     try {
@@ -39,6 +100,7 @@ export default function EditProdukPage() {
           id_kategori: resProduk.data.id_kategori || '',
           satuan: resProduk.data.satuan || '',
           stok_minimum: resProduk.data.stok_minimum || '',
+          bisa_kedaluwarsa: resProduk.data.bisa_kedaluwarsa !== false,
         });
         if (resProduk.data.gambar_produk) {
           setExistingImage(resProduk.data.gambar_produk);
@@ -94,12 +156,19 @@ export default function EditProdukPage() {
       fd.append('id_kategori', parseInt(form.id_kategori));
       fd.append('satuan', form.satuan);
       fd.append('stok_minimum', parseInt(form.stok_minimum));
+      fd.append('bisa_kedaluwarsa', form.bisa_kedaluwarsa);
       if (imageFile) {
         fd.append('gambar_produk', imageFile);
       }
 
       const res = await produkService.ubah(idProduk, fd);
-      if (res.success) router.push('/dashboard/produk');
+      if (res.success) {
+        // Refresh notification count in sidebar
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('refresh-notification-count'));
+        }
+        router.push('/dashboard/produk');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mengubah produk');
     } finally {
@@ -136,11 +205,11 @@ export default function EditProdukPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">Nama Produk</label>
-            <input value={form.nama_produk} onChange={(e) => setForm({ ...form, nama_produk: e.target.value })} className="input-dark" disabled={submitting} />
+            <input value={form.nama_produk} onChange={(e) => { setDiubahManual(false); setForm({ ...form, nama_produk: e.target.value }); }} className="input-dark" disabled={submitting} />
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">Kategori</label>
-            <select value={form.id_kategori} onChange={(e) => setForm({ ...form, id_kategori: e.target.value })} className="input-dark" disabled={submitting}>
+            <select value={form.id_kategori} onChange={(e) => { setDiubahManual(false); setForm({ ...form, id_kategori: e.target.value }); }} className="input-dark" disabled={submitting}>
               <option value="">Pilih kategori</option>
               {kategoriList.map((k) => <option key={k.id_kategori} value={k.id_kategori}>{k.nama_kategori}</option>)}
             </select>
@@ -154,6 +223,24 @@ export default function EditProdukPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">Stok Minimum</label>
               <input type="number" min="0" value={form.stok_minimum} onChange={(e) => setForm({ ...form, stok_minimum: e.target.value })} className="input-dark" disabled={submitting} />
             </div>
+          </div>
+
+          {/* Bisa Kedaluwarsa Checkbox */}
+          <div className="flex items-center gap-3 py-2">
+            <input
+              type="checkbox"
+              id="bisa_kedaluwarsa"
+              checked={form.bisa_kedaluwarsa}
+              onChange={(e) => {
+                setDiubahManual(true);
+                setForm({ ...form, bisa_kedaluwarsa: e.target.checked });
+              }}
+              className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-[#E1FF01] focus:ring-[#E1FF01]/20 focus:ring-offset-zinc-900"
+              disabled={submitting}
+            />
+            <label htmlFor="bisa_kedaluwarsa" className="text-sm font-medium text-zinc-300 cursor-pointer select-none">
+              Bisa memiliki batch & tanggal kedaluwarsa
+            </label>
           </div>
 
           {/* Gambar Produk */}

@@ -48,19 +48,25 @@ export default function NotifikasiPage() {
   useEffect(() => { muatData(); }, [muatData]);
 
   const handleTandaiDibaca = async (id) => {
+    // Optimistic Update
+    setNotifikasi((prev) => prev.map((n) => n.id_notifikasi === id ? { ...n, dibaca: true } : n));
     try {
       await notifikasiService.tandaiDibaca(id);
-      setNotifikasi((prev) => prev.map((n) => n.id_notifikasi === id ? { ...n, dibaca: true } : n));
       window.dispatchEvent(new Event('refresh-notification-count'));
-    } catch { /* abaikan */ }
+    } catch {
+      muatData();
+    }
   };
 
   const handleTandaiSemuaDibaca = async () => {
+    // Optimistic Update
+    setNotifikasi((prev) => prev.map((n) => ({ ...n, dibaca: true })));
     try {
       await notifikasiService.tandaiSemuaDibaca();
-      setNotifikasi((prev) => prev.map((n) => ({ ...n, dibaca: true })));
       window.dispatchEvent(new Event('refresh-notification-count'));
-    } catch { /* abaikan */ }
+    } catch {
+      muatData();
+    }
   };
 
   const handleSelectAll = (e) => {
@@ -81,15 +87,18 @@ export default function NotifikasiPage() {
     setIsDeleteModalOpen(false);
     if (selectedIds.length === 0) return;
     
+    const idsToDelete = [...selectedIds];
+    
+    // Optimistic Update
+    setNotifikasi((prev) => prev.filter((n) => !idsToDelete.includes(n.id_notifikasi)));
+    setSelectedIds([]);
+    
     try {
-      if (selectedIds.length > 0) {
-        await notifikasiService.hapusBanyak(selectedIds);
-      }
-
-      setNotifikasi((prev) => prev.filter((n) => !selectedIds.includes(n.id_notifikasi)));
-      setSelectedIds([]);
+      await notifikasiService.hapusBanyak(idsToDelete);
       window.dispatchEvent(new Event('refresh-notification-count'));
-    } catch { /* abaikan */ }
+    } catch {
+      muatData();
+    }
   };
 
   const [filter, setFilter] = useState('SEMUA');

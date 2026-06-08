@@ -120,7 +120,7 @@ function ProdukDropdown({ produkList, value, onChange, disabled, onOpenChange })
   );
 }
 
-function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, hasSelectedProduct }) {
+function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, adaProdukTerpilih }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -170,7 +170,7 @@ function BatchDropdown({ batchList, value, onChange, disabled, onOpenChange, has
           }}
         >
           <div className="max-h-[200px] overflow-y-auto py-1">
-            {!hasSelectedProduct ? (
+            {!adaProdukTerpilih ? (
               <div className="px-4 py-4 text-center text-sm text-zinc-500">Pilih produk dulu</div>
             ) : batchList.length === 0 ? (
               <div className="px-4 py-4 text-center text-sm text-zinc-500">Stok Kosong / Tidak ada batch aktif</div>
@@ -237,6 +237,12 @@ function StokKeluarContent() {
   const [batchDropdownOpen, setBatchDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const produkTerpilih = useMemo(() => {
+    return produkList.find((p) => String(p.id_produk) === String(form.id_produk));
+  }, [produkList, form.id_produk]);
+
+  const bisaKedaluwarsa = produkTerpilih ? produkTerpilih.bisa_kedaluwarsa !== false : true;
 
   /* ── Pagination Logic ── */
   const totalPages = Math.max(1, Math.ceil(transaksiList.length / ROWS_PER_PAGE));
@@ -318,6 +324,11 @@ function StokKeluarContent() {
       setShowForm(false);
       setForm({ id_produk: '', id_batch: '', jumlah: '', tujuan_keluar: '', keterangan: '' });
       
+      // Refresh notification count in sidebar
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refresh-notification-count'));
+      }
+
       // Refetch all data to update dropdowns and transaction history
       const [resTrx, resProduk, resBatch] = await Promise.all([
         stokService.ambilTransaksiKeluar(),
@@ -423,19 +434,21 @@ function StokKeluarContent() {
                   
                   {/* Dimmer container for rest of the form */}
                   <div className={`space-y-2.5 transition-all duration-300 ${produkDropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
-                    <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                        Batch <span className="text-zinc-500 text-[10px]">(Opsional - Alokasi Otomatis FEFO)</span>
-                      </label>
-                      <BatchDropdown
-                        batchList={batchFiltered}
-                        value={form.id_batch}
-                        onChange={(val) => setForm({ ...form, id_batch: val })}
-                        disabled={submitting || !form.id_produk}
-                        onOpenChange={setBatchDropdownOpen}
-                        hasSelectedProduct={!!form.id_produk}
-                      />
-                    </div>
+                    {bisaKedaluwarsa && (
+                      <div>
+                        <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                          Batch <span className="text-zinc-500 text-[10px]">(Opsional - Alokasi Otomatis FEFO)</span>
+                        </label>
+                        <BatchDropdown
+                          batchList={batchFiltered}
+                          value={form.id_batch}
+                          onChange={(val) => setForm({ ...form, id_batch: val })}
+                          disabled={submitting || !form.id_produk}
+                          onOpenChange={setBatchDropdownOpen}
+                          adaProdukTerpilih={!!form.id_produk}
+                        />
+                      </div>
+                    )}
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         Jumlah <span className="text-red-400">*</span>

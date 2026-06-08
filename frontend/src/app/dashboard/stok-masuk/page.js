@@ -151,6 +151,12 @@ function StokMasukContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const searchParams = useSearchParams();
 
+  const produkTerpilih = useMemo(() => {
+    return produkList.find((p) => String(p.id_produk) === String(form.id_produk));
+  }, [produkList, form.id_produk]);
+
+  const bisaKedaluwarsa = produkTerpilih ? produkTerpilih.bisa_kedaluwarsa !== false : true;
+
   useEffect(() => {
     setMounted(true);
     if (searchParams.get('action') === 'new') {
@@ -231,25 +237,38 @@ function StokMasukContent() {
     setFormError('');
     if (!form.id_produk) return setFormError('Pilih produk');
     if (!form.jumlah || parseInt(form.jumlah) <= 0) return setFormError('Jumlah harus > 0');
-    if (!form.kode_batch) return setFormError('Kode batch wajib');
-    if (!form.tanggal_kedaluwarsa) return setFormError('Tanggal kedaluwarsa wajib');
+    if (bisaKedaluwarsa) {
+      if (!form.kode_batch) return setFormError('Kode batch wajib');
+      if (!form.tanggal_kedaluwarsa) return setFormError('Tanggal kedaluwarsa wajib');
+    }
 
     setSubmitting(true);
     try {
-      await stokService.masuk({
+      const payload = {
         id_produk: parseInt(form.id_produk),
         jumlah: parseInt(form.jumlah),
         sumber_masuk: form.sumber_masuk,
         keterangan: form.keterangan,
-        batch: {
+      };
+
+      if (bisaKedaluwarsa) {
+        payload.batch = {
           kode_batch: form.kode_batch,
           tanggal_masuk: new Date().toISOString(),
           tanggal_kedaluwarsa: form.tanggal_kedaluwarsa,
-        },
-      });
+        };
+      }
+
+      await stokService.masuk(payload);
       setSukses('Stok masuk berhasil dicatat');
       setShowForm(false);
       setForm({ id_produk: '', jumlah: '', kode_batch: '', tanggal_kedaluwarsa: '', sumber_masuk: '', keterangan: '' });
+      
+      // Refresh notification count in sidebar
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refresh-notification-count'));
+      }
+
       const [resTrx, resProduk] = await Promise.all([
         stokService.ambilTransaksiMasuk(),
         produkService.ambilSemua(),
@@ -345,7 +364,13 @@ function StokMasukContent() {
                       value={form.id_produk}
                       onChange={(val) => {
                       const produk = produkList.find((p) => String(p.id_produk) === String(val));
-                      setForm({ ...form, id_produk: val, kode_batch: generateKodeBatch(produk?.nama_produk) });
+                      const isExp = produk ? produk.bisa_kedaluwarsa !== false : true;
+                      setForm({
+                        ...form,
+                        id_produk: val,
+                        kode_batch: isExp ? generateKodeBatch(produk?.nama_produk) : '',
+                        tanggal_kedaluwarsa: ''
+                      });
                     }}
                       disabled={submitting}
                       onOpenChange={setDropdownOpen}
@@ -353,19 +378,21 @@ function StokMasukContent() {
                   </div>
                   
                   {/* Dimmer container for rest of the form */}
-                  <div className={`grid grid-cols-2 gap-3 transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''}`}>
+                  <div className={`grid transition-all duration-300 ${dropdownOpen ? 'opacity-30 blur-[2px] pointer-events-none' : ''} ${bisaKedaluwarsa ? 'grid-cols-2 gap-3' : 'grid-cols-1'}`}>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         Jumlah <span className="text-red-400">*</span>
                       </label>
                       <input type="number" min="1" value={form.jumlah} onChange={(e) => setForm({ ...form, jumlah: e.target.value })} className="input-dark" placeholder="0" disabled={submitting} />
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                        Kode Batch <span className="text-red-400">*</span>
-                      </label>
-                      <input value={form.kode_batch} onChange={(e) => setForm({ ...form, kode_batch: e.target.value })} className="input-dark" placeholder="BTH-001" disabled={submitting} />
-                    </div>
+                    {bisaKedaluwarsa && (
+                      <div>
+                        <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                          Kode Batch <span className="text-red-400">*</span>
+                        </label>
+                        <input value={form.kode_batch} onChange={(e) => setForm({ ...form, kode_batch: e.target.value })} className="input-dark" placeholder="BTH-001" disabled={submitting} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -375,13 +402,15 @@ function StokMasukContent() {
               {/* ─── Section 2: Info Pelacakan ─── */}
               <div className="mb-3">
                 <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(225,255,1,0.5)' }}>Info Pelacakan</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                      Tanggal Kedaluwarsa <span className="text-red-400">*</span>
-                    </label>
-                    <input type="date" value={form.tanggal_kedaluwarsa} onChange={(e) => setForm({ ...form, tanggal_kedaluwarsa: e.target.value })} className="input-dark" disabled={submitting} />
-                  </div>
+                <div className={`grid ${bisaKedaluwarsa ? 'grid-cols-2 gap-3' : 'grid-cols-1'}`}>
+                  {bisaKedaluwarsa && (
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        Tanggal Kedaluwarsa <span className="text-red-400">*</span>
+                      </label>
+                      <input type="date" value={form.tanggal_kedaluwarsa} onChange={(e) => setForm({ ...form, tanggal_kedaluwarsa: e.target.value })} className="input-dark" disabled={submitting} />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       Sumber Masuk

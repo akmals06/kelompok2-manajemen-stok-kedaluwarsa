@@ -29,7 +29,7 @@ const mapToLegacyFormat = (row) => {
 };
 
 let lastSyncTime = 0;
-const SYNC_COOLDOWN = 60 * 1000; // Cooldown sync 1 menit untuk performance
+const SYNC_COOLDOWN = 0; // Cooldown sync 0 untuk real-time update saat demo / input logic
 
 const sinkronisasiNotifikasiKedaluwarsa = async () => {
   try {
@@ -200,6 +200,7 @@ const ambilSemuaNotifikasi = async () => {
   await sinkronisasiSemuaNotifikasi();
 
   const dbRows = await prisma.notifikasi_kedaluwarsa.findMany({
+    where: { status_hapus: false },
     orderBy: { tanggal_notifikasi: 'desc' },
     take: 50,
     include: {
@@ -220,7 +221,7 @@ const hitungBelumDibaca = async () => {
   await sinkronisasiSemuaNotifikasi();
 
   const dbCount = await prisma.notifikasi_kedaluwarsa.count({
-    where: { status_baca: false },
+    where: { status_baca: false, status_hapus: false },
   });
 
   return dbCount;
@@ -236,15 +237,16 @@ const tandaiSudahDibaca = async (idNotifikasi) => {
 
 const tandaiSemuaDibaca = async () => {
   return prisma.notifikasi_kedaluwarsa.updateMany({
-    where: { status_baca: false },
+    where: { status_baca: false, status_hapus: false },
     data: { status_baca: true },
   });
 };
 
 const hapusNotifikasi = async (idNotifikasi) => {
   const idNum = parseInt(idNotifikasi, 10);
-  return prisma.notifikasi_kedaluwarsa.delete({
-    where: { id_notifikasi: idNum }
+  return prisma.notifikasi_kedaluwarsa.update({
+    where: { id_notifikasi: idNum },
+    data: { status_hapus: true }
   });
 };
 
@@ -252,8 +254,9 @@ const hapusBeberapaNotifikasi = async (ids) => {
   const realIds = ids.map(id => parseInt(id, 10));
   if (realIds.length === 0) return { count: 0 };
 
-  return prisma.notifikasi_kedaluwarsa.deleteMany({
-    where: { id_notifikasi: { in: realIds } }
+  return prisma.notifikasi_kedaluwarsa.updateMany({
+    where: { id_notifikasi: { in: realIds } },
+    data: { status_hapus: true }
   });
 };
 

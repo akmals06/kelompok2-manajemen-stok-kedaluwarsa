@@ -175,6 +175,12 @@ export default function ProdukPage() {
         prev.map((p) => p.id_produk === produk.id_produk ? { ...p, status_aktif: !p.status_aktif } : p)
       );
       setSukses(`Status produk "${produk.nama_produk}" berhasil diubah`);
+      
+      // Refresh notification count in sidebar
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refresh-notification-count'));
+      }
+
       setTimeout(() => setSukses(''), 3000);
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mengubah status');
@@ -202,6 +208,12 @@ export default function ProdukPage() {
       await produkService.tambah(fd);
       setSukses('Produk berhasil ditambahkan');
       closeForm();
+      
+      // Refresh notification count in sidebar
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refresh-notification-count'));
+      }
+
       const res = await produkService.ambilSemua();
       if (res.success) setProdukList(res.data || []);
       setTimeout(() => setSukses(''), 3000);
@@ -604,9 +616,19 @@ export default function ProdukPage() {
           <div className="glass-card p-6">
             <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4 flex items-center justify-between">
               <span>Umur Persediaan / Batch</span>
-              <span className="text-[10px] text-zinc-500 lowercase tracking-normal">{batchProdukSelected.length} batch aktif</span>
+              <span className="text-[10px] text-zinc-500 lowercase tracking-normal">
+                {selectedProduk.bisa_kedaluwarsa !== false ? `${batchProdukSelected.length} batch aktif` : 'tidak aktif'}
+              </span>
             </h3>
-            {batchProdukSelected.length === 0 ? (
+            {selectedProduk.bisa_kedaluwarsa === false ? (
+              <div className="flex flex-col items-center justify-center h-48 text-center bg-white/[0.01] rounded-2xl border border-white/[0.04] p-6">
+                <Clock className="w-10 h-10 text-zinc-700 mb-3" />
+                <p className="text-sm font-medium text-zinc-400">Tidak ada tanggal kedaluwarsa</p>
+                <p className="text-xs text-zinc-600 mt-1 max-w-[280px]">
+                  Produk ini diatur agar tidak memiliki batch & tanggal kedaluwarsa.
+                </p>
+              </div>
+            ) : batchProdukSelected.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-center bg-white/[0.01] rounded-2xl border border-white/[0.04] p-6">
                 <Clock className="w-10 h-10 text-zinc-700 mb-3" />
                 <p className="text-sm font-medium text-zinc-400">Belum ada batch aktif</p>

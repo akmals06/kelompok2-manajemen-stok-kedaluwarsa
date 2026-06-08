@@ -49,6 +49,7 @@ model produk {
   stok_tersedia             Int                         @default(0)
   stok_minimum              Int                         @default(0)
   status_aktif              Boolean                     @default(true)
+  bisa_kedaluwarsa          Boolean                     @default(true)
   gambar_produk             String?
   created_at                DateTime                    @default(now())
   updated_at                DateTime                    @updatedAt

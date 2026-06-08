@@ -123,66 +123,68 @@ const prosesStokKeluar = async (dataTransaksi, idBatch) => {
       data: { stok_tersedia: { decrement: dataTransaksi.jumlah } },
     });
 
-    if (idBatch) {
-      const batch = await tx.batch_produk.findUnique({
-        where: { id_batch: parseInt(idBatch, 10) },
-      });
+    if (produk.bisa_kedaluwarsa) {
+      if (idBatch) {
+        const batch = await tx.batch_produk.findUnique({
+          where: { id_batch: parseInt(idBatch, 10) },
+        });
 
-      if (!batch || batch.jumlah_sisa < dataTransaksi.jumlah) {
-        throw Object.assign(new Error('Jumlah sisa batch tidak mencukupi'), { statusCode: 422 });
-      }
-
-      await tx.batch_produk.update({
-        where: { id_batch: parseInt(idBatch, 10) },
-        data: { jumlah_sisa: { decrement: dataTransaksi.jumlah } },
-      });
-
-      await tx.detail_transaksi_stok.create({
-        data: {
-          id_transaksi: transaksi.id_transaksi,
-          id_batch: parseInt(idBatch, 10),
-          jumlah_batch: dataTransaksi.jumlah,
-        },
-      });
-    } else {
-      // FEFO automatic allocation
-      const batchList = await tx.batch_produk.findMany({
-        where: {
-          id_produk: dataTransaksi.id_produk,
-          jumlah_sisa: { gt: 0 },
-          status_batch: { in: ['AKTIF', 'MENDEKATI_KEDALUWARSA'] },
-          tanggal_kedaluwarsa: { gt: new Date() },
-        },
-        orderBy: {
-          tanggal_kedaluwarsa: 'asc',
-        },
-      });
-
-      const totalBatchStock = batchList.reduce((acc, curr) => acc + curr.jumlah_sisa, 0);
-      if (totalBatchStock < dataTransaksi.jumlah) {
-        throw Object.assign(new Error('Jumlah sisa batch tidak mencukupi untuk alokasi FEFO'), { statusCode: 422 });
-      }
-
-      let sisaKebutuhan = dataTransaksi.jumlah;
-      for (const batch of batchList) {
-        if (sisaKebutuhan <= 0) break;
-
-        const alokasi = Math.min(batch.jumlah_sisa, sisaKebutuhan);
+        if (!batch || batch.jumlah_sisa < dataTransaksi.jumlah) {
+          throw Object.assign(new Error('Jumlah sisa batch tidak mencukupi'), { statusCode: 422 });
+        }
 
         await tx.batch_produk.update({
-          where: { id_batch: batch.id_batch },
-          data: { jumlah_sisa: { decrement: alokasi } },
+          where: { id_batch: parseInt(idBatch, 10) },
+          data: { jumlah_sisa: { decrement: dataTransaksi.jumlah } },
         });
 
         await tx.detail_transaksi_stok.create({
           data: {
             id_transaksi: transaksi.id_transaksi,
-            id_batch: batch.id_batch,
-            jumlah_batch: alokasi,
+            id_batch: parseInt(idBatch, 10),
+            jumlah_batch: dataTransaksi.jumlah,
+          },
+        });
+      } else {
+        // FEFO automatic allocation
+        const batchList = await tx.batch_produk.findMany({
+          where: {
+            id_produk: dataTransaksi.id_produk,
+            jumlah_sisa: { gt: 0 },
+            status_batch: { in: ['AKTIF', 'MENDEKATI_KEDALUWARSA'] },
+            tanggal_kedaluwarsa: { gt: new Date() },
+          },
+          orderBy: {
+            tanggal_kedaluwarsa: 'asc',
           },
         });
 
-        sisaKebutuhan -= alokasi;
+        const totalBatchStock = batchList.reduce((acc, curr) => acc + curr.jumlah_sisa, 0);
+        if (totalBatchStock < dataTransaksi.jumlah) {
+          throw Object.assign(new Error('Jumlah sisa batch tidak mencukupi untuk alokasi FEFO'), { statusCode: 422 });
+        }
+
+        let sisaKebutuhan = dataTransaksi.jumlah;
+        for (const batch of batchList) {
+          if (sisaKebutuhan <= 0) break;
+
+          const alokasi = Math.min(batch.jumlah_sisa, sisaKebutuhan);
+
+          await tx.batch_produk.update({
+            where: { id_batch: batch.id_batch },
+            data: { jumlah_sisa: { decrement: alokasi } },
+          });
+
+          await tx.detail_transaksi_stok.create({
+            data: {
+              id_transaksi: transaksi.id_transaksi,
+              id_batch: batch.id_batch,
+              jumlah_batch: alokasi,
+            },
+          });
+
+          sisaKebutuhan -= alokasi;
+        }
       }
     }
 
