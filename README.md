@@ -35,7 +35,6 @@ Sistem ini dirancang untuk membantu pemilik usaha ritel (UMKM) dalam:
 | **Frontend** | Next.js 15 | App Router, Server & Client Components |
 | **Backend** | Express.js 4 | RESTful API, Modular Architecture, Dual-JWT Auth |
 | **Database** | PostgreSQL 16 | Prisma ORM 6, Supabase Connection Pooling |
-| **Styling** | Tailwind CSS 3 | Dark Mode, Responsive, Animasi Smooth |
 
 ---
 
